@@ -65,19 +65,35 @@ const AssignEntranceExam = () => {
     if (settings.company_name) setCompanyName(settings.company_name);
     if (settings.short_term) setShortTerm(settings.short_term);
     if (settings.campus_address) setCampusAddress(settings.campus_address);
+  }, [settings]);
+
+  useEffect(() => {
+    if (!settings) return;
+
+    if (settings.branches) {
+      try {
+        const parsedBranches = typeof settings.branches === "string"
+          ? JSON.parse(settings.branches)
+          : settings.branches;
+
+        setBranches(parsedBranches);
+      } catch (err) {
+        console.error("Invalid branches JSON", err);
+      }
+    }
 
   }, [settings]);
 
-   const tabs = [
-     { label: "Room Registration", to: "/room_registration", icon: <KeyIcon fontSize="large" /> },
-     { label: "Verify Documents Room Assignment", to: "/verify_document_schedule", icon: <MeetingRoomIcon fontSize="large" /> },
-     { label: "Verify Documents Schedule Management", to: "/verify_schedule", icon: <ScheduleIcon fontSize="large" /> },
-     { label: "Evaluator's Applicant List", to: "/evaluator_schedule_room_list", icon: <PeopleIcon fontSize="large" /> },
-     { label: "Entrance Exam Room Assignment", to: "/assign_entrance_exam", icon: <MeetingRoomIcon fontSize="large" /> },
-     { label: "Entrance Exam Schedule Management", to: "/assign_schedule_applicant", icon: <ScheduleIcon fontSize="large" /> },
-     { label: "Proctor's Applicant List", to: "/admission_schedule_room_list", icon: <PeopleIcon fontSize="large" /> },
-     { label: "Announcement", to: "/announcement_for_admission", icon: <CampaignIcon fontSize="large" /> },
-   ];
+  const tabs = [
+    { label: "Room Registration", to: "/room_registration", icon: <KeyIcon fontSize="large" /> },
+    { label: "Verify Documents Room Assignment", to: "/verify_document_schedule", icon: <MeetingRoomIcon fontSize="large" /> },
+    { label: "Verify Documents Schedule Management", to: "/verify_schedule", icon: <ScheduleIcon fontSize="large" /> },
+    { label: "Evaluator's Applicant List", to: "/evaluator_schedule_room_list", icon: <PeopleIcon fontSize="large" /> },
+    { label: "Entrance Exam Room Assignment", to: "/assign_entrance_exam", icon: <MeetingRoomIcon fontSize="large" /> },
+    { label: "Entrance Exam Schedule Management", to: "/assign_schedule_applicant", icon: <ScheduleIcon fontSize="large" /> },
+    { label: "Proctor's Applicant List", to: "/admission_schedule_room_list", icon: <PeopleIcon fontSize="large" /> },
+    { label: "Announcement", to: "/announcement_for_admission", icon: <CampaignIcon fontSize="large" /> },
+  ];
 
   const [userID, setUserID] = useState("");
   const [user, setUser] = useState("");
@@ -141,6 +157,15 @@ const AssignEntranceExam = () => {
     fetchRooms();
   }, []);
 
+  const [schoolYearId, setSchoolYearId] = useState('');
+
+  useEffect(() => {
+    axios.get(`${API_BASE_URL}/active_school_year`)
+    .then(res => {
+      setSchoolYearId(res.data[0]?.school_year_id);
+    });
+  }, []);
+
   useEffect(() => {
     const fetchSchedules = async () => {
       try {
@@ -196,8 +221,14 @@ const AssignEntranceExam = () => {
     }
   };
 
+  const [selectedCampusFilter, setSelectedCampusFilter] = useState("");
+
+
   const filteredSchedules = schedules.filter((s) => {
     const scheduleMonth = new Date(s.day_description).getMonth() + 1;
+
+    const matchesCampus =
+      !selectedCampusFilter || s.branch === selectedCampusFilter;
 
     const matchesMonth =
       !selectedMonth || scheduleMonth === Number(selectedMonth);
@@ -209,9 +240,9 @@ const AssignEntranceExam = () => {
       !searchQuery ||
       s.building_description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.room_description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.proctor?.toLowerCase().includes(searchQuery.toLowerCase());
+      s.evaluator?.toLowerCase().includes(searchQuery.toLowerCase());
 
-    return matchesMonth && matchesDate && matchesSearch;
+    return matchesCampus && matchesMonth && matchesDate && matchesSearch;
   });
 
   const handleSaveSchedule = async () => {
@@ -228,6 +259,7 @@ const AssignEntranceExam = () => {
         await axios.put(
           `${API_BASE_URL}/update_exam_schedule/${editingSchedule.schedule_id}`,
           {
+            branch: selectedBranch,  // ✅ ADDED
             day_description: day,
             building_description: buildingName,
             room_description: sel.room_description,
@@ -235,13 +267,13 @@ const AssignEntranceExam = () => {
             end_time: endTime,
             proctor,
             room_quota: roomQuota,
+            active_school_year_id: schoolYearId,
           }
         );
         setSnackbarMessage("Schedule updated");
-        setSnackbarSeverity("success");
-        setOpenSnackbar(true);
       } else {
         await axios.post(`${API_BASE_URL}/insert_exam_schedule`, {
+          branch: selectedBranch,  // ✅ ADDED
           day_description: day,
           building_description: buildingName,
           room_description: sel.room_description,
@@ -249,24 +281,37 @@ const AssignEntranceExam = () => {
           end_time: endTime,
           proctor,
           room_quota: roomQuota,
+          active_school_year_id: schoolYearId,
         });
         setSnackbarMessage("Schedule saved");
-        setSnackbarSeverity("success");
-        setOpenSnackbar(true);
       }
 
+      setSnackbarSeverity("success");
+      setOpenSnackbar(true);
+
       setEditingSchedule(null);
-      setDay(""); setBuildingName(""); setRoomId("");
-      setStartTime(""); setEndTime(""); setProctor(""); setRoomQuota("");
+      setSelectedBranch("");   // ✅ RESET
+      setDay("");
+      setBuildingName("");
+      setRoomId("");
+      setStartTime("");
+      setEndTime("");
+      setProctor("");
+      setRoomQuota("");
 
       const res = await axios.get(`${API_BASE_URL}/exam_schedules_with_count`);
       setSchedules(res.data);
+
     } catch (err) {
       setSnackbarMessage(err.response?.data?.error || "Action failed ❌");
       setSnackbarSeverity("error");
       setOpenSnackbar(true);
     }
   };
+
+
+  const [selectedBranch, setSelectedBranch] = useState("");
+  const [branches, setBranches] = useState([]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -299,6 +344,7 @@ const AssignEntranceExam = () => {
 
   const handleEdit = (schedule) => {
     setEditingSchedule(schedule);
+    setSelectedBranch(schedule.branch);  // ✅ ADDED
     setDay(schedule.day_description);
     setBuildingName(schedule.building_description);
 
@@ -356,20 +402,7 @@ const AssignEntranceExam = () => {
     });
   };
 
-  document.addEventListener('contextmenu', (e) => e.preventDefault());
-  document.addEventListener('keydown', (e) => {
-    const isBlockedKey =
-      e.key === 'F12' || // DevTools
-      e.key === 'F11' || // Fullscreen
-      (e.ctrlKey && e.shiftKey && (e.key.toLowerCase() === 'i' || e.key.toLowerCase() === 'j')) || // Ctrl+Shift+I/J
-      (e.ctrlKey && e.key.toLowerCase() === 'u') || // Ctrl+U (View Source)
-      (e.ctrlKey && e.key.toLowerCase() === 'p');   // Ctrl+P (Print)
 
-    if (isBlockedKey) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-  });
 
   if (loading || hasAccess === null) {
     return <LoadingOverlay open={loading} message="Loading..." />;
@@ -503,6 +536,25 @@ const AssignEntranceExam = () => {
 
             <form onSubmit={handleSubmit}>
               <Grid container spacing={2}>
+
+                <Grid item xs={12}>
+                  <TextField
+                    select
+                    fullWidth
+                    label="Campus / Branch"
+                    value={selectedBranch}
+                    onChange={(e) => setSelectedBranch(e.target.value)}
+                    required
+                  >
+                    {branches.map((b) => (
+                      <MenuItem key={b.id} value={b.branch}>
+                        {b.branch}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Grid>
+
+
                 <Grid item xs={12}>
                   <TextField fullWidth type="date" label="Exam Date"
                     InputLabelProps={{ shrink: true }}
@@ -577,6 +629,22 @@ const AssignEntranceExam = () => {
 
             {/* ===== FILTER & SEARCH BOX ===== */}
             <Box display="flex" gap={2} mb={3} flexWrap="wrap">
+
+              <TextField
+                select
+                label="Select Campus"
+                value={selectedCampusFilter}
+                onChange={(e) => setSelectedCampusFilter(e.target.value)}
+                sx={{ minWidth: 200 }}
+              >
+                <MenuItem value="">All Campus</MenuItem>
+                {branches.map((b) => (
+                  <MenuItem key={b.id} value={b.branch}>
+                    {b.branch}
+                  </MenuItem>
+                ))}
+              </TextField>
+
               {/* 📆 Month Selector */}
               <TextField
                 select
@@ -619,6 +687,7 @@ const AssignEntranceExam = () => {
               <table width="100%" style={{ borderCollapse: "collapse" }}>
                 <thead>
                   <tr style={{ backgroundColor: settings?.header_color || "#1976d2", color: "#ffffff" }}>
+                    <th style={{ border: `2px solid ${borderColor}`, width: "33.33%", padding: "12px 8px" }}>Campus</th>
                     <th style={{ border: `2px solid ${borderColor}`, width: "33.33%", padding: "12px 8px" }}>Date</th>
                     <th style={{ border: `2px solid ${borderColor}`, width: "33.33%", padding: "12px 8px" }}>Building</th>
                     <th style={{ border: `2px solid ${borderColor}`, width: "33.33%", padding: "12px 8px" }}>Room</th>
@@ -632,6 +701,7 @@ const AssignEntranceExam = () => {
                 <tbody>
                   {filteredSchedules.map(s => (
                     <tr key={`${s.id}-${s.day_description}-${s.room_description}`}>
+                      <td style={{ border: `2px solid ${borderColor}`, padding: "12px 8px", textAlign: "center" }}>{s.branch}</td>
                       <td style={{ border: `2px solid ${borderColor}`, padding: "12px 8px", textAlign: "center" }}>{formatDate(s.day_description)}</td>
                       <td style={{ border: `2px solid ${borderColor}`, padding: "12px 8px", textAlign: "center" }}>{s.building_description}</td>
                       <td style={{ border: `2px solid ${borderColor}`, padding: "12px 8px", textAlign: "center" }}>{s.room_description}</td>

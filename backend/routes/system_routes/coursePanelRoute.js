@@ -66,9 +66,9 @@ router.post("/adding_course", async (req, res) => {
       [
         course_code,
         course_description || null,
-        course_unit || 0,
-        lec_unit || 0,
-        lab_unit || 0,
+        parseFloat(course_unit) || 0,
+        parseFloat(lec_unit) || 0,
+        parseFloat(lab_unit) || 0,
         prereq || null,
         corequisite || null,
       ]
@@ -128,7 +128,7 @@ router.put("/update_course/:id", async (req, res) => {
     if (rows.length > 0) {
       return res.status(400).json({ message: "The course already exists" });
     }
-    
+
     await db3.query(
       `UPDATE course_table SET
          course_code = ?,
@@ -142,9 +142,9 @@ router.put("/update_course/:id", async (req, res) => {
       [
         course_code,
         course_description ?? current.course_description,
-        course_unit ?? current.course_unit,
-        lec_unit ?? current.lec_unit,
-        lab_unit ?? current.lab_unit,
+        course_unit !== undefined ? parseFloat(course_unit) : current.course_unit,
+        lec_unit !== undefined ? parseFloat(lec_unit) : current.lec_unit,
+        lab_unit !== undefined ? parseFloat(lab_unit) : current.lab_unit,
         prereq !== undefined ? prereq : current.prereq,
         corequisite !== undefined ? corequisite : current.corequisite,
         id,

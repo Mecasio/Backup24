@@ -40,7 +40,7 @@ const allowedOrigins = [
   'http://192.168.50.211:5173',
   'http://136.239.248.58:5173',
   'http://192.168.50.90:5173',
-  'http://192.168.0.108:5173',
+  'http://192.168.50.90:5173',
 ];
 
 app.use(
@@ -86,6 +86,7 @@ const coursePanel = require("./routes/system_routes/coursePanelRoute");
 const tosfPanel = require("./routes/system_routes/tosfRoute");
 const paymentExporting = require("./routes/system_routes/paymentExportingRoute");
 const corExporting = require("./routes/system_routes/corExportingRoute");
+
 const entranceExamSchedule = require("./routes/admission_routes/entranceExamSchedule");
 const verifyDocumentSchedule = require("./routes/admission_routes/verifyDocumentSchedule");
 const QualifyingInterviewExam = require("./routes/admission_routes/QualifyingInterviewExam");
@@ -3161,50 +3162,6 @@ app.get("/api/all-applicants", async (req, res) => {
 
 // UPDATED --------------------------------------------------------- 11/16/2025
 
-app.post("/unassign_all_from_schedule", async (req, res) => {
-  const { schedule_id } = req.body;
-  try {
-    // ✅ Correct table: exam_applicants
-    await db.execute(
-      "UPDATE exam_applicants SET schedule_id = NULL WHERE schedule_id = ?",
-      [schedule_id],
-    );
-    res.json({
-      success: true,
-      message: `All applicants unassigned from schedule ${schedule_id}`,
-    });
-  } catch (err) {
-    console.error("Error unassigning all applicants:", err);
-    res.status(500).json({ error: "Failed to unassign all applicants" });
-  }
-});
-
-app.post("/unassign_schedule", async (req, res) => {
-  const { applicant_number } = req.body;
-
-  if (!applicant_number) {
-    return res.status(400).json({ error: "Applicant number is required." });
-  }
-
-  try {
-    const [result] = await db.query(
-      `DELETE FROM admission.exam_applicants WHERE applicant_id = ?`,
-      [applicant_number],
-    );
-
-    if (result.affectedRows > 0) {
-      res.json({
-        success: true,
-        message: `Applicant ${applicant_number} unassigned.`,
-      });
-    } else {
-      res.status(404).json({ error: "Applicant not found or not assigned." });
-    }
-  } catch (err) {
-    console.error("Error unassigning schedule:", err);
-    res.status(500).json({ error: "Database error" });
-  }
-});
 
 // ================= VERIFIED & ECAT APPLICANTS =================
 // ================= VERIFIED & ECAT APPLICANTS =================
@@ -3259,107 +3216,6 @@ app.get("/api/verified-ecat-applicants", async (req, res) => {
 });
 
 // ================= ENTRANCE EXAM SCHEDULE =================
-
-// Get all schedules (rooms + times)
-app.get("/exam_schedules", async (req, res) => {
-  try {
-    const [rows] = await db.execute(`
-      SELECT
-        schedule_id,
-        day_description,
-        room_description,
-        start_time,
-        end_time,
-        room_quota
-      FROM admission.entrance_exam_schedule
-      ORDER BY day_description, start_time
-    `);
-    res.json(rows);
-  } catch (err) {
-    console.error("❌ Error fetching exam schedules:", err);
-    res.status(500).send("Server error");
-  }
-});
-
-// FILTER OF YEAR AND SEMESTER
-app.get("/exam_schedules_with_count/:yearId/:semesterId", async (req, res) => {
-  const { yearId, semesterId } = req.params;
-
-  try {
-    const [rows] = await db.query(
-      `
-      SELECT
-        ees.schedule_id,
-        ees.day_description,
-        ees.building_description,
-        ees.room_description,
-        ees.start_time,
-        ees.end_time,
-        ees.proctor,
-        ees.room_quota,
-        ees.created_at,
-        sy.year_id,
-        sy.semester_id,
-        SUBSTRING(ea.applicant_id, 5, 1) AS middle_code,
-        COUNT(ea.applicant_id) AS current_occupancy
-      FROM admission.entrance_exam_schedule ees
-      JOIN enrollment.active_school_year_table sy ON ees.active_school_year_id = sy.id
-      LEFT JOIN admission.exam_applicants ea
-        ON ees.schedule_id = ea.schedule_id
-      WHERE sy.year_id = ? AND sy.semester_id = ?
-      GROUP BY ees.schedule_id
-      ORDER BY ees.day_description, ees.start_time;
-    `,
-      [yearId, semesterId],
-    );
-
-    res.json(rows);
-  } catch (err) {
-    console.error("Error:", err);
-    res.status(500).send("Server error");
-  }
-});
-
-// GET: interview schedules with applicant count, filtered by department if needed
-app.get(
-  "/interview_schedules_with_count/:yearId/:semesterId",
-  async (req, res) => {
-    const { yearId, semesterId } = req.params;
-
-    try {
-      const [rows] = await db.query(
-        `
-      SELECT
-        ees.schedule_id,
-        ees.day_description,
-        ees.building_description,
-        ees.room_description,
-        ees.start_time,
-        ees.end_time,
-        ees.interviewer,
-        ees.room_quota,
-        ees.created_at,
-        sy.year_id,
-        sy.semester_id,
-        COUNT(ea.applicant_id) AS current_occupancy
-      FROM admission.interview_exam_schedule ees
-      JOIN enrollment.active_school_year_table sy ON ees.active_school_year_id = sy.id
-      LEFT JOIN admission.interview_applicants ea
-        ON ees.schedule_id = ea.schedule_id
-      WHERE sy.year_id = ? AND sy.semester_id = ?
-      GROUP BY ees.schedule_id
-      ORDER BY ees.day_description, ees.start_time;
-    `,
-        [yearId, semesterId],
-      );
-
-      res.json(rows);
-    } catch (err) {
-      console.error("Interview Schedule Error:", err);
-      res.status(500).send("Server error");
-    }
-  },
-);
 
 // NEW API
 app.post("/api/update-grade", async (req, res) => {
@@ -7107,207 +6963,7 @@ app.put("/api/interview/remove_applicant", async (req, res) => {
   }
 });
 
-// 2. Get all interview schedules
-app.get("/interview_schedules", async (req, res) => {
-  try {
-    const [rows] = await db.query(`
-      SELECT *
-      FROM interview_exam_schedule
-      ORDER BY created_at DESC
-    `);
-    res.json(rows);
-  } catch (err) {
-    console.error("❌ Error fetching interview schedules:", err);
-    res.status(500).json({ error: "Failed to fetch interview schedules" });
-  }
-});
 
-app.get("/interview_schedules_with_count", async (req, res) => {
-  try {
-    const [rows] = await db.query(`
-      SELECT
-        s.schedule_id,
-        s.day_description,
-        s.building_description,
-        s.room_description,
-        s.start_time,
-        s.end_time,
-        s.interviewer,
-        s.room_quota,
-        IFNULL(COUNT(ia.applicant_id), 0) AS current_occupancy,
-        (s.room_quota - IFNULL(COUNT(ia.applicant_id), 0)) AS remaining_slots
-      FROM interview_exam_schedule s
-      LEFT JOIN interview_applicants ia
-        ON s.schedule_id = ia.schedule_id
-      GROUP BY
-        s.schedule_id,
-        s.day_description,
-        s.building_description,
-        s.room_description,
-        s.start_time,
-        s.end_time,
-        s.interviewer,
-        s.room_quota
-      HAVING remaining_slots > 0      -- ✅ auto-hide full rooms
-      ORDER BY s.created_at DESC
-    `);
-
-    res.json(rows);
-  } catch (err) {
-    console.error("❌ Error fetching interview schedules with count:", err);
-    res
-      .status(500)
-      .json({ error: "Failed to fetch interview schedules with count" });
-  }
-});
-
-// 4. Unassign one applicant
-app.post("/unassign_interview", async (req, res) => {
-  const { applicant_number } = req.body;
-  try {
-    await db.query(
-      `UPDATE interview_applicants
-       SET schedule_id = NULL
-       WHERE applicant_id = ?`,
-      [applicant_number],
-    );
-    res.json({
-      success: true,
-      message: `Applicant ${applicant_number} unassigned.`,
-    });
-  } catch (err) {
-    console.error("❌ Error unassigning interview applicant:", err);
-    res.status(500).json({ error: "Failed to unassign applicant." });
-  }
-});
-
-// 5. Unassign ALL applicants
-app.post("/unassign_all_from_interview", async (req, res) => {
-  const { schedule_id } = req.body;
-  try {
-    await db.query(
-      `UPDATE interview_applicants
-       SET schedule_id = NULL
-       WHERE schedule_id = ?`,
-      [schedule_id],
-    );
-    res.json({
-      success: true,
-      message: `All applicants unassigned from schedule ${schedule_id}.`,
-    });
-  } catch (err) {
-    console.error("❌ Error unassigning all interview applicants:", err);
-    res.status(500).json({ error: "Failed to unassign all applicants." });
-  }
-});
-
-app.put("/api/interview_applicants/assign", async (req, res) => {
-  const { applicant_numbers } = req.body;
-  console.log(applicant_numbers);
-
-  if (!Array.isArray(applicant_numbers) || applicant_numbers.length === 0) {
-    return res.status(400).json({ message: "No applicant numbers provided" });
-  }
-
-  try {
-    const [result] = await db3.query(
-      `UPDATE admission.interview_applicants
-       SET status = 'Accepted'
-       WHERE applicant_id IN (?)`,
-      [applicant_numbers],
-    );
-
-    res.json({
-      message: `Updated ${result.affectedRows} applicants to Accepted.`,
-      updated: applicant_numbers,
-    });
-  } catch (err) {
-    console.error("Error accepting applicants:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-app.put(
-  "/api/interview_applicants/assign/:applicant_number",
-  async (req, res) => {
-    const { applicant_number } = req.params;
-
-    if (!applicant_number) {
-      return res.status(400).json({ message: "Missing applicant_number" });
-    }
-
-    try {
-      const [result] = await db3.query(
-        `UPDATE admission.interview_applicants
-       SET status = 'Accepted'
-       WHERE applicant_id = ?`,
-        [applicant_number],
-      );
-
-      res.json({
-        message: `Applicant ${applicant_number} updated to Accepted.`,
-        affectedRows: result.affectedRows,
-      });
-    } catch (err) {
-      console.error("Error accepting applicant:", err);
-      res.status(500).json({ message: "Server error" });
-    }
-  },
-);
-
-app.put(
-  "/api/interview_applicants/unassign/:applicant_number",
-  async (req, res) => {
-    const { applicant_number } = req.params;
-
-    if (!applicant_number) {
-      return res.status(400).json({ message: "Missing applicant_number" });
-    }
-
-    try {
-      const [result] = await db3.query(
-        `UPDATE admission.interview_applicants
-       SET status = 'Waiting List'
-       WHERE applicant_id = ?`,
-        [applicant_number],
-      );
-
-      res.json({
-        message: `Applicant ${applicant_number} updated to Accepted.`,
-        affectedRows: result.affectedRows,
-      });
-    } catch (err) {
-      console.error("Error accepting applicant:", err);
-      res.status(500).json({ message: "Server error" });
-    }
-  },
-);
-
-app.put("/api/interview_applicants/unassign-all", async (req, res) => {
-  const { applicant_numbers } = req.body;
-  console.log(applicant_numbers);
-
-  if (!Array.isArray(applicant_numbers) || applicant_numbers.length === 0) {
-    return res.status(400).json({ message: "No applicant numbers provided" });
-  }
-
-  try {
-    const [result] = await db3.query(
-      `UPDATE admission.interview_applicants
-       SET status = 'Waiting List'
-       WHERE applicant_id IN (?)`,
-      [applicant_numbers],
-    );
-
-    res.json({
-      message: `Updated ${result.affectedRows} applicants to Accepted.`,
-      updated: applicant_numbers,
-    });
-  } catch (err) {
-    console.error("Error accepting applicants:", err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
 
 // ================== INTERVIEW SOCKET EVENTS ==================
 io.on("connection", (socket) => {
@@ -7592,6 +7248,7 @@ app.get("/exam_schedules", async (req, res) => {
     const [rows] = await db.query(`
       SELECT
         s.schedule_id,
+        s.branch,
         s.day_description,
         s.building_description,
         s.room_description,
@@ -7611,6 +7268,9 @@ app.get("/exam_schedules", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
+
+
+
 io.on("connection", (socket) => {
   console.log("✅ Socket.IO client connected");
 
@@ -8059,36 +7719,6 @@ app.get("/api/exam-schedule-count/:schedule_id", async (req, res) => {
   }
 });
 
-// GET schedules with current occupancy
-app.get("/exam_schedules_with_count", async (req, res) => {
-  try {
-    const [rows] = await db.query(`
-      SELECT
-        s.schedule_id,
-        s.day_description,
-        s.building_description,
-        s.room_description,
-        s.start_time,
-        s.end_time,
-        s.proctor,
-        s.room_quota,
-        COUNT(ea.applicant_id) AS current_occupancy,
-        (s.room_quota - COUNT(ea.applicant_id)) AS remaining_slots
-      FROM admission.entrance_exam_schedule s
-      LEFT JOIN admission.exam_applicants ea
-        ON ea.schedule_id = s.schedule_id
-      LEFT JOIN enrollment.active_school_year_table sy ON s.active_school_year_id = sy.id
-      WHERE sy.astatus = 1
-      GROUP BY s.schedule_id
-      ORDER BY s.day_description, s.start_time
-    `);
-
-    res.json(rows);
-  } catch (err) {
-    console.error("❌ Error fetching schedules with count:", err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
 
 //READ ENROLLED USERS (UPDATED!)
 app.get("/enrolled_users", async (req, res) => {

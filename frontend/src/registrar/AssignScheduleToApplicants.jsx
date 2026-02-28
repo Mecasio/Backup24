@@ -1039,7 +1039,7 @@ Admission Office`;
                       key={s.schedule_id}
                       value={s.schedule_id}
                     >
-                      {s.proctor} - {s.day_description} | {s.building_description} | {s.room_description} |{" "}
+                        {s.branch} : {s.proctor} - {s.day_description} | {s.building_description} | {s.room_description} |{" "}
                       {new Date(`1970-01-01T${s.start_time}`).toLocaleTimeString("en-US", {
                         hour: "numeric",
                         minute: "2-digit",

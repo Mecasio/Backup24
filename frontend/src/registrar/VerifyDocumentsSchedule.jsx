@@ -35,7 +35,6 @@ import InputAdornment from "@mui/material/InputAdornment";
 const VerifyDocumentsSchedule = () => {
 
     const settings = useContext(SettingsContext);
-
     const [titleColor, setTitleColor] = useState("#000000");
     const [subtitleColor, setSubtitleColor] = useState("#555555");
     const [borderColor, setBorderColor] = useState("#000000");
@@ -47,6 +46,28 @@ const VerifyDocumentsSchedule = () => {
     const [companyName, setCompanyName] = useState("");
     const [shortTerm, setShortTerm] = useState("");
     const [campusAddress, setCampusAddress] = useState("");
+    const [selectedBranch, setSelectedBranch] = useState("");
+
+    const [branches, setBranches] = useState([]);
+
+    useEffect(() => {
+        if (!settings) return;
+
+        if (settings.branches) {
+            try {
+                const parsedBranches = typeof settings.branches === "string"
+                    ? JSON.parse(settings.branches)
+                    : settings.branches;
+
+                setBranches(parsedBranches);
+            } catch (err) {
+                console.error("Invalid branches JSON", err);
+            }
+        }
+
+    }, [settings]);
+
+
 
     useEffect(() => {
         if (!settings) return;
@@ -73,17 +94,17 @@ const VerifyDocumentsSchedule = () => {
 
     }, [settings]);
 
-   const tabs = [
-       { label: "Room Registration", to: "/room_registration", icon: <KeyIcon fontSize="large" /> },
-       { label: "Verify Documents Room Assignment", to: "/verify_document_schedule", icon: <MeetingRoomIcon fontSize="large" /> },
-       { label: "Verify Documents Schedule Management", to: "/verify_schedule", icon: <ScheduleIcon fontSize="large" /> },
-       { label: "Evaluator's Applicant List", to: "/evaluator_schedule_room_list", icon: <PeopleIcon fontSize="large" /> },
-       { label: "Entrance Exam Room Assignment", to: "/assign_entrance_exam", icon: <MeetingRoomIcon fontSize="large" /> },
-       { label: "Entrance Exam Schedule Management", to: "/assign_schedule_applicant", icon: <ScheduleIcon fontSize="large" /> },
-       { label: "Proctor's Applicant List", to: "/admission_schedule_room_list", icon: <PeopleIcon fontSize="large" /> },
-       { label: "Announcement", to: "/announcement_for_admission", icon: <CampaignIcon fontSize="large" /> },
-     ];
-   
+    const tabs = [
+        { label: "Room Registration", to: "/room_registration", icon: <KeyIcon fontSize="large" /> },
+        { label: "Verify Documents Room Assignment", to: "/verify_document_schedule", icon: <MeetingRoomIcon fontSize="large" /> },
+        { label: "Verify Documents Schedule Management", to: "/verify_schedule", icon: <ScheduleIcon fontSize="large" /> },
+        { label: "Evaluator's Applicant List", to: "/evaluator_schedule_room_list", icon: <PeopleIcon fontSize="large" /> },
+        { label: "Entrance Exam Room Assignment", to: "/assign_entrance_exam", icon: <MeetingRoomIcon fontSize="large" /> },
+        { label: "Entrance Exam Schedule Management", to: "/assign_schedule_applicant", icon: <ScheduleIcon fontSize="large" /> },
+        { label: "Proctor's Applicant List", to: "/admission_schedule_room_list", icon: <PeopleIcon fontSize="large" /> },
+        { label: "Announcement", to: "/announcement_for_admission", icon: <CampaignIcon fontSize="large" /> },
+    ];
+
 
     const navigate = useNavigate();
     const [activeStep, setActiveStep] = useState(1);
@@ -216,6 +237,7 @@ const VerifyDocumentsSchedule = () => {
         try {
             await axios.post(`${API_BASE_URL}/create_verify_document_schedule`, {
                 schedule_date: day,
+                branch: selectedBranch, // ✅ ADD THIS
                 building_description: buildingName,
                 room_description: sel.room_description,
                 start_time: startTime,
@@ -264,9 +286,15 @@ const VerifyDocumentsSchedule = () => {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedMonth, setSelectedMonth] = useState("");
     const [selectedDate, setSelectedDate] = useState("");
+    const [selectedCampusFilter, setSelectedCampusFilter] = useState("");
+
+
 
     const filteredSchedules = schedules.filter((s) => {
         const scheduleMonth = new Date(s.schedule_date).getMonth() + 1;
+
+        const matchesCampus =
+            !selectedCampusFilter || s.branch === selectedCampusFilter;
 
         const matchesMonth =
             !selectedMonth || scheduleMonth === Number(selectedMonth);
@@ -280,8 +308,9 @@ const VerifyDocumentsSchedule = () => {
             s.room_description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             s.evaluator?.toLowerCase().includes(searchQuery.toLowerCase());
 
-        return matchesMonth && matchesDate && matchesSearch;
+        return matchesCampus && matchesMonth && matchesDate && matchesSearch;
     });
+
 
 
 
@@ -309,7 +338,7 @@ const VerifyDocumentsSchedule = () => {
     const handleEdit = (schedule) => {
         setEditingSchedule(schedule);
 
-        // Fill the form with schedule data
+        setSelectedBranch(schedule.branch); // ✅ ADD THIS
         setDay(schedule.schedule_date);
         setBuildingName(schedule.building_description);
         setRoomId(
@@ -352,6 +381,7 @@ const VerifyDocumentsSchedule = () => {
                 `${API_BASE_URL}/update_verify_document_schedule/${editingSchedule.schedule_id}`,
                 {
                     schedule_date: day,
+                    branch: selectedBranch, // ✅ ADD
                     building_description: buildingName,
                     room_description: sel.room_description,
                     start_time: startTime,
@@ -360,6 +390,7 @@ const VerifyDocumentsSchedule = () => {
                     room_quota: Number(roomQuota)
                 }
             );
+
 
             setSnackbarMessage("Schedule updated successfully ✅");
             setSnackbarSeverity("success");
@@ -398,16 +429,16 @@ const VerifyDocumentsSchedule = () => {
     };
 
 
+const formatDate = (dateString) => {
+  if (!dateString) return "";
 
-    const formatDate = (dateString) => {
-        if (!dateString) return "";
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
 
-        return new Date(dateString).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-        });
-    };
     const formatTime = (time) => {
         if (!time) return "";
 
@@ -595,13 +626,31 @@ const VerifyDocumentsSchedule = () => {
 
                         <form onSubmit={handleSubmit}>
                             <Grid container spacing={2}>
+
+                                <Grid item xs={12}>
+                                    <TextField
+                                        select
+                                        fullWidth
+                                        label="Branch"
+                                        value={selectedBranch}
+                                        onChange={(e) => setSelectedBranch(e.target.value)}
+                                        required
+                                    >
+                                        {branches.map((b) => (
+                                            <MenuItem key={b.id} value={b.branch}>
+                                                {b.branch}
+                                            </MenuItem>
+                                        ))}
+                                    </TextField>
+                                </Grid>
+
                                 <Grid item xs={12}>
                                     <TextField
                                         fullWidth
-                                        label="Exam Date"
                                         type="date"
+                                        label="Exam Date"
                                         InputLabelProps={{ shrink: true }}
-                                        value={day || ""}
+                                        value={day}
                                         inputProps={{ min: minDate, max: maxDate }}
                                         onChange={(e) => setDay(e.target.value)}
                                         required
@@ -732,6 +781,21 @@ const VerifyDocumentsSchedule = () => {
 
                         <Box display="flex" gap={2} mb={3} flexWrap="wrap">
 
+                            <TextField
+                                select
+                                label="Select Campus"
+                                value={selectedCampusFilter}
+                                onChange={(e) => setSelectedCampusFilter(e.target.value)}
+                                sx={{ minWidth: 200 }}
+                            >
+                                <MenuItem value="">All Campus</MenuItem>
+                                {branches.map((b) => (
+                                    <MenuItem key={b.id} value={b.branch}>
+                                        {b.branch}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+
                             {/* 📆 Month Selector */}
                             <TextField
                                 select
@@ -775,6 +839,7 @@ const VerifyDocumentsSchedule = () => {
                             <table width="100%" style={{ borderCollapse: "collapse" }}>
                                 <thead>
                                     <tr style={{ backgroundColor: settings?.header_color || "#1976d2", color: "#ffffff" }}>
+                                        <th style={{ border: `2px solid ${borderColor}`, width: "33.33%", padding: "12px 8px" }}>Branch</th>
                                         <th style={{ border: `2px solid ${borderColor}`, width: "33.33%", padding: "12px 8px" }}>Date</th>
                                         <th style={{ border: `2px solid ${borderColor}`, width: "33.33%", padding: "12px 8px" }}>Building</th>
                                         <th style={{ border: `2px solid ${borderColor}`, width: "33.33%", padding: "12px 8px" }}>Room</th>
@@ -788,6 +853,7 @@ const VerifyDocumentsSchedule = () => {
                                 <tbody>
                                     {filteredSchedules.map(s => (
                                         <tr key={`${s.id}-${s.day_description}-${s.room_description}`}>
+                                            <td style={{ border: `2px solid ${borderColor}`, padding: "12px 8px", textAlign: "center" }}>{s.branch}</td>
                                             <td style={{ border: `2px solid ${borderColor}`, padding: "12px 8px", textAlign: "center" }}>{formatDate(s.schedule_date)}</td>
                                             <td style={{ border: `2px solid ${borderColor}`, padding: "12px 8px", textAlign: "center" }}>{s.building_description}</td>
                                             <td style={{ border: `2px solid ${borderColor}`, padding: "12px 8px", textAlign: "center" }}>{s.room_description}</td>

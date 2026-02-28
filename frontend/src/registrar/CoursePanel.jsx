@@ -219,10 +219,20 @@ const CoursePanel = () => {
 
   const handleChangesForEverything = (e) => {
     const { name, value } = e.target;
-    setCourse((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+
+    setCourse((prev) => {
+      const updated = {
+        ...prev,
+        [name]: value,
+      };
+
+      // Auto compute total
+      const lec = parseFloat(updated.lec_unit) || 0;
+      const lab = parseFloat(updated.lab_unit) || 0;
+      updated.course_unit = (lec + lab).toFixed(2);
+
+      return updated;
+    });
   };
 
 
@@ -230,9 +240,9 @@ const CoursePanel = () => {
     try {
       await axios.post(`${API_BASE_URL}/adding_course`, {
         ...course,
-        course_unit: Number(course.course_unit),
-        lec_unit: Number(course.lec_unit),
-        lab_unit: Number(course.lab_unit),
+        course_unit: parseFloat(course.course_unit) || 0,
+        lec_unit: parseFloat(course.lec_unit) || 0,
+        lab_unit: parseFloat(course.lab_unit) || 0,
         prereq: course.prereq || null,
         corequisite: course.corequisite || null,
       });
@@ -318,9 +328,9 @@ const CoursePanel = () => {
     try {
       await axios.put(`${API_BASE_URL}/update_course/${editId}`, {
         ...course,
-        course_unit: Number(course.course_unit),
-        lec_unit: Number(course.lec_unit),
-        lab_unit: Number(course.lab_unit),
+        course_unit: parseFloat(course.course_unit) || 0,
+        lec_unit: parseFloat(course.lec_unit) || 0,
+        lab_unit: parseFloat(course.lab_unit) || 0,
         prereq: course.prereq || null,
         corequisite: course.corequisite || null,
       });
@@ -344,7 +354,7 @@ const CoursePanel = () => {
     }
   };
 
-  
+
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [courseToDelete, setCourseToDelete] = useState(null);
 
@@ -528,6 +538,10 @@ const CoursePanel = () => {
               type="number"
               value={course.lec_unit}
               onChange={handleChangesForEverything}
+              inputProps={{
+                step: "0.01",   // ✅ allow decimals
+                min: "0"
+              }}
             />
           </Grid>
 
@@ -539,6 +553,10 @@ const CoursePanel = () => {
               type="number"
               value={course.lab_unit}
               onChange={handleChangesForEverything}
+              inputProps={{
+                step: "0.01",
+                min: "0"
+              }}
             />
           </Grid>
 
@@ -549,7 +567,7 @@ const CoursePanel = () => {
               name="course_unit"
               type="number"
               value={course.course_unit}
-              onChange={handleChangesForEverything}
+              InputProps={{ readOnly: true }}
             />
           </Grid>
 

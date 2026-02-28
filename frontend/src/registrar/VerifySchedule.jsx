@@ -44,9 +44,6 @@ import API_BASE_URL from "../apiConfig";
 import CampaignIcon from '@mui/icons-material/Campaign';
 import { Toc } from "@mui/icons-material";
 
-
-
-
 const AssignScheduleToApplicants = () => {
     const socket = useRef(null);
 
@@ -107,8 +104,13 @@ const AssignScheduleToApplicants = () => {
 
     }, [settings]);
 
-
-
+    useEffect(() => {
+        socket.current = io(API_BASE_URL);
+    
+        return () => {
+          socket.current.disconnect();
+        };
+    }, []);
 
     const tabs = [
         { label: "Room Registration", to: "/room_registration", icon: <KeyIcon fontSize="large" /> },
@@ -383,9 +385,18 @@ const AssignScheduleToApplicants = () => {
     const handleAssignSingle = (applicantNumber) => {
         if (!selectedSchedule) {
             setSnack({
-                open: true,
-                message: "Please select a schedule first.",
-                severity: "warning",
+            open: true,
+            message: "Please select a schedule first.",
+            severity: "warning",
+            });
+            return;
+        }
+
+        if (!socket?.current) {
+            setSnack({
+            open: true,
+            message: "Socket not connected yet. Try again.",
+            severity: "error",
             });
             return;
         }
@@ -397,27 +408,25 @@ const AssignScheduleToApplicants = () => {
 
         socket.current.once("update_verify_schedule_result", (res) => {
             if (res.success) {
+            setPersons((prev) =>
+                prev.map((p) =>
+                p.applicant_number === applicantNumber
+                    ? { ...p, schedule_id: selectedSchedule }
+                    : p
+                )
+            );
 
-                // ✅ THIS IS WHAT YOU WERE MISSING
-                setPersons(prev =>
-                    prev.map(p =>
-                        p.applicant_number === applicantNumber
-                            ? { ...p, schedule_id: selectedSchedule }
-                            : p
-                    )
-                );
-
-                setSnack({
-                    open: true,
-                    message: `Applicant ${applicantNumber} assigned successfully.`,
-                    severity: "success",
-                });
+            setSnack({
+                open: true,
+                message: `Applicant ${applicantNumber} assigned successfully.`,
+                severity: "success",
+            });
             } else {
-                setSnack({
-                    open: true,
-                    message: res.error || "Failed to assign applicant.",
-                    severity: "error",
-                });
+            setSnack({
+                open: true,
+                message: res.error || "Failed to assign applicant.",
+                severity: "error",
+            });
             }
         });
     };
@@ -1113,7 +1122,7 @@ Admission Office`
                                             key={s.schedule_id}
                                             value={s.schedule_id}
                                         >
-                                            {s.evaluator} - {s.schedule_date} | {s.building_description} | {s.room_description} |{" "}
+                                            {s.branch} : {s.evaluator} - {s.schedule_date} | {s.building_description} | {s.room_description} |{" "}
                                             {new Date(`1970-01-01T${s.start_time}`).toLocaleTimeString("en-US", {
                                                 hour: "numeric",
                                                 minute: "2-digit",
@@ -1738,6 +1747,7 @@ Admission Office`
                                                 // ✅ Not assigned → Assign only
                                                 <Button
                                                     variant="contained"
+                                                    disabled={!socket?.current} 
                                                     onClick={(e) => {
                                                         e.stopPropagation(); // ✅ REQUIRED
                                                         handleAssignSingle(person.applicant_number);

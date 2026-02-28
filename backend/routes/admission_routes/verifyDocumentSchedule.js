@@ -8,6 +8,7 @@ router.post("/create_verify_document_schedule", async (req, res) => {
   try {
     const {
       schedule_date,
+      branch, // ✅ added
       building_description,
       room_description,
       start_time,
@@ -16,38 +17,49 @@ router.post("/create_verify_document_schedule", async (req, res) => {
       room_quota
     } = req.body;
 
-    if (!schedule_date || !building_description || !room_description || !start_time || !end_time) {
+    // ✅ Validate required fields
+    if (
+      !schedule_date ||
+      !branch ||
+      !building_description ||
+      !room_description ||
+      !start_time ||
+      !end_time ||
+      !room_quota
+    ) {
       return res.status(400).json({ error: "Missing required fields." });
     }
 
-    // 🔍 CHECK IF SAME DATE + BUILDING + ROOM ALREADY EXISTS
+    // 🔍 CHECK DUPLICATE (NOW INCLUDING BRANCH)
     const [existing] = await db.query(
       `
-        SELECT 1
-        FROM verify_document_schedule
-        WHERE schedule_date = ?
-          AND building_description = ?
-          AND room_description = ?
+      SELECT 1
+      FROM verify_document_schedule
+      WHERE schedule_date = ?
+        AND branch = ?
+        AND building_description = ?
+        AND room_description = ?
       `,
-      [schedule_date, building_description, room_description]
+      [schedule_date, branch, building_description, room_description]
     );
 
     if (existing.length > 0) {
       return res.status(400).json({
-        error: "⚠️ Room already exists for this building on this date."
+        error: "⚠️ Room already exists for this branch on this date."
       });
     }
 
-    // ✅ INSERT IF NO DUPLICATE
+    // ✅ INSERT
     const sql = `
       INSERT INTO verify_document_schedule
-      (schedule_date, building_description, room_description,
+      (schedule_date, branch, building_description, room_description,
        start_time, end_time, evaluator, room_quota, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
     `;
 
     const [result] = await db.query(sql, [
       schedule_date,
+      branch,
       building_description,
       room_description,
       start_time,
@@ -68,12 +80,14 @@ router.post("/create_verify_document_schedule", async (req, res) => {
 });
 
 // GET verify document schedules
+// GET verify document schedules
 router.get("/verify_document_schedule_list", async (req, res) => {
   try {
     const [rows] = await db.query(`
       SELECT 
         schedule_id,
         schedule_date,
+        branch,   -- ✅ added
         building_description,
         room_description,
         start_time,
@@ -85,18 +99,23 @@ router.get("/verify_document_schedule_list", async (req, res) => {
     `);
 
     res.json(rows);
+
   } catch (err) {
     console.error("❌ Error fetching verify document schedules:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
+
+// UPDATE verify document schedule
 // UPDATE verify document schedule
 router.put("/update_verify_document_schedule/:schedule_id", async (req, res) => {
   try {
     const { schedule_id } = req.params;
+
     const {
       schedule_date,
+      branch, // ✅ added
       building_description,
       room_description,
       start_time,
@@ -105,9 +124,22 @@ router.put("/update_verify_document_schedule/:schedule_id", async (req, res) => 
       room_quota
     } = req.body;
 
+    if (
+      !schedule_date ||
+      !branch ||
+      !building_description ||
+      !room_description ||
+      !start_time ||
+      !end_time ||
+      !room_quota
+    ) {
+      return res.status(400).json({ error: "Missing required fields." });
+    }
+
     const sql = `
       UPDATE verify_document_schedule
       SET schedule_date = ?, 
+          branch = ?,   -- ✅ added
           building_description = ?, 
           room_description = ?, 
           start_time = ?, 
@@ -117,8 +149,9 @@ router.put("/update_verify_document_schedule/:schedule_id", async (req, res) => 
       WHERE schedule_id = ?
     `;
 
-    const [result] = await db.query(sql, [
+    await db.query(sql, [
       schedule_date,
+      branch,
       building_description,
       room_description,
       start_time,
@@ -128,12 +161,14 @@ router.put("/update_verify_document_schedule/:schedule_id", async (req, res) => 
       schedule_id
     ]);
 
-    res.json({ message: "Schedule updated successfully" });
+    res.json({ message: "Schedule updated successfully ✅" });
+
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error updating verify document schedule:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
+
 
 // DELETE verify document schedule
 router.delete("/delete_verify_document_schedule/:schedule_id", async (req, res) => {
@@ -242,6 +277,7 @@ router.get("/verify_document_schedules_with_count", async (req, res) => {
     const [rows] = await db.query(`
       SELECT 
         s.schedule_id,
+        s.branch,
         s.schedule_date,
         s.building_description,
         s.room_description,

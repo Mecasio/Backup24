@@ -71,6 +71,24 @@ const AssignQualifyingInterviewExam = () => {
 
     }, [settings]);
 
+    useEffect(() => {
+        if (!settings) return;
+
+        if (settings.branches) {
+            try {
+                const parsedBranches = typeof settings.branches === "string"
+                    ? JSON.parse(settings.branches)
+                    : settings.branches;
+
+                setBranches(parsedBranches);
+            } catch (err) {
+                console.error("Invalid branches JSON", err);
+            }
+        }
+
+    }, [settings]);
+
+
     const tabs = [
 
         { label: "Qualifying / Interview Room Assignment", to: "/assign_qualifying_interview_exam", icon: <MeetingRoomIcon fontSize="large" /> },
@@ -126,6 +144,8 @@ const AssignQualifyingInterviewExam = () => {
     }, []);
 
     const [schedules, setSchedules] = useState([]);
+    const [selectedBranch, setSelectedBranch] = useState("");  // selected in form
+    const [branches, setBranches] = useState([]);
 
     useEffect(() => {
         const fetchSchedules = async () => {
@@ -204,12 +224,14 @@ const AssignQualifyingInterviewExam = () => {
             day_description: day,
             building_description: buildingName,
             room_id: roomId,
+            branch: selectedBranch, // ✅ ADD THIS
             room_description: selectedRoom?.room_description || "",
             start_time: startTime,
             end_time: endTime,
             interviewer,
             room_quota: roomQuota || 40,
         };
+
 
         try {
             if (editingSchedule) {
@@ -350,23 +372,30 @@ const AssignQualifyingInterviewExam = () => {
     const [selectedMonth, setSelectedMonth] = useState("");
     const [selectedDate, setSelectedDate] = useState("");
 
+    const [selectedCampusFilter, setSelectedCampusFilter] = useState("");
+
+
     const filteredSchedules = schedules.filter((s) => {
         const scheduleMonth = new Date(s.day_description).getMonth() + 1;
+
+        const matchesCampus =
+            !selectedCampusFilter || s.branch === selectedCampusFilter;
 
         const matchesMonth =
             !selectedMonth || scheduleMonth === Number(selectedMonth);
 
         const matchesDate =
-            !selectedDate || s.day_description === selectedDate;
+         !selectedDate || s.day_description === selectedDate;
 
         const matchesSearch =
             !searchQuery ||
             s.building_description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
             s.room_description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            s.interviewer?.toLowerCase().includes(searchQuery.toLowerCase());
+            s.evaluator?.toLowerCase().includes(searchQuery.toLowerCase());
 
-        return matchesMonth && matchesDate && matchesSearch;
+        return matchesCampus && matchesMonth && matchesDate && matchesSearch;
     });
+
 
 
     const availableDates = Array.from(
@@ -538,6 +567,23 @@ const AssignQualifyingInterviewExam = () => {
 
                                 <Grid item xs={12}>
                                     <TextField
+                                        select
+                                        fullWidth
+                                        label="Branch"
+                                        value={selectedBranch}
+                                        onChange={(e) => setSelectedBranch(e.target.value)}
+                                        required
+                                    >
+                                        {branches.map((b) => (
+                                            <MenuItem key={b.id} value={b.branch}>
+                                                {b.branch}
+                                            </MenuItem>
+                                        ))}
+                                    </TextField>
+                                </Grid>
+
+                                <Grid item xs={12}>
+                                    <TextField
                                         fullWidth
                                         type="date"
                                         label="Exam Date"
@@ -658,6 +704,21 @@ const AssignQualifyingInterviewExam = () => {
 
                             <TextField
                                 select
+                                label="Select Campus"
+                                value={selectedCampusFilter}
+                                onChange={(e) => setSelectedCampusFilter(e.target.value)}
+                                sx={{ minWidth: 200 }}
+                            >
+                                <MenuItem value="">All Campus</MenuItem>
+                                {branches.map((b) => (
+                                    <MenuItem key={b.id} value={b.branch}>
+                                        {b.branch}
+                                    </MenuItem>
+                                ))}
+                            </TextField>
+
+                            <TextField
+                                select
                                 label="Select Month"
                                 value={selectedMonth}
                                 onChange={(e) => {
@@ -700,7 +761,7 @@ const AssignQualifyingInterviewExam = () => {
                                         color: "#fff"
                                     }}>
                                         {[
-                                            "Date", "Building", "Room",
+                                            "Branch", "Date", "Building", "Room",
                                             "Start", "End", "Interviewer",
                                             "Quota", "Actions"
                                         ].map(h => (
@@ -718,6 +779,7 @@ const AssignQualifyingInterviewExam = () => {
                                 <tbody>
                                     {filteredSchedules.map(s => (
                                         <tr key={s.schedule_id}>
+                                            <td style={cellStyle}>{s.branch}</td>
                                             <td style={cellStyle}>{formatDate(s.day_description)}</td>
                                             <td style={cellStyle}>{s.building_description}</td>
                                             <td style={cellStyle}>{s.room_description}</td>
