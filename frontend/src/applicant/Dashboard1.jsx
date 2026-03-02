@@ -223,13 +223,23 @@ const Dashboard1 = (props) => {
 
   useEffect(() => {
     const savedEmail = localStorage.getItem("applicantEmail");
-    if (savedEmail) {
-      setPerson((prev) => ({
-        ...prev,
-        emailAddress: savedEmail,
-      }));
-    }
+    const savedFirst = localStorage.getItem("first_name");
+    const savedLast = localStorage.getItem("last_name");
+    const savedMiddle = localStorage.getItem("middle_name");
+    const savedBirth = localStorage.getItem("birthOfDate");
+    const savedAge = localStorage.getItem("age");
+
+    setPerson(prev => ({
+      ...prev,
+      emailAddress: savedEmail || "",
+      first_name: savedFirst || "",
+      last_name: savedLast || "",
+      middle_name: savedMiddle || "",
+      birthOfDate: savedBirth || "",
+      age: savedAge || ""
+    }));
   }, []);
+
 
   // do not alter
   useEffect(() => {
@@ -384,12 +394,18 @@ const Dashboard1 = (props) => {
     return age < 0 ? "" : age;
   };
 
-  // 🧩 Real-time handleChange with Manila-based age + filtering reset
   const handleChange = (e) => {
     const target = e && e.target ? e.target : {};
     const { name, type, checked, value } = target;
 
-    const updatedValue = type === "checkbox" ? (checked ? 1 : 0) : value;
+    const updatedValue =
+      type === "checkbox"
+        ? checked
+          ? 1
+          : 0
+        : ["first_name", "middle_name", "last_name"].includes(name)
+          ? value.toUpperCase()
+          : value;
 
     const updatedPerson = {
       ...person,
@@ -406,7 +422,7 @@ const Dashboard1 = (props) => {
       updatedPerson.yearLevel = "First Year";
     }
 
-
+    // ✅ Reset program if campus or academicProgram changed
     if (name === "campus" || name === "academicProgram") {
       updatedPerson.program = "";
     }
@@ -414,7 +430,6 @@ const Dashboard1 = (props) => {
     setPerson(updatedPerson);
     handleUpdate(updatedPerson); // real-time save
   };
-
 
   const handleBlur = async () => {
     try {
@@ -1758,12 +1773,24 @@ const Dashboard1 = (props) => {
                   Last Name
                 </Typography>
                 <TextField
+                  InputProps={{
+                    readOnly: true,
+                    sx: { textTransform: "uppercase" } // must be inside InputProps
+                  }}
                   fullWidth
                   size="small"
                   name="last_name"
-                  required
-                  value={person.last_name || ""}
-                  onChange={handleChange}
+                  require
+                  value={(person.last_name || "").toUpperCase()}
+                  onChange={(e) =>
+                    handleChange({
+                      ...e,
+                      target: {
+                        ...e.target,
+                        value: e.target.value.toUpperCase()
+                      }
+                    })
+                  }
                   onBlur={() => handleUpdate(person)}
                   placeholder="Enter your Last Name"
                   error={errors.last_name}
@@ -1778,11 +1805,23 @@ const Dashboard1 = (props) => {
                 </Typography>
                 <TextField
                   fullWidth
+                  InputProps={{
+                    readOnly: true,
+                    sx: { textTransform: "uppercase" } // must be inside InputProps
+                  }}
                   size="small"
                   name="first_name"
                   required
-                  value={person.first_name || ""}
-                  onChange={handleChange}
+                  value={(person.first_name || "").toUpperCase()}
+                  onChange={(e) =>
+                    handleChange({
+                      ...e,
+                      target: {
+                        ...e.target,
+                        value: e.target.value.toUpperCase()
+                      }
+                    })
+                  }
                   onBlur={() => handleUpdate(person)}
                   placeholder="Enter your First Name"
                   error={errors.first_name}
@@ -1799,11 +1838,23 @@ const Dashboard1 = (props) => {
                 </Typography>
                 <TextField
                   fullWidth
+                  InputProps={{
+                    readOnly: true,
+                    sx: { textTransform: "uppercase" } // must be inside InputProps
+                  }}
                   size="small"
                   name="middle_name"
                   required
-                  value={person.middle_name || ""}
-                  onChange={handleChange}
+                  value={(person.middle_name || "").toUpperCase()}
+                  onChange={(e) =>
+                    handleChange({
+                      ...e,
+                      target: {
+                        ...e.target,
+                        value: e.target.value.toUpperCase()
+                      }
+                    })
+                  }
                   onBlur={() => handleUpdate(person)}
                   placeholder="Enter your Middle Name"
                 />
@@ -2120,6 +2171,8 @@ const Dashboard1 = (props) => {
                 </Typography>
                 <TextField
                   fullWidth
+                  InputProps={{ readOnly: true }}
+
                   size="small"
                   type="date"
                   name="birthOfDate"

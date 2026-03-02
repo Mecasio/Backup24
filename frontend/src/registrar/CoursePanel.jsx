@@ -620,325 +620,475 @@ const CoursePanel = () => {
 
 
 
-        <TableContainer component={Paper} sx={{ width: '100%' }}>
-          <Table size="small">
-            <TableHead sx={{ backgroundColor: '#6D2323', color: "white" }}>
-              <TableRow>
-                <TableCell
-                  colSpan={10}
-                  sx={{
+      <TableContainer component={Paper} sx={{ width: '100%' }}>
+        <Table size="small">
+          <TableHead sx={{ backgroundColor: '#6D2323', color: "white" }}>
+            <TableRow>
+              <TableCell
+                colSpan={10}
+                sx={{
+                  border: `2px solid ${borderColor}`,
+                  py: 0.5,
+                  backgroundColor: settings?.header_color || "#1976d2",
+                  color: "white",
+                }}
+              >
+                <Box
+                  display="flex"
+                  justifyContent="space-between" // Left & right sides
+                  alignItems="center"
+                  flexWrap="wrap"
+                  gap={1}
+                >
+
+                  <Typography fontSize="14px" fontWeight="bold" color="white">
+                    Total Subjects: {filteredCourses.length}
+                  </Typography>
+                  {/* Right side: Pagination / Filtering Controls */}
+                  <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+                    <Button
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        minWidth: 80,
+                        color: "white",
+                        borderColor: "white",
+                        backgroundColor: "transparent",
+                        '&:hover': {
+                          borderColor: 'white',
+                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        },
+                        '&.Mui-disabled': {
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          opacity: 1,
+                        }
+                      }}
+                    >
+                      First
+                    </Button>
+
+                    <Button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        minWidth: 80,
+                        color: "white",
+                        borderColor: "white",
+                        backgroundColor: "transparent",
+                        '&:hover': {
+                          borderColor: 'white',
+                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        },
+                        '&.Mui-disabled': {
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          opacity: 1,
+                        }
+                      }}
+                    >
+                      Prev
+                    </Button>
+
+                    {/* Page Dropdown */}
+                    <FormControl size="small" sx={{ minWidth: 80 }}>
+                      <Select
+                        value={currentPage}
+                        onChange={(e) => setCurrentPage(Number(e.target.value))}
+                        displayEmpty
+                        sx={{
+                          fontSize: '12px',
+                          height: 36,
+                          color: 'white',
+                          border: '1px solid white',
+                          backgroundColor: 'transparent',
+                          '.MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
+                          '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
+                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
+                          '& svg': { color: 'white' }
+                        }}
+                        MenuProps={{
+                          PaperProps: { sx: { maxHeight: 200, backgroundColor: '#fff' } }
+                        }}
+                      >
+                        {Array.from({ length: totalPages }, (_, i) => (
+                          <MenuItem key={i + 1} value={i + 1}>
+                            Page {i + 1}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+
+                    <Typography fontSize="11px" color="white">
+                      of {totalPages} page{totalPages > 1 ? 's' : ''}
+                    </Typography>
+
+                    <Button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        minWidth: 80,
+                        color: "white",
+                        borderColor: "white",
+                        backgroundColor: "transparent",
+                        '&:hover': { borderColor: 'white', backgroundColor: 'rgba(255,255,255,0.1)' },
+                        '&.Mui-disabled': { color: "white", borderColor: "white", backgroundColor: "transparent", opacity: 1 }
+                      }}
+                    >
+                      Next
+                    </Button>
+
+                    <Button
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        minWidth: 80,
+                        color: "white",
+                        borderColor: "white",
+                        backgroundColor: "transparent",
+                        '&:hover': { borderColor: 'white', backgroundColor: 'rgba(255,255,255,0.1)' },
+                        '&.Mui-disabled': { color: "white", borderColor: "white", backgroundColor: "transparent", opacity: 1 }
+                      }}
+                    >
+                      Last
+                    </Button>
+                  </Box>
+                </Box>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+        </Table>
+      </TableContainer>
+
+
+
+
+      <div style={styles.tableContainer}>
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              {[
+                "ID",
+                "Code",
+                "Description",
+                "Lec Unit",
+                "Lab Unit",
+                "Credit Unit",
+                "Prerequisite",
+                "Corequisite",
+                "Lab",
+                "Lecture",
+                "Actions",
+              ].map((header) => (
+                <th
+                  key={header}
+                  style={{
                     border: `2px solid ${borderColor}`,
-                    py: 0.5,
-                    backgroundColor: settings?.header_color || "#1976d2",
-                    color: "white",
+                    backgroundColor: "#f5f5f5",
+                    color: "#000",
+                    padding: "8px",
                   }}
                 >
-                  <Box
-                    display="flex"
-                    justifyContent="space-between" // Left & right sides
-                    alignItems="center"
-                    flexWrap="wrap"
-                    gap={1}
-                  >
-                  
-                   <Typography sx={{ color: "white", fontWeight: "bold" }}>
-                      Total Subjects: {filteredCourses.length}
-                    </Typography>
-                    {/* Right side: Pagination / Filtering Controls */}
-                    <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
-                      <Button
-                        onClick={() => setCurrentPage(1)}
-                        disabled={currentPage === 1}
-                        variant="outlined"
-                        size="small"
-                        sx={{
-                          minWidth: 80,
-                          color: "white",
-                          borderColor: "white",
-                          backgroundColor: "transparent",
-                          '&:hover': {
-                            borderColor: 'white',
-                            backgroundColor: 'rgba(255,255,255,0.1)',
-                          },
-                          '&.Mui-disabled': {
-                            color: "white",
-                            borderColor: "white",
-                            backgroundColor: "transparent",
-                            opacity: 1,
-                          }
-                        }}
-                      >
-                        First
-                      </Button>
+                  {header}
+                </th>
+              ))}
+            </tr>
+          </thead>
 
-                      <Button
-                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                        disabled={currentPage === 1}
-                        variant="outlined"
-                        size="small"
-                        sx={{
-                          minWidth: 80,
-                          color: "white",
-                          borderColor: "white",
-                          backgroundColor: "transparent",
-                          '&:hover': {
-                            borderColor: 'white',
-                            backgroundColor: 'rgba(255,255,255,0.1)',
-                          },
-                          '&.Mui-disabled': {
-                            color: "white",
-                            borderColor: "white",
-                            backgroundColor: "transparent",
-                            opacity: 1,
-                          }
-                        }}
-                      >
-                        Prev
-                      </Button>
-
-                      {/* Page Dropdown */}
-                      <FormControl size="small" sx={{ minWidth: 80 }}>
-                        <Select
-                          value={currentPage}
-                          onChange={(e) => setCurrentPage(Number(e.target.value))}
-                          displayEmpty
-                          sx={{
-                            fontSize: '12px',
-                            height: 36,
-                            color: 'white',
-                            border: '1px solid white',
-                            backgroundColor: 'transparent',
-                            '.MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
-                            '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
-                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
-                            '& svg': { color: 'white' }
-                          }}
-                          MenuProps={{
-                            PaperProps: { sx: { maxHeight: 200, backgroundColor: '#fff' } }
-                          }}
-                        >
-                          {Array.from({ length: totalPages }, (_, i) => (
-                            <MenuItem key={i + 1} value={i + 1}>
-                              Page {i + 1}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </FormControl>
-
-                      <Typography fontSize="11px" color="white">
-                        of {totalPages} page{totalPages > 1 ? 's' : ''}
-                      </Typography>
-
-                      <Button
-                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                        disabled={currentPage === totalPages}
-                        variant="outlined"
-                        size="small"
-                        sx={{
-                          minWidth: 80,
-                          color: "white",
-                          borderColor: "white",
-                          backgroundColor: "transparent",
-                          '&:hover': { borderColor: 'white', backgroundColor: 'rgba(255,255,255,0.1)' },
-                          '&.Mui-disabled': { color: "white", borderColor: "white", backgroundColor: "transparent", opacity: 1 }
-                        }}
-                      >
-                        Next
-                      </Button>
-
-                      <Button
-                        onClick={() => setCurrentPage(totalPages)}
-                        disabled={currentPage === totalPages}
-                        variant="outlined"
-                        size="small"
-                        sx={{
-                          minWidth: 80,
-                          color: "white",
-                          borderColor: "white",
-                          backgroundColor: "transparent",
-                          '&:hover': { borderColor: 'white', backgroundColor: 'rgba(255,255,255,0.1)' },
-                          '&.Mui-disabled': { color: "white", borderColor: "white", backgroundColor: "transparent", opacity: 1 }
-                        }}
-                      >
-                        Last
-                      </Button>
-                    </Box>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-          </Table>
-        </TableContainer>
+          <tbody>
+            {currentCourses.map((c, index) => {
+              // decide fee per course
+              const courseFee = feeRules.find(fee => {
+                if (fee.fee_code === "NSTP_SPECIAL_FEE") {
+                  return Number(c.is_nstp) === 1;
+                }
+                if (fee.fee_code === "COMPUTER_LABORATORY_FEE") {
+                  return Number(c.iscomputer_lab) === 1;
+                }
+                if (fee.fee_code === "COURSE_WITH_LAB_FEE") {
+                  return Number(c.isnon_computer_lab) === 1;
+                }
+                return false;
+              });
 
 
+              return (
+                <tr key={c.course_id}>
+                  <td style={styles.tableCell}>{index + 1}</td>
+                  <td style={styles.tableCell}>{c.course_code}</td>
+                  <td style={styles.tableCell}>{c.course_description}</td>
+                  <td style={styles.tableCell}>{c.lec_unit}</td>
+                  <td style={styles.tableCell}>{c.lab_unit}</td>
+                  <td style={styles.tableCell}>{c.course_unit}</td>
+                  <td style={styles.tableCell}>{c.prereq}</td>
+                  <td style={styles.tableCell}>{c.corequisite}</td>
+                  <td style={styles.tableCell}>{c.iscomputer_lab ? "YES" : "NO"}</td>
+                  <td style={styles.tableCell}>{c.isnon_computer_lab ? "YES" : "NO"}</td>
 
-
-        <div style={styles.tableContainer}>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                {[
-                  "ID",
-                  "Code",
-                  "Description",
-                  "Lec Unit",
-                  "Lab Unit",
-                  "Credit Unit",
-                  "Prerequisite",
-                  "Corequisite",
-                  "Lab",
-                  "Lecture",
-                  "Actions",
-                ].map((header) => (
-                  <th
-                    key={header}
-                    style={{
-                      border: `2px solid ${borderColor}`,
-                      backgroundColor: "#f5f5f5",
-                      color: "#000",
-                      padding: "8px",
-                    }}
-                  >
-                    {header}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-
-            <tbody>
-              {currentCourses.map((c, index) => {
-                // decide fee per course
-                const courseFee = feeRules.find(fee => {
-                  if (fee.fee_code === "NSTP_SPECIAL_FEE") {
-                    return Number(c.is_nstp) === 1;
-                  }
-                  if (fee.fee_code === "COMPUTER_LABORATORY_FEE") {
-                    return Number(c.iscomputer_lab) === 1;
-                  }
-                  if (fee.fee_code === "COURSE_WITH_LAB_FEE") {
-                    return Number(c.isnon_computer_lab) === 1;
-                  }
-                  return false;
-                });
-
-
-                return (
-                  <tr key={c.course_id}>
-                    <td style={styles.tableCell}>{index + 1}</td>
-                    <td style={styles.tableCell}>{c.course_code}</td>
-                    <td style={styles.tableCell}>{c.course_description}</td>
-                    <td style={styles.tableCell}>{c.lec_unit}</td>
-                    <td style={styles.tableCell}>{c.lab_unit}</td>
-                    <td style={styles.tableCell}>{c.course_unit}</td>
-                    <td style={styles.tableCell}>{c.prereq}</td>
-                    <td style={styles.tableCell}>{c.corequisite}</td>
-                    <td style={styles.tableCell}>{c.iscomputer_lab ? "YES" : "NO"}</td>
-                    <td style={styles.tableCell}>{c.isnon_computer_lab ? "YES" : "NO"}</td>
-
-                    {/* ✅ SINGLE FEE CELL */}
-                    {/* <td style={styles.tableCell}>
+                  {/* ✅ SINGLE FEE CELL */}
+                  {/* <td style={styles.tableCell}>
                       {courseFee ? courseFee.description : "—"}
                     </td>
                     <td style={styles.tableCell}>
                       {courseFee ? `₱${Number(courseFee.amount).toFixed(2)}` : "₱0.00"}
                     </td> */}
 
-                    <td style={styles.tableCell}>
-                      <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
-                        <button
-                          onClick={() => handleEdit(c)}
-                          style={{
-                            backgroundColor: "green",
-                            color: "#fff",
-                            border: "none",
-                            padding: "6px 10px",
-                            width: "100px",
-                            borderRadius: 4,
-                            cursor: "pointer",
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => {
-                            setCourseToDelete(c);
-                            setOpenDeleteDialog(true);
-                          }}
-                          style={{
-                            backgroundColor: "#9E0000",
-                            color: "#fff",
-                            border: "none",
-                            width: "100px",
-                            padding: "6px 10px",
-                            borderRadius: 4,
-                            cursor: "pointer",
-                          }}
-                        >
-                          Delete
-                        </button>
+                  <td style={styles.tableCell}>
+                    <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+                      <button
+                        onClick={() => handleEdit(c)}
+                        style={{
+                          backgroundColor: "green",
+                          color: "#fff",
+                          border: "none",
+                          padding: "6px 10px",
+                          width: "100px",
+                          borderRadius: 4,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          setCourseToDelete(c);
+                          setOpenDeleteDialog(true);
+                        }}
+                        style={{
+                          backgroundColor: "#9E0000",
+                          color: "#fff",
+                          border: "none",
+                          width: "100px",
+                          padding: "6px 10px",
+                          borderRadius: 4,
+                          cursor: "pointer",
+                        }}
+                      >
+                        Delete
+                      </button>
 
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
 
-          </table>
-        </div>
+        </table>
 
-        <Dialog
-          open={openDeleteDialog}
-          onClose={() => setOpenDeleteDialog(false)}
-        >
-          <DialogTitle>Confirm Delete Course</DialogTitle>
+      </div>
+      <TableContainer component={Paper} sx={{ width: '100%' }}>
+        <Table size="small">
+          <TableHead sx={{ backgroundColor: '#6D2323', color: "white" }}>
+            <TableRow>
+              <TableCell
+                colSpan={10}
+                sx={{
+                  border: `2px solid ${borderColor}`,
+                  py: 0.5,
+                  backgroundColor: settings?.header_color || "#1976d2",
+                  color: "white",
+                }}
+              >
+                <Box
+                  display="flex"
+                  justifyContent="space-between" // Left & right sides
+                  alignItems="center"
+                  flexWrap="wrap"
+                  gap={1}
+                >
 
-          <DialogContent>
-            <Typography>
-              Are you sure you want to delete the course{" "}
-              <b>{courseToDelete?.course_description}</b>{" "}
-              (<b>{courseToDelete?.course_code}</b>)?
-            </Typography>
-          </DialogContent>
+                  <Typography fontSize="14px" fontWeight="bold" color="white">
+                    Total Subjects: {filteredCourses.length}
+                  </Typography>
+                  {/* Right side: Pagination / Filtering Controls */}
+                  <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+                    <Button
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        minWidth: 80,
+                        color: "white",
+                        borderColor: "white",
+                        backgroundColor: "transparent",
+                        '&:hover': {
+                          borderColor: 'white',
+                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        },
+                        '&.Mui-disabled': {
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          opacity: 1,
+                        }
+                      }}
+                    >
+                      First
+                    </Button>
 
-          <DialogActions>
-            <Button onClick={() => setOpenDeleteDialog(false)}>
-              Cancel
-            </Button>
+                    <Button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        minWidth: 80,
+                        color: "white",
+                        borderColor: "white",
+                        backgroundColor: "transparent",
+                        '&:hover': {
+                          borderColor: 'white',
+                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        },
+                        '&.Mui-disabled': {
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          opacity: 1,
+                        }
+                      }}
+                    >
+                      Prev
+                    </Button>
 
-            <Button
-              color="error"
-              variant="contained"
-              onClick={() => {
-                handleDelete(courseToDelete.course_id);
-                setOpenDeleteDialog(false);
-                setCourseToDelete(null);
-              }}
-            >
-              Yes, Delete
-            </Button>
-          </DialogActions>
-        </Dialog>
+                    {/* Page Dropdown */}
+                    <FormControl size="small" sx={{ minWidth: 80 }}>
+                      <Select
+                        value={currentPage}
+                        onChange={(e) => setCurrentPage(Number(e.target.value))}
+                        displayEmpty
+                        sx={{
+                          fontSize: '12px',
+                          height: 36,
+                          color: 'white',
+                          border: '1px solid white',
+                          backgroundColor: 'transparent',
+                          '.MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
+                          '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
+                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
+                          '& svg': { color: 'white' }
+                        }}
+                        MenuProps={{
+                          PaperProps: { sx: { maxHeight: 200, backgroundColor: '#fff' } }
+                        }}
+                      >
+                        {Array.from({ length: totalPages }, (_, i) => (
+                          <MenuItem key={i + 1} value={i + 1}>
+                            Page {i + 1}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
 
+                    <Typography fontSize="11px" color="white">
+                      of {totalPages} page{totalPages > 1 ? 's' : ''}
+                    </Typography>
 
-        {/* ✅ Snackbar */}
-        <Snackbar
-          key={snack.key}
-          open={snack.open}
-          autoHideDuration={4000}
-          onClose={handleClose}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        >
-          <Alert
-            onClose={handleClose}
-            severity={snack.severity} // ✅ Use severity: "success" | "error" | "info" | "warning"
-            sx={{ width: "100%" }}
+                    <Button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        minWidth: 80,
+                        color: "white",
+                        borderColor: "white",
+                        backgroundColor: "transparent",
+                        '&:hover': { borderColor: 'white', backgroundColor: 'rgba(255,255,255,0.1)' },
+                        '&.Mui-disabled': { color: "white", borderColor: "white", backgroundColor: "transparent", opacity: 1 }
+                      }}
+                    >
+                      Next
+                    </Button>
+
+                    <Button
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        minWidth: 80,
+                        color: "white",
+                        borderColor: "white",
+                        backgroundColor: "transparent",
+                        '&:hover': { borderColor: 'white', backgroundColor: 'rgba(255,255,255,0.1)' },
+                        '&.Mui-disabled': { color: "white", borderColor: "white", backgroundColor: "transparent", opacity: 1 }
+                      }}
+                    >
+                      Last
+                    </Button>
+                  </Box>
+                </Box>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+        </Table>
+      </TableContainer>
+
+      <Dialog
+        open={openDeleteDialog}
+        onClose={() => setOpenDeleteDialog(false)}
+      >
+        <DialogTitle>Confirm Delete Course</DialogTitle>
+
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete the course{" "}
+            <b>{courseToDelete?.course_description}</b>{" "}
+            (<b>{courseToDelete?.course_code}</b>)?
+          </Typography>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setOpenDeleteDialog(false)}>
+            Cancel
+          </Button>
+
+          <Button
+            color="error"
+            variant="contained"
+            onClick={() => {
+              handleDelete(courseToDelete.course_id);
+              setOpenDeleteDialog(false);
+              setCourseToDelete(null);
+            }}
           >
-            {snack.message}
-          </Alert>
-        </Snackbar>
+            Yes, Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-   
+
+      {/* ✅ Snackbar */}
+      <Snackbar
+        key={snack.key}
+        open={snack.open}
+        autoHideDuration={4000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleClose}
+          severity={snack.severity} // ✅ Use severity: "success" | "error" | "info" | "warning"
+          sx={{ width: "100%" }}
+        >
+          {snack.message}
+        </Alert>
+      </Snackbar>
+
+
     </Box>
   );
 };

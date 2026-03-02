@@ -935,10 +935,10 @@ const ProgramTagging = () => {
           </Button>
         </div>
 
-        <br/>
-       
+        <br />
 
-        <TableContainer component={Paper} sx={{ width: '100%', border: `2px solid ${borderColor}`, mb: "-30px"  }}>
+
+        <TableContainer component={Paper} sx={{ width: '100%', border: `2px solid ${borderColor}`, mb: "-30px" }}>
           <Table>
             <TableHead sx={{ backgroundColor: settings?.header_color || "#1976d2", }}>
               <TableRow>
@@ -986,7 +986,7 @@ const ProgramTagging = () => {
                       gap={1}
                     >
                       {/* Left side: Total Tagged Programs */}
-                      <Typography sx={{  color: "white" }}>
+                      <Typography fontSize="14px" fontWeight="bold" color="white">
                         Total Tagged Programs: {filteredPrograms.length}
                       </Typography>
 

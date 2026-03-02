@@ -1894,6 +1894,175 @@ th, td {
                 </Table>
             </TableContainer>
 
+            <TableContainer component={Paper} sx={{ width: '100%', }}>
+                <Table size="small">
+                    <TableHead sx={{ backgroundColor: '#6D2323', color: "white" }}>
+                        <TableRow>
+                            <TableCell colSpan={10} sx={{ border: `2px solid ${borderColor}`, py: 0.5, backgroundColor: settings?.header_color || "#1976d2", color: "white" }}>
+                                <Box display="flex" justifyContent="space-between" alignItems="center">
+                                    {/* Left: Total Count */}
+                                    <Typography fontSize="14px" fontWeight="bold" color="white">
+                                        Total Applicants: {filteredPersons.length}
+                                    </Typography>
+
+                                    {/* Right: Pagination Controls */}
+                                    <Box display="flex" alignItems="center" gap={1}>
+                                        {/* First & Prev */}
+                                        <Button
+                                            onClick={() => setCurrentPage(1)}
+                                            disabled={currentPage === 1}
+                                            variant="outlined"
+                                            size="small"
+                                            sx={{
+                                                minWidth: 80,
+                                                color: "white",
+                                                borderColor: "white",
+                                                backgroundColor: "transparent",
+                                                '&:hover': {
+                                                    borderColor: 'white',
+                                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                                },
+                                                '&.Mui-disabled': {
+                                                    color: "white",
+                                                    borderColor: "white",
+                                                    backgroundColor: "transparent",
+                                                    opacity: 1,
+                                                }
+                                            }}
+                                        >
+                                            First
+                                        </Button>
+
+                                        <Button
+                                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                            disabled={currentPage === 1}
+                                            variant="outlined"
+                                            size="small"
+                                            sx={{
+                                                minWidth: 80,
+                                                color: "white",
+                                                borderColor: "white",
+                                                backgroundColor: "transparent",
+                                                '&:hover': {
+                                                    borderColor: 'white',
+                                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                                },
+                                                '&.Mui-disabled': {
+                                                    color: "white",
+                                                    borderColor: "white",
+                                                    backgroundColor: "transparent",
+                                                    opacity: 1,
+                                                }
+                                            }}
+                                        >
+                                            Prev
+                                        </Button>
+
+
+                                        {/* Page Dropdown */}
+                                        <FormControl size="small" sx={{ minWidth: 80 }}>
+                                            <Select
+                                                value={currentPage}
+                                                onChange={(e) => setCurrentPage(Number(e.target.value))}
+                                                displayEmpty
+                                                sx={{
+                                                    fontSize: '12px',
+                                                    height: 36,
+                                                    color: 'white',
+                                                    border: '1px solid white',
+                                                    backgroundColor: 'transparent',
+                                                    '.MuiOutlinedInput-notchedOutline': {
+                                                        borderColor: 'white',
+                                                    },
+                                                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                                                        borderColor: 'white',
+                                                    },
+                                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                                        borderColor: 'white',
+                                                    },
+                                                    '& svg': {
+                                                        color: 'white', // dropdown arrow icon color
+                                                    }
+                                                }}
+                                                MenuProps={{
+                                                    PaperProps: {
+                                                        sx: {
+                                                            maxHeight: 200,
+                                                            backgroundColor: '#fff', // dropdown background
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                {Array.from({ length: totalPages }, (_, i) => (
+                                                    <MenuItem key={i + 1} value={i + 1}>
+                                                        Page {i + 1}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+
+                                        <Typography fontSize="11px" color="white">
+                                            of {totalPages} page{totalPages > 1 ? 's' : ''}
+                                        </Typography>
+
+
+                                        {/* Next & Last */}
+                                        <Button
+                                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                            disabled={currentPage === totalPages}
+                                            variant="outlined"
+                                            size="small"
+                                            sx={{
+                                                minWidth: 80,
+                                                color: "white",
+                                                borderColor: "white",
+                                                backgroundColor: "transparent",
+                                                '&:hover': {
+                                                    borderColor: 'white',
+                                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                                },
+                                                '&.Mui-disabled': {
+                                                    color: "white",
+                                                    borderColor: "white",
+                                                    backgroundColor: "transparent",
+                                                    opacity: 1,
+                                                }
+                                            }}
+                                        >
+                                            Next
+                                        </Button>
+
+                                        <Button
+                                            onClick={() => setCurrentPage(totalPages)}
+                                            disabled={currentPage === totalPages}
+                                            variant="outlined"
+                                            size="small"
+                                            sx={{
+                                                minWidth: 80,
+                                                color: "white",
+                                                borderColor: "white",
+                                                backgroundColor: "transparent",
+                                                '&:hover': {
+                                                    borderColor: 'white',
+                                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                                },
+                                                '&.Mui-disabled': {
+                                                    color: "white",
+                                                    borderColor: "white",
+                                                    backgroundColor: "transparent",
+                                                    opacity: 1,
+                                                }
+                                            }}
+                                        >
+                                            Last
+                                        </Button>
+                                    </Box>
+                                </Box>
+                            </TableCell>
+                        </TableRow>
+                    </TableHead>
+                </Table>
+            </TableContainer>
 
 
             <Snackbar

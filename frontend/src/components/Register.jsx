@@ -15,11 +15,17 @@ import {
   Email as EmailIcon,
   Lock as LockIcon,
   Visibility,
-  VisibilityOff
+  VisibilityOff,
+  Person as PersonIcon,
+  ArrowDropDown as ArrowDropDownIcon,
+  Badge as BadgeIcon,
+  Cake as CakeIcon,
 } from "@mui/icons-material";
 // import ReCAPTCHA from "react-google-recaptcha";
 import { SettingsContext } from "../App"; // ✅ Access settings from context
 import API_BASE_URL from "../apiConfig";
+import AnnouncementSlider from "../components/AnnouncementSlider";
+
 const Register = () => {
   const settings = useContext(SettingsContext);
 
@@ -65,12 +71,51 @@ const Register = () => {
     setSnack(prev => ({ ...prev, open: false }));
   };
 
+  const [lastName, setLastName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [middleName, setMiddleName] = useState("");
+  const [birthday, setBirthday] = useState("");
+  const [age, setAge] = useState("");
+
+  useEffect(() => {
+    if (birthday) {
+      const manilaNow = new Date(
+        new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" })
+      );
+
+      const birthDate = new Date(birthday);
+      let calculatedAge = manilaNow.getFullYear() - birthDate.getFullYear();
+
+      const monthDiff = manilaNow.getMonth() - birthDate.getMonth();
+
+      if (
+        monthDiff < 0 ||
+        (monthDiff === 0 && manilaNow.getDate() < birthDate.getDate())
+      ) {
+        calculatedAge--;
+      }
+
+      setAge(calculatedAge >= 0 ? calculatedAge : "");
+    } else {
+      setAge("");
+    }
+  }, [birthday]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleRegister = async () => {
     if (isSubmitting) return;
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!lastName || !firstName || !middleName || !birthday) {
+      setSnack({
+        open: true,
+        message: "Please complete all personal information fields!",
+        severity: "warning",
+      });
+      return;
+    }
 
     if (!emailRegex.test(usersData.email)) {
       setSnack({
@@ -165,6 +210,11 @@ const Register = () => {
     try {
       const response = await axios.post(`${API_BASE_URL}/auth/register`, {
         ...usersData,
+        lastName,
+        firstName,
+        middleName,
+        birthday,
+        age,
         otp,
       });
 
@@ -243,7 +293,11 @@ const Register = () => {
           }}
           maxWidth={false}
         >
-          <div style={{ border: "5px solid black" }} className="Container">
+          <AnnouncementSlider />
+          <div
+            style={{ border: "5px solid black", marginLeft: 100, gap: "250px" }}
+            className="Container"
+          >
             <div
               className="Header"
               style={{
@@ -274,6 +328,129 @@ const Register = () => {
             </div>
 
             <div className="Body">
+
+              <div className="TextField" style={{ position: "relative" }}>
+                <label>Last Name</label>
+                <input
+                  type="text"
+                  placeholder="Enter your last name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  onKeyDown={handleKeyDownRegister}
+                  className="border"
+                  style={{
+                    paddingLeft: "2.5rem",
+                    textTransform: "Uppercase",
+                    border: `2px solid ${borderColor}`,
+                  }}
+                />
+                <BadgeIcon
+                  style={{
+                    position: "absolute",
+                    top: "2.5rem",
+                    left: "0.7rem",
+                    color: "rgba(0,0,0,0.4)",
+                  }}
+                />
+              </div>
+
+              <div className="TextField" style={{ position: "relative" }}>
+                <label>First Name</label>
+                <input
+                  type="text"
+                  placeholder="Enter your first name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  onKeyDown={handleKeyDownRegister}
+                  className="border"
+                  style={{
+                    paddingLeft: "2.5rem",
+                    textTransform: "Uppercase",
+                    border: `2px solid ${borderColor}`,
+                  }}
+                />
+                <PersonIcon
+                  style={{
+                    position: "absolute",
+                    top: "2.5rem",
+                    left: "0.7rem",
+                    color: "rgba(0,0,0,0.4)",
+                  }}
+                />
+              </div>
+
+              <div className="TextField" style={{ position: "relative" }}>
+                <label>Middle Name</label>
+                <input
+                  type="text"
+                  placeholder="Enter your middle name"
+                  value={middleName}
+                  onChange={(e) => setMiddleName(e.target.value)}
+                  onKeyDown={handleKeyDownRegister}
+                  className="border"
+                  style={{
+                    paddingLeft: "2.5rem",
+                    textTransform: "Uppercase",
+                    border: `2px solid ${borderColor}`,
+                  }}
+                />
+                <PersonIcon
+                  style={{
+                    position: "absolute",
+                    top: "2.5rem",
+                    left: "0.7rem",
+                    color: "rgba(0,0,0,0.4)",
+                  }}
+                />
+              </div>
+
+              <div className="TextField" style={{ position: "relative" }}>
+                <label>Birthday</label>
+                <input
+                  type="date"
+                  value={birthday}
+                  onChange={(e) => setBirthday(e.target.value)}
+                  onKeyDown={handleKeyDownRegister}
+                  className="border"
+                  style={{
+                    paddingLeft: "2.5rem",
+                    border: `2px solid ${borderColor}`,
+                  }}
+                />
+                <CakeIcon
+                  style={{
+                    position: "absolute",
+                    top: "2.5rem",
+                    left: "0.7rem",
+                    color: "rgba(0,0,0,0.4)",
+                  }}
+                />
+              </div>
+
+              <div className="TextField" style={{ position: "relative" }}>
+                <label>Age</label>
+                <input
+                  type="text"
+                  value={age}
+                  readOnly
+                  placeholder="Auto-computed age"
+                  className="border"
+                  style={{
+                    paddingLeft: "2.5rem",
+                    backgroundColor: "#f5f5f5",
+                    border: `2px solid ${borderColor}`,
+                  }}
+                />
+                <CakeIcon
+                  style={{
+                    position: "absolute",
+                    top: "2.5rem",
+                    left: "0.7rem",
+                    color: "rgba(0,0,0,0.4)",
+                  }}
+                />
+              </div>
+
               <div className="TextField" style={{ position: "relative" }}>
                 <label htmlFor="email">Email Address</label>
                 <input
@@ -337,7 +514,7 @@ const Register = () => {
                 </button>
               </div>
 
-              <div className="TextField" style={{ position: "relative" }}>
+              <div className="TextField" style={{ position: "relative",}}>
                 <label htmlFor="confirmPassword">Confirm Password</label>
                 <input
                   type={showPassword ? "text" : "password"}
@@ -399,7 +576,7 @@ const Register = () => {
                   pointerEvents: !isSubmitting ? "auto" : "none",
                   opacity: !isSubmitting ? 1 : 0.5,
                   cursor: !isSubmitting ? "pointer" : "not-allowed",
-                  marginTop: "20px",
+                  marginTop: "40px",
                   backgroundColor: mainButtonColor,
                   height: "50px",
                   border: `2px solid ${borderColor}`,

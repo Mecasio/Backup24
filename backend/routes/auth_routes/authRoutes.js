@@ -14,7 +14,26 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString()
 
 // POST REGISTER (APPLICANT ONLY)
 router.post("/register", async (req, res) => {
-  const { email, password, campus, otp } = req.body;
+  const {
+    email,
+    password,
+    campus,
+    otp,
+    firstName,
+    middleName,
+    lastName,
+    birthday,
+    age
+  } = req.body;
+
+  const [existingPerson] = await db.query(
+    `SELECT * FROM person_table 
+   WHERE first_name = ? 
+   AND last_name = ? 
+   AND birthOfDate = ?`,
+    [firstName.trim(), lastName.trim(), birthday]
+  );
+
 
   if (!email || !password) {
     return res.json({ success: false, message: "Please fill up all required fields" });
@@ -61,9 +80,18 @@ router.post("/register", async (req, res) => {
 
     // ⭐⭐⭐ FIX: STORE EMAIL INTO person_table.emailAddress ⭐⭐⭐
     const [personResult] = await db.query(
-      `INSERT INTO person_table (campus, emailAddress, termsOfAgreement, current_step)
-       VALUES (?, ?, 1, 1)`,
-      [campus, email.trim().toLowerCase()]
+      `INSERT INTO person_table 
+  (campus, emailAddress, first_name, middle_name, last_name, birthOfDate, age, termsOfAgreement, current_step)
+  VALUES (?, ?, ?, ?, ?, ?, ?, 1, 1)`,
+      [
+        campus,
+        email.trim().toLowerCase(),
+        firstName.trim(),
+        middleName?.trim() || null,
+        lastName.trim(),
+        birthday,
+        age
+      ]
     );
 
     person_id = personResult.insertId;
@@ -474,6 +502,12 @@ router.post("/login_applicant", async (req, res) => {
       token,
       success: true,
       email: user.email,
+      registered_email: user.emailAddress,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      middle_name: user.middle_name,
+      birthday: user.birthOfDate,
+      age: user.age,
       role: user.role,
       person_id: user.person_id,
       applicant_number: applicantNumber,
@@ -542,7 +576,7 @@ router.post("/request-otp", async (req, res) => {
   );
 
   if (existingUser.length > 0) {
-    return res.status(400).json({ message: "This email is already registered and cannot be used again." });
+    return res.status(400).json({ message: "This Account is already registered and cannot be used again." });
   }
 
   const now = Date.now();

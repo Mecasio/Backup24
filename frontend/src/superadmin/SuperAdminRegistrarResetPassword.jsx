@@ -177,7 +177,7 @@ const SuperAdminRegistrarResetPassword = () => {
   }, []);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 25;
+  const rowsPerPage = 20;
 
   const totalPages = Math.ceil(registrars.length / rowsPerPage);
   const indexOfLastRow = currentPage * rowsPerPage;
@@ -429,65 +429,7 @@ const SuperAdminRegistrarResetPassword = () => {
         ))}
       </Box>
       <br />
-
-      <TableContainer component={Paper} sx={{ width: '100%', border: `2px solid ${borderColor}`, }}>
-        <Table>
-          <TableHead sx={{ backgroundColor: settings?.header_color || "#1976d2", }}>
-            <TableRow>
-              <TableCell sx={{ color: 'white', textAlign: "Center" }}>Registrar Information</TableCell>
-            </TableRow>
-          </TableHead>
-        </Table>
-      </TableContainer>
-      <Paper sx={{ p: 3, border: `2px solid ${borderColor}` }}>
-        <Box
-          display="grid"
-          gridTemplateColumns={{ xs: "1fr", sm: "1fr 1fr" }}
-          gap={2}
-        >
-          <TextField
-            label="Employee ID"
-            value={userInfo?.employee_id || ""}
-            fullWidth
-            InputProps={{ readOnly: true }}
-          />
-          <TextField
-            label="Email"
-            value={userInfo?.email || ""}
-            fullWidth
-            InputProps={{ readOnly: true }}
-          />
-          <TextField
-            label="Full Name"
-            value={userInfo?.fullName || ""}
-            fullWidth
-            InputProps={{ readOnly: true }}
-          />
-          <TextField
-            select
-            label="Status"
-            value={userInfo?.status ?? ""}
-            fullWidth
-            onChange={handleStatusChange}
-          >
-            <MenuItem value={1}>Active</MenuItem>
-            <MenuItem value={0}>Inactive</MenuItem>
-          </TextField>
-        </Box>
-
-        <Box mt={3}>
-          <Button
-            variant="contained"
-            color="error"
-            style={{ backgroundColor: mainButtonColor, color: "white" }}
-            onClick={handleReset}
-            disabled={!userInfo || loading}
-          >
-            {loading ? "Processing..." : "Reset Password"}
-          </Button>
-        </Box>
-      </Paper>
-
+      <br />
       <TableContainer component={Paper} sx={{ width: "100%" }}>
         <Table size="small">
 
@@ -632,6 +574,171 @@ const SuperAdminRegistrarResetPassword = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <TableContainer component={Paper}>
+
+        <Table size="small">
+
+          <TableHead>
+
+            {/* PAGINATION BAR */}
+            <TableRow>
+              <TableCell
+                colSpan={6}
+                sx={{
+                  border: `2px solid ${borderColor}`,
+                  py: 0.5,
+                  backgroundColor: settings?.header_color || "#1976d2",
+                  color: "white",
+                }}
+              >
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+
+                  {/* LEFT: TOTAL COUNT */}
+                  <Typography fontSize="14px" fontWeight="bold" color="white">
+                    Total Registrars: {registrars.length}
+                  </Typography>
+
+                  {/* RIGHT: PAGINATION CONTROLS */}
+                  <Box display="flex" alignItems="center" gap={1}>
+
+                    {/* FIRST */}
+                    <Button
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      variant="outlined"
+                      size="small"
+                      sx={paginationButtonStyle}
+                    >
+                      First
+                    </Button>
+
+                    {/* PREV */}
+                    <Button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      variant="outlined"
+                      size="small"
+                      sx={paginationButtonStyle}
+                    >
+                      Prev
+                    </Button>
+
+                    {/* PAGE DROPDOWN */}
+                    <FormControl size="small" sx={{ minWidth: 90 }}>
+                      <Select
+                        value={currentPage}
+                        onChange={(e) => setCurrentPage(Number(e.target.value))}
+                        sx={paginationSelectStyle}
+                        MenuProps={{
+                          PaperProps: { sx: { maxHeight: 200 } }
+                        }}
+                      >
+                        {Array.from({ length: totalPages }, (_, i) => (
+                          <MenuItem key={i + 1} value={i + 1}>
+                            Page {i + 1}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+
+                    <Typography fontSize="12px" color="white">
+                      of {totalPages} page{totalPages > 1 ? "s" : ""}
+                    </Typography>
+
+                    {/* NEXT */}
+                    <Button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      variant="outlined"
+                      size="small"
+                      sx={paginationButtonStyle}
+                    >
+                      Next
+                    </Button>
+
+                    {/* LAST */}
+                    <Button
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      variant="outlined"
+                      size="small"
+                      sx={paginationButtonStyle}
+                    >
+                      Last
+                    </Button>
+                  </Box>
+                </Box>
+              </TableCell>
+            </TableRow>
+
+
+          </TableHead>
+
+        </Table>
+
+      </TableContainer>
+
+      <br />
+      <br />
+
+      <TableContainer component={Paper} sx={{ width: '100%', border: `2px solid ${borderColor}`, }}>
+        <Table>
+          <TableHead sx={{ backgroundColor: settings?.header_color || "#1976d2", }}>
+            <TableRow>
+              <TableCell sx={{ color: 'white', textAlign: "Center" }}>Registrar Information</TableCell>
+            </TableRow>
+          </TableHead>
+        </Table>
+      </TableContainer>
+      <Paper sx={{ p: 3, border: `2px solid ${borderColor}` }}>
+        <Box
+          display="grid"
+          gridTemplateColumns={{ xs: "1fr", sm: "1fr 1fr" }}
+          gap={2}
+        >
+          <TextField
+            label="Employee ID"
+            value={userInfo?.employee_id || ""}
+            fullWidth
+            InputProps={{ readOnly: true }}
+          />
+          <TextField
+            label="Email"
+            value={userInfo?.email || ""}
+            fullWidth
+            InputProps={{ readOnly: true }}
+          />
+          <TextField
+            label="Full Name"
+            value={userInfo?.fullName || ""}
+            fullWidth
+            InputProps={{ readOnly: true }}
+          />
+          <TextField
+            select
+            label="Status"
+            value={userInfo?.status ?? ""}
+            fullWidth
+            onChange={handleStatusChange}
+          >
+            <MenuItem value={1}>Active</MenuItem>
+            <MenuItem value={0}>Inactive</MenuItem>
+          </TextField>
+        </Box>
+
+        <Box mt={3}>
+          <Button
+            sx={{ mt: 2 }}
+            variant="contained"
+
+            onClick={handleReset}
+            disabled={!userInfo || loading}
+          >
+            {loading ? "Processing..." : "Reset Password"}
+          </Button>
+        </Box>
+      </Paper>
+
 
 
 

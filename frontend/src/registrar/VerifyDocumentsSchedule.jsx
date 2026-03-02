@@ -581,12 +581,12 @@ const VerifyDocumentsSchedule = () => {
             {/* ===== NAV CARDS ===== */}
             <Box
                 sx={{
-                  display: "flex",
-          justifyContent: "space-between",
-          flexWrap: "nowrap", // ❌ prevent wrapping
-          width: "100%",
-          mt: 1,
-          gap: 2,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    flexWrap: "nowrap", // ❌ prevent wrapping
+                    width: "100%",
+                    mt: 1,
+                    gap: 2,
                 }}
             >
                 {tabs.map((tab, index) => (
@@ -646,7 +646,7 @@ const VerifyDocumentsSchedule = () => {
 
 
                             <TableCell
-                                colSpan={9}
+                                colSpan={10}
                                 sx={{
                                     border: `2px solid ${borderColor}`,
                                     py: 1,
@@ -762,6 +762,7 @@ const VerifyDocumentsSchedule = () => {
                         {/* ===== COLUMN HEADERS ===== */}
                         <TableRow>
                             {[
+                                "ID",
                                 "Branch",
                                 "Date",
                                 "Building",
@@ -791,11 +792,12 @@ const VerifyDocumentsSchedule = () => {
 
                     {/* ===== TABLE BODY ===== */}
                     <TableBody>
-                        {paginatedSchedules.map((s) => (
+                        {paginatedSchedules.map((s, index) => (
                             <TableRow
                                 key={`${s.id}-${s.schedule_date}-${s.room_description}`}
                                 hover
                             >
+                                <TableCell align="center" sx={cellStyle}>{index + 1}</TableCell>
                                 <TableCell align="center" sx={cellStyle}>
                                     {s.branch}
                                 </TableCell>
@@ -1017,7 +1019,7 @@ const VerifyDocumentsSchedule = () => {
             </TableContainer>
 
             <br />
-             <br />
+            <br />
             {/* ===== ADD / EDIT FORM ===== */}
             <TableContainer
                 component={Paper}

@@ -284,7 +284,7 @@ const ProgramPanel = () => {
 
 
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 50; // adjust how many programs per page
+  const itemsPerPage = 20; // adjust how many programs per page
 
   // Recalculate total pages dynamically based on filteredPrograms
   const totalPages = Math.ceil(filteredPrograms.length / itemsPerPage);
@@ -315,26 +315,8 @@ const ProgramPanel = () => {
       gap: "20px",
       flexWrap: "wrap",
     },
-    formSection: {
-      width: "48%",
-      background: "#f8f8f8",
-      padding: "25px",
 
-      boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-      boxSizing: "border-box",
-      border: `2px solid ${borderColor}`,
-    },
-    displaySection: {
-      width: "48%",
-      background: "#f8f8f8",
-      padding: "25px",
 
-      boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-      overflowY: "auto",
-      maxHeight: "750px",
-      boxSizing: "border-box",
-      border: `2px solid ${borderColor}`,
-    },
     formGroup: { marginBottom: "20px" },
     label: {
       display: "block",
@@ -350,15 +332,11 @@ const ProgramPanel = () => {
       borderRadius: "5px",
       border: "1px solid #ccc",
     },
-    taggedProgramsContainer: {
 
-      maxHeight: "750px",
-      marginTop: "15px",
-    },
     table: { width: "100%", borderCollapse: "collapse" },
     th: {
 
-      padding: "15px",
+      padding: "8px",
       textAlign: "left",
       fontWeight: "bold",
       border: `2px solid ${borderColor}`,
@@ -366,7 +344,7 @@ const ProgramPanel = () => {
       color: "#000"
     },
     td: {
-      padding: "12px",
+      padding: "8px",
       textAlign: "left",
       borderBottom: "1px solid #ddd",
       fontSize: "16px",
@@ -445,29 +423,457 @@ const ProgramPanel = () => {
 
       <hr style={{ border: "1px solid #ccc", width: "100%" }} />
       <br />
+      <br />
 
-      <div style={styles.container}>
-        <TableContainer component={Paper} sx={{ width: '100%', border: `2px solid ${borderColor}`, mb: "20px" }}>
-          <Table>
-            <TableHead sx={{ backgroundColor: settings?.header_color || "#1976d2", }}>
+      <div style={styles.formSection}>
+
+        <TableContainer component={Paper} sx={{ width: '100%', }}>
+          <Table size="small">
+            <TableHead sx={{ backgroundColor: '#6D2323', color: "white" }}>
               <TableRow>
-                <TableCell sx={{ color: 'white', textAlign: "Center" }}>Program Panel</TableCell>
+                <TableCell colSpan={20} sx={{ border: `2px solid ${borderColor}`, py: 0.5, backgroundColor: settings?.header_color || "#1976d2", color: "white" }}>
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    flexWrap="wrap"
+                    sx={{ padding: "6px" }}
+                  >
+                    {/* LEFT SIDE - TOTAL PROGRAM */}
+                    <Typography fontSize="14px" fontWeight="bold" color="white">
+                      Total Program: {filteredPrograms.length}
+                    </Typography>
+
+                    {/* RIGHT SIDE - PAGINATION */}
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      gap={1}
+                      flexWrap="wrap"
+                    >
+                      <Button
+                        onClick={() => setCurrentPage(1)}
+                        disabled={currentPage === 1}
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          minWidth: 80,
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          '&:hover': {
+                            borderColor: 'white',
+                            backgroundColor: 'rgba(255,255,255,0.1)',
+                          },
+                          '&.Mui-disabled': {
+                            color: "white",
+                            borderColor: "white",
+                            backgroundColor: "transparent",
+                            opacity: 1,
+                          }
+                        }}
+                      >
+                        First
+                      </Button>
+
+                      <Button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          minWidth: 80,
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          '&:hover': {
+                            borderColor: 'white',
+                            backgroundColor: 'rgba(255,255,255,0.1)',
+                          },
+                          '&.Mui-disabled': {
+                            color: "white",
+                            borderColor: "white",
+                            backgroundColor: "transparent",
+                            opacity: 1,
+                          }
+                        }}
+                      >
+                        Prev
+                      </Button>
+
+
+                      {/* Page Dropdown */}
+                      <FormControl size="small" sx={{ minWidth: 80 }}>
+                        <Select
+                          value={currentPage}
+                          onChange={(e) => setCurrentPage(Number(e.target.value))}
+                          displayEmpty
+                          sx={{
+                            fontSize: '12px',
+                            height: 36,
+                            color: 'white',
+                            border: '1px solid white',
+                            backgroundColor: 'transparent',
+                            '.MuiOutlinedInput-notchedOutline': {
+                              borderColor: 'white',
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: 'white',
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderColor: 'white',
+                            },
+                            '& svg': {
+                              color: 'white', // dropdown arrow icon color
+                            }
+                          }}
+                          MenuProps={{
+                            PaperProps: {
+                              sx: {
+                                maxHeight: 200,
+                                backgroundColor: '#fff', // dropdown background
+                              }
+                            }
+                          }}
+                        >
+                          {Array.from({ length: totalPages }, (_, i) => (
+                            <MenuItem key={i + 1} value={i + 1}>
+                              Page {i + 1}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      <Typography fontSize="11px" color="white">
+                        of {totalPages} page{totalPages > 1 ? 's' : ''}
+                      </Typography>
+
+
+                      {/* Next & Last */}
+                      <Button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          minWidth: 80,
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          '&:hover': {
+                            borderColor: 'white',
+                            backgroundColor: 'rgba(255,255,255,0.1)',
+                          },
+                          '&.Mui-disabled': {
+                            color: "white",
+                            borderColor: "white",
+                            backgroundColor: "transparent",
+                            opacity: 1,
+                          }
+                        }}
+                      >
+                        Next
+                      </Button>
+
+                      <Button
+                        onClick={() => setCurrentPage(totalPages)}
+                        disabled={currentPage === totalPages}
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          minWidth: 80,
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          '&:hover': {
+                            borderColor: 'white',
+                            backgroundColor: 'rgba(255,255,255,0.1)',
+                          },
+                          '&.Mui-disabled': {
+                            color: "white",
+                            borderColor: "white",
+                            backgroundColor: "transparent",
+                            opacity: 1,
+                          }
+                        }}
+                      >
+                        Last
+                      </Button>
+
+                    </Box>
+                  </Box>
+                </TableCell>
               </TableRow>
             </TableHead>
           </Table>
         </TableContainer>
-        <div style={styles.formSection}>
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.th}>ID</th>
+              <th style={styles.th}>Description</th>
+              <th style={styles.th}>Code</th>
+              <th style={styles.th}>Major</th>
+              <th style={styles.th}>Components</th>
+              <th style={styles.th}>Academic Program</th>
+
+              <th style={styles.th}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentPrograms.map((prog, index) => (
+
+              <tr key={prog.program_id}>
+                <td style={styles.td}>{index + 1}</td>
+                <td style={styles.td}>{prog.program_description}</td>
+                <td style={styles.td}>{prog.program_code}</td>
+                <td style={styles.td}>{prog.major || "—"}</td>
+                <td style={styles.td}>
+                  {getCampusName(prog.components)}
+                </td>
+                <td style={styles.td}>
+                  {prog.academic_program === 0
+                    ? "Undergraduate"
+                    : prog.academic_program === 1
+                      ? "Graduate"
+                      : prog.academic_program === 2
+                        ? "Techvoc"
+                        : "—"}
+                </td>
+
+
+                <td style={{ ...styles.td, textAlign: "center" }}>
+                  <div style={{ display: "flex", justifyContent: "center", gap: "8px" }}>
+                    <button
+                      onClick={() => handleEdit(prog)}
+                      style={styles.editButton}
+                    >
+                      <EditIcon fontSize="small" /> Edit
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setProgramToDelete(prog);
+                        setOpenDeleteDialog(true);
+                      }}
+                      style={styles.deleteButton}
+                    >
+                      <DeleteIcon fontSize="small" /> Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+
+        </table>
+        {programs.length === 0 && <p>No programs available.</p>}
+        <TableContainer component={Paper} sx={{ width: '100%', }}>
+          <Table size="small">
+            <TableHead sx={{ backgroundColor: '#6D2323', color: "white" }}>
+              <TableRow>
+                <TableCell colSpan={20} sx={{ border: `2px solid ${borderColor}`, py: 0.5, backgroundColor: settings?.header_color || "#1976d2", color: "white" }}>
+                  <Box
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    flexWrap="wrap"
+                    sx={{ padding: "6px" }}
+                  >
+                    {/* LEFT SIDE - TOTAL PROGRAM */}
+                    <Typography fontSize="14px" fontWeight="bold" color="white">
+                      Total Program: {filteredPrograms.length}
+                    </Typography>
+
+                    {/* RIGHT SIDE - PAGINATION */}
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      gap={1}
+                      flexWrap="wrap"
+                    >
+                      <Button
+                        onClick={() => setCurrentPage(1)}
+                        disabled={currentPage === 1}
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          minWidth: 80,
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          '&:hover': {
+                            borderColor: 'white',
+                            backgroundColor: 'rgba(255,255,255,0.1)',
+                          },
+                          '&.Mui-disabled': {
+                            color: "white",
+                            borderColor: "white",
+                            backgroundColor: "transparent",
+                            opacity: 1,
+                          }
+                        }}
+                      >
+                        First
+                      </Button>
+
+                      <Button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        disabled={currentPage === 1}
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          minWidth: 80,
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          '&:hover': {
+                            borderColor: 'white',
+                            backgroundColor: 'rgba(255,255,255,0.1)',
+                          },
+                          '&.Mui-disabled': {
+                            color: "white",
+                            borderColor: "white",
+                            backgroundColor: "transparent",
+                            opacity: 1,
+                          }
+                        }}
+                      >
+                        Prev
+                      </Button>
+
+
+                      {/* Page Dropdown */}
+                      <FormControl size="small" sx={{ minWidth: 80 }}>
+                        <Select
+                          value={currentPage}
+                          onChange={(e) => setCurrentPage(Number(e.target.value))}
+                          displayEmpty
+                          sx={{
+                            fontSize: '12px',
+                            height: 36,
+                            color: 'white',
+                            border: '1px solid white',
+                            backgroundColor: 'transparent',
+                            '.MuiOutlinedInput-notchedOutline': {
+                              borderColor: 'white',
+                            },
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              borderColor: 'white',
+                            },
+                            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                              borderColor: 'white',
+                            },
+                            '& svg': {
+                              color: 'white', // dropdown arrow icon color
+                            }
+                          }}
+                          MenuProps={{
+                            PaperProps: {
+                              sx: {
+                                maxHeight: 200,
+                                backgroundColor: '#fff', // dropdown background
+                              }
+                            }
+                          }}
+                        >
+                          {Array.from({ length: totalPages }, (_, i) => (
+                            <MenuItem key={i + 1} value={i + 1}>
+                              Page {i + 1}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </FormControl>
+
+                      <Typography fontSize="11px" color="white">
+                        of {totalPages} page{totalPages > 1 ? 's' : ''}
+                      </Typography>
+
+
+                      {/* Next & Last */}
+                      <Button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        disabled={currentPage === totalPages}
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          minWidth: 80,
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          '&:hover': {
+                            borderColor: 'white',
+                            backgroundColor: 'rgba(255,255,255,0.1)',
+                          },
+                          '&.Mui-disabled': {
+                            color: "white",
+                            borderColor: "white",
+                            backgroundColor: "transparent",
+                            opacity: 1,
+                          }
+                        }}
+                      >
+                        Next
+                      </Button>
+
+                      <Button
+                        onClick={() => setCurrentPage(totalPages)}
+                        disabled={currentPage === totalPages}
+                        variant="outlined"
+                        size="small"
+                        sx={{
+                          minWidth: 80,
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          '&:hover': {
+                            borderColor: 'white',
+                            backgroundColor: 'rgba(255,255,255,0.1)',
+                          },
+                          '&.Mui-disabled': {
+                            color: "white",
+                            borderColor: "white",
+                            backgroundColor: "transparent",
+                            opacity: 1,
+                          }
+                        }}
+                      >
+                        Last
+                      </Button>
+
+                    </Box>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            </TableHead>
+          </Table>
+        </TableContainer>
+
+        
+        <br />
+        <br />
+        <TableContainer component={Paper} sx={{ width: '100%', border: `2px solid ${borderColor}`, }}>
+          <Table>
+            <TableHead sx={{ backgroundColor: settings?.header_color || "#1976d2", }}>
+              <TableRow>
+                <TableCell sx={{ color: 'white', textAlign: "Center" }}>Insert Program</TableCell>
+              </TableRow>
+            </TableHead>
+          </Table>
+        </TableContainer>
+        <TableContainer
+          component={Paper}
+          sx={{
+            width: "100%",
+            border: `2px solid ${borderColor}`,
+            mb: "20px",
+            p: 3
+          }}
+        >
+
+
 
           <div style={styles.formGroup}>
-
-            <Typography
-              variant="h6"
-              sx={{ mb: 2, textAlign: "center", color: subtitleColor, fontWeight: "bold" }}
-            >
-              Add Program
-            </Typography>
-
-
             <label htmlFor="program_name" style={styles.label}>
               Program Description:
             </label>
@@ -511,6 +917,7 @@ const ProgramPanel = () => {
               style={styles.input}
             />
           </div>
+
           <div style={styles.formGroup}>
             <label htmlFor="program_components" style={styles.label}>
               Campus:
@@ -531,6 +938,7 @@ const ProgramPanel = () => {
               ))}
             </select>
           </div>
+
           <div style={styles.formGroup}>
             <label style={styles.label}>Academic Program:</label>
 
@@ -547,260 +955,28 @@ const ProgramPanel = () => {
             </select>
           </div>
 
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
+            <Button
+              onClick={handleAddingProgram}
+              variant="contained"
+              sx={{
+                width: "30%",
+
+              }}
+            >
+              {editMode ? "Update Program" : "Insert Program"}
+            </Button>
+          </Box>
+
+        </TableContainer>
 
 
-          <Button
-            onClick={handleAddingProgram}
-            variant="contained"
-            sx={{
-              backgroundColor: "primary",
-              color: "white",
-              mt: 3,
-              width: "100%",
-              "&:hover": { backgroundColor: "#000000" },
-            }}
-          >
-            {editMode ? "Update Program" : "Insert Program"}
-          </Button>
-        </div>
-
-        <div style={styles.displaySection}>
-          <Typography
-            variant="h6"
-            sx={{ mb: 2, textAlign: "center", color: subtitleColor, fontWeight: "bold" }}
-          >
-            Program List
-          </Typography>
-
-          <div style={styles.taggedProgramsContainer}>
-            <TableContainer component={Paper} sx={{ width: '100%', }}>
-              <Table size="small">
-                <TableHead sx={{ backgroundColor: '#6D2323', color: "white" }}>
-                  <TableRow>
-                    <TableCell colSpan={20} sx={{ border: `2px solid ${borderColor}`, py: 0.5, backgroundColor: settings?.header_color || "#1976d2", color: "white" }}>
-                      <Box
-                        display="flex"
-                        justifyContent="flex-end"
-                        alignItems="center"
-                        gap={1}
-                        flexWrap="wrap"
-                      >
-                        <Button
-                          onClick={() => setCurrentPage(1)}
-                          disabled={currentPage === 1}
-                          variant="outlined"
-                          size="small"
-                          sx={{
-                            minWidth: 80,
-                            color: "white",
-                            borderColor: "white",
-                            backgroundColor: "transparent",
-                            '&:hover': {
-                              borderColor: 'white',
-                              backgroundColor: 'rgba(255,255,255,0.1)',
-                            },
-                            '&.Mui-disabled': {
-                              color: "white",
-                              borderColor: "white",
-                              backgroundColor: "transparent",
-                              opacity: 1,
-                            }
-                          }}
-                        >
-                          First
-                        </Button>
-
-                        <Button
-                          onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                          disabled={currentPage === 1}
-                          variant="outlined"
-                          size="small"
-                          sx={{
-                            minWidth: 80,
-                            color: "white",
-                            borderColor: "white",
-                            backgroundColor: "transparent",
-                            '&:hover': {
-                              borderColor: 'white',
-                              backgroundColor: 'rgba(255,255,255,0.1)',
-                            },
-                            '&.Mui-disabled': {
-                              color: "white",
-                              borderColor: "white",
-                              backgroundColor: "transparent",
-                              opacity: 1,
-                            }
-                          }}
-                        >
-                          Prev
-                        </Button>
+        <br />
 
 
-                        {/* Page Dropdown */}
-                        <FormControl size="small" sx={{ minWidth: 80 }}>
-                          <Select
-                            value={currentPage}
-                            onChange={(e) => setCurrentPage(Number(e.target.value))}
-                            displayEmpty
-                            sx={{
-                              fontSize: '12px',
-                              height: 36,
-                              color: 'white',
-                              border: '1px solid white',
-                              backgroundColor: 'transparent',
-                              '.MuiOutlinedInput-notchedOutline': {
-                                borderColor: 'white',
-                              },
-                              '&:hover .MuiOutlinedInput-notchedOutline': {
-                                borderColor: 'white',
-                              },
-                              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                borderColor: 'white',
-                              },
-                              '& svg': {
-                                color: 'white', // dropdown arrow icon color
-                              }
-                            }}
-                            MenuProps={{
-                              PaperProps: {
-                                sx: {
-                                  maxHeight: 200,
-                                  backgroundColor: '#fff', // dropdown background
-                                }
-                              }
-                            }}
-                          >
-                            {Array.from({ length: totalPages }, (_, i) => (
-                              <MenuItem key={i + 1} value={i + 1}>
-                                Page {i + 1}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
 
-                        <Typography fontSize="11px" color="white">
-                          of {totalPages} page{totalPages > 1 ? 's' : ''}
-                        </Typography>
-
-
-                        {/* Next & Last */}
-                        <Button
-                          onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                          disabled={currentPage === totalPages}
-                          variant="outlined"
-                          size="small"
-                          sx={{
-                            minWidth: 80,
-                            color: "white",
-                            borderColor: "white",
-                            backgroundColor: "transparent",
-                            '&:hover': {
-                              borderColor: 'white',
-                              backgroundColor: 'rgba(255,255,255,0.1)',
-                            },
-                            '&.Mui-disabled': {
-                              color: "white",
-                              borderColor: "white",
-                              backgroundColor: "transparent",
-                              opacity: 1,
-                            }
-                          }}
-                        >
-                          Next
-                        </Button>
-
-                        <Button
-                          onClick={() => setCurrentPage(totalPages)}
-                          disabled={currentPage === totalPages}
-                          variant="outlined"
-                          size="small"
-                          sx={{
-                            minWidth: 80,
-                            color: "white",
-                            borderColor: "white",
-                            backgroundColor: "transparent",
-                            '&:hover': {
-                              borderColor: 'white',
-                              backgroundColor: 'rgba(255,255,255,0.1)',
-                            },
-                            '&.Mui-disabled': {
-                              color: "white",
-                              borderColor: "white",
-                              backgroundColor: "transparent",
-                              opacity: 1,
-                            }
-                          }}
-                        >
-                          Last
-                        </Button>
-
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-              </Table>
-            </TableContainer>
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.th}>ID</th>
-                  <th style={styles.th}>Description</th>
-                  <th style={styles.th}>Code</th>
-                  <th style={styles.th}>Major</th>
-                  <th style={styles.th}>Components</th>
-                  <th style={styles.th}>Academic Program</th>
-
-                  <th style={styles.th}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentPrograms.map((prog, index) => (
-
-                  <tr key={prog.program_id}>
-                    <td style={styles.td}>{index + 1}</td>
-                    <td style={styles.td}>{prog.program_description}</td>
-                    <td style={styles.td}>{prog.program_code}</td>
-                    <td style={styles.td}>{prog.major || "—"}</td>
-                    <td style={styles.td}>
-                      {getCampusName(prog.components)}
-                    </td>
-                    <td style={styles.td}>
-                      {prog.academic_program === 0
-                        ? "Undergraduate"
-                        : prog.academic_program === 1
-                          ? "Graduate"
-                          : prog.academic_program === 2
-                            ? "Techvoc"
-                            : "—"}
-                    </td>
-
-
-                    <td style={{ ...styles.td, textAlign: "center" }}>
-                      <button
-                        onClick={() => handleEdit(prog)}
-                        style={styles.editButton}
-                      >
-                        <EditIcon fontSize="small" /> Edit
-                      </button>
-                      <button
-                        onClick={() => {
-                          setProgramToDelete(prog);
-                          setOpenDeleteDialog(true);
-                        }}
-                        style={styles.deleteButton}
-                      >
-                        <DeleteIcon fontSize="small" /> Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-
-            </table>
-            {programs.length === 0 && <p>No programs available.</p>}
-          </div>
-        </div>
       </div>
+
 
       <Dialog
         open={openDeleteDialog}

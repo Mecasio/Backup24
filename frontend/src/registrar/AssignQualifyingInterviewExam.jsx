@@ -525,12 +525,12 @@ const AssignQualifyingInterviewExam = () => {
 
             <Box
                 sx={{
-                  display: "flex",
-          justifyContent: "space-between",
-          flexWrap: "nowrap", // ❌ prevent wrapping
-          width: "100%",
-          mt: 1,
-          gap: 2,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    flexWrap: "nowrap", // ❌ prevent wrapping
+                    width: "100%",
+                    mt: 1,
+                    gap: 2,
                 }}
             >
                 {tabs.map((tab, index) => (
@@ -599,7 +599,7 @@ const AssignQualifyingInterviewExam = () => {
                             }}
                         >
                             <TableCell
-                                colSpan={9}
+                                colSpan={10}
                                 sx={{
                                     border: `2px solid ${borderColor}`,
                                     py: 1,
@@ -714,7 +714,7 @@ const AssignQualifyingInterviewExam = () => {
                         {/* COLUMN HEADERS */}
                         <TableRow>
                             {[
-                                "Branch", "Date", "Building", "Room",
+                                "ID", "Branch", "Date", "Building", "Room",
                                 "Start", "End", "Interviewer",
                                 "Quota", "Actions"
                             ].map(h => (
@@ -734,8 +734,9 @@ const AssignQualifyingInterviewExam = () => {
                     </TableHead>
 
                     <TableBody>
-                        {paginatedSchedules.map(s => (
+                        {paginatedSchedules.map((s, index) => (
                             <TableRow key={s.schedule_id} hover>
+                                <TableCell align="center" sx={cellStyle}>{index + 1}</TableCell>
                                 <TableCell align="center" sx={cellStyle}>{s.branch}</TableCell>
                                 <TableCell align="center" sx={cellStyle}>{formatDate(s.day_description)}</TableCell>
                                 <TableCell align="center" sx={cellStyle}>{s.building_description}</TableCell>
@@ -1176,7 +1177,7 @@ const AssignQualifyingInterviewExam = () => {
                 </DialogActions>
             </Dialog>
 
-        </Box>
+        </Box >
     );
 };
 

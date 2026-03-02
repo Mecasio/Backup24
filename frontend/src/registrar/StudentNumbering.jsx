@@ -97,7 +97,7 @@ const StudentNumbering = () => {
         socket.current = io(API_BASE_URL);
 
         return () => {
-        socket.current.disconnect();
+            socket.current.disconnect();
         };
     }, []);
 
@@ -158,6 +158,75 @@ const StudentNumbering = () => {
     };
 
 
+ const [person, setPerson] = useState({
+
+    profile_img: "",
+    campus: "",
+    academicProgram: "",
+    classifiedAs: "",
+    program: "",
+    program2: "",
+    program3: "",
+    yearLevel: "",
+    last_name: "",
+    first_name: "",
+    middle_name: "",
+    extension: "",
+    nickname: "",
+    height: "",
+    weight: "",
+    lrnNumber: "",
+    gender: "",
+    pwdType: "",
+    pwdId: "",
+    birthOfDate: "",
+    age: "",
+    birthPlace: "",
+    languageDialectSpoken: "",
+    citizenship: "",
+    religion: "",
+    civilStatus: "",
+    tribeEthnicGroup: "",
+    otherEthnicGroup: "",
+    cellphoneNumber: "",
+    emailAddress: "",
+    telephoneNumber: "",
+    facebookAccount: "",
+    presentStreet: "",
+    presentBarangay: "",
+    presentZipCode: "",
+    presentRegion: "",
+    presentProvince: "",
+    presentMunicipality: "",
+    presentDswdHouseholdNumber: "",
+    permanentStreet: "",
+    permanentBarangay: "",
+    permanentZipCode: "",
+    permanentRegion: "",
+    permanentProvince: "",
+    permanentMunicipality: "",
+    permanentDswdHouseholdNumber: "",
+    father_deceased: "",
+    father_family_name: "", father_given_name: "", father_middle_name: "", father_ext: "", father_contact: "", father_occupation: "",
+    father_income: "", father_email: "", mother_deceased: "", mother_family_name: "", mother_given_name: "", mother_middle_name: "",
+    mother_contact: "", mother_occupation: "", mother_income: "", guardian: "", guardian_family_name: "", guardian_given_name: "",
+    guardian_middle_name: "", guardian_ext: "", guardian_nickname: "", guardian_address: "", guardian_contact: "", guardian_email: "",
+    schoolLevel: "",
+    schoolLastAttended: "",
+    schoolAddress: "",
+    courseProgram: "",
+    honor: "",
+    generalAverage: "",
+    yearGraduated: "",
+    schoolLevel1: "",
+    schoolLastAttended1: "",
+    schoolAddress1: "",
+    courseProgram1: "",
+    honor1: "",
+    generalAverage1: "",
+    yearGraduated1: "",
+    strand: "",
+  });
 
 
     const location = useLocation();
@@ -177,7 +246,7 @@ const StudentNumbering = () => {
     const [authPassed, setAuthPassed] = useState(false);
     const [showAuthPassword, setShowAuthPassword] = useState(false);
 
-    const [curriculumOptions, setCurriculumOptions] = useState([]);
+
     useEffect(() => {
         axios
             .get(`${API_BASE_URL}/get_school_year/`)
@@ -238,7 +307,7 @@ const StudentNumbering = () => {
         }
     };
 
-  
+
     const [explicitSelection, setExplicitSelection] = useState(false);
 
     const [persons, setPersons] = useState([]);
@@ -277,6 +346,8 @@ const StudentNumbering = () => {
         }, 500);
         return () => clearTimeout(delayDebounce);
     }, [searchQuery]);
+
+
     const startIndex = (currentPage - 1) * itemsPerPage;
 
 
@@ -292,6 +363,9 @@ const StudentNumbering = () => {
     const [selectedActiveSchoolYear, setSelectedActiveSchoolYear] = useState('');
 
     const [department, setDepartment] = useState([]);
+
+    const [curriculumOptions, setCurriculumOptions] = useState([]);
+
     useEffect(() => {
         axios.get(`${API_BASE_URL}/api/applied_program`)
             .then(res => {
@@ -299,6 +373,17 @@ const StudentNumbering = () => {
                 setCurriculumOptions(res.data);
             });
     }, []);
+
+    console.log("person.program:", person.program);
+    console.log("curriculumOptions:", curriculumOptions);
+
+    {
+        curriculumOptions.find(
+            (item) =>
+                item?.curriculum_id?.toString() === (person?.program ?? "").toString()
+        )?.program_description || (person?.program ?? "")
+
+    }
 
 
     const [allCurriculums, setAllCurriculums] = useState([]);
@@ -472,7 +557,7 @@ const StudentNumbering = () => {
                 }
             });
         } catch (err) {
-          setAuthError("Invalid Password please try Again");
+            setAuthError("Invalid Password please try Again");
         }
     };
 
@@ -481,27 +566,9 @@ const StudentNumbering = () => {
         setSnack(prev => ({ ...prev, open: false }));
     };
 
-    // 🔒 Disable right-click
-    document.addEventListener('contextmenu', (e) => e.preventDefault());
-
-    // 🔒 Block DevTools shortcuts + Ctrl+P silently
-    document.addEventListener('keydown', (e) => {
-        const isBlockedKey =
-            e.key === 'F12' || // DevTools
-            e.key === 'F11' || // Fullscreen
-            (e.ctrlKey && e.shiftKey && (e.key.toLowerCase() === 'i' || e.key.toLowerCase() === 'j')) || // Ctrl+Shift+I/J
-            (e.ctrlKey && e.key.toLowerCase() === 'u') || // Ctrl+U (View Source)
-            (e.ctrlKey && e.key.toLowerCase() === 'p');   // Ctrl+P (Print)
-
-        if (isBlockedKey) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    });
-
     // Put this at the very bottom before the return 
     if (loading || hasAccess === null) {
-       return <LoadingOverlay open={loading} message="Loading..." />;
+        return <LoadingOverlay open={loading} message="Loading..." />;
     }
 
     if (!hasAccess) {
@@ -552,7 +619,7 @@ const StudentNumbering = () => {
                 <DialogActions>
                     <Button
                         variant="contained"
-                        sx={{ backgroundColor: mainButtonColor, color: "white" }}
+
                         onClick={handleAuthSubmit}
                     >
                         Yes, I Confirm
@@ -564,7 +631,7 @@ const StudentNumbering = () => {
     }
 
     return (
-          <Box sx={{ height: "calc(100vh - 150px)", overflowY: "auto", paddingRight: 1, backgroundColor: "transparent", mt: 1, padding: 2 }}>
+        <Box sx={{ height: "calc(100vh - 150px)", overflowY: "auto", paddingRight: 1, backgroundColor: "transparent", mt: 1, padding: 2 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                 <Typography variant="h4" fontWeight="bold" sx={{ color: titleColor, }}>
                     ASSIGN STUDENT NUMBER FOR REGISTRAR
@@ -594,9 +661,7 @@ const StudentNumbering = () => {
                 />
             </Box>
             <hr style={{ border: "1px solid #ccc", width: "100%" }} />
-
-       
-
+            <br />
             <br />
 
             <TableContainer component={Paper} sx={{ width: '100%', border: `2px solid ${borderColor}`, }}>
@@ -982,12 +1047,23 @@ const StudentNumbering = () => {
                             <Typography style={{ fontSize: "16px" }}>
                                 <strong>Applicant ID:</strong> {selectedPerson.applicant_number || "N/A"} <br />
                                 <strong>Name:</strong> {selectedPerson.first_name} {selectedPerson.middle_name} {selectedPerson.last_name}<br />
+                                <strong>Birth Of Date:</strong>{" "}
+                                {selectedPerson.birthOfDate
+                                    ? new Date(selectedPerson.birthOfDate).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                    })
+                                    : "N/A"}
+                                <br />
+                                <strong>Age:</strong> {selectedPerson.age}<br />
+                                <strong>Program Applied:</strong> ({selectedPerson.program_code}){selectedPerson.program_description}{selectedPerson.major}<br />
                                 <strong>Email Address:</strong> {selectedPerson.emailAddress}
                             </Typography>
 
                             <Button
                                 variant="contained"
-                                sx={{ mt: 2, backgroundColor: '#800000', color: 'white' }}
+                                sx={{ marginTop: "15px" }}
                                 onClick={confirmAssignNumber}   // 👈 directly run the assign logic
                             >
                                 Assign Student Number
@@ -1012,6 +1088,181 @@ const StudentNumbering = () => {
                 </Box>
             </Box>
 
+            <TableContainer component={Paper} sx={{ width: '100%' }}>
+                <Table size="small">
+                    <TableHead sx={{ backgroundColor: settings?.header_color || "#1976d2", color: "white" }}>
+                        <TableRow>
+                            <TableCell
+                                colSpan={10}
+                                sx={{
+                                    border: `2px solid ${borderColor}`,
+                                    py: 0.5,
+                                    backgroundColor: settings?.header_color || "#1976d2",
+                                    color: "white"
+                                }}
+                            >
+                                <Box display="flex" justifyContent="space-between" alignItems="center" >
+                                    {/* Left: Applicant List Count */}
+                                    <Typography fontSize="14px" fontWeight="bold" color="white">
+                                        Total Applicant's: {filteredPersons.length}
+                                    </Typography>
+
+                                    {/* Right: Pagination Controls */}
+                                    <Box display="flex" alignItems="center" gap={1}>
+                                        {/* First & Prev */}
+                                        <Button
+                                            onClick={() => setCurrentPage(1)}
+                                            disabled={currentPage === 1}
+                                            variant="outlined"
+                                            size="small"
+                                            sx={{
+                                                minWidth: 80,
+                                                color: "white",
+                                                borderColor: "white",
+                                                backgroundColor: "transparent",
+                                                '&:hover': {
+                                                    borderColor: 'white',
+                                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                                },
+                                                '&.Mui-disabled': {
+                                                    color: "white",
+                                                    borderColor: "white",
+                                                    backgroundColor: "transparent",
+                                                    opacity: 1,
+                                                },
+                                            }}
+                                        >
+                                            First
+                                        </Button>
+
+                                        <Button
+                                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                            disabled={currentPage === 1}
+                                            variant="outlined"
+                                            size="small"
+                                            sx={{
+                                                minWidth: 80,
+                                                color: "white",
+                                                borderColor: "white",
+                                                backgroundColor: "transparent",
+                                                '&:hover': {
+                                                    borderColor: 'white',
+                                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                                },
+                                                '&.Mui-disabled': {
+                                                    color: "white",
+                                                    borderColor: "white",
+                                                    backgroundColor: "transparent",
+                                                    opacity: 1,
+                                                },
+                                            }}
+                                        >
+                                            Prev
+                                        </Button>
+
+                                        {/* Page Dropdown */}
+                                        <FormControl size="small" sx={{ minWidth: 80 }}>
+                                            <Select
+                                                value={currentPage}
+                                                onChange={(e) => setCurrentPage(Number(e.target.value))}
+                                                displayEmpty
+                                                sx={{
+                                                    fontSize: '12px',
+                                                    height: 36,
+                                                    color: 'white',
+                                                    border: '1px solid white',
+                                                    backgroundColor: 'transparent',
+                                                    '.MuiOutlinedInput-notchedOutline': {
+                                                        borderColor: 'white',
+                                                    },
+                                                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                                                        borderColor: 'white',
+                                                    },
+                                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                                        borderColor: 'white',
+                                                    },
+                                                    '& svg': {
+                                                        color: 'white',
+                                                    }
+                                                }}
+                                                MenuProps={{
+                                                    PaperProps: {
+                                                        sx: {
+                                                            maxHeight: 200,
+                                                            backgroundColor: '#fff',
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                {Array.from({ length: totalPages }, (_, i) => (
+                                                    <MenuItem key={i + 1} value={i + 1}>
+                                                        Page {i + 1}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+
+                                        <Typography fontSize="11px" color="white">
+                                            of {totalPages} page{totalPages > 1 ? 's' : ''}
+                                        </Typography>
+
+                                        {/* Next & Last */}
+                                        <Button
+                                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                            disabled={currentPage === totalPages}
+                                            variant="outlined"
+                                            size="small"
+                                            sx={{
+                                                minWidth: 80,
+                                                color: "white",
+                                                borderColor: "white",
+                                                backgroundColor: "transparent",
+                                                '&:hover': {
+                                                    borderColor: 'white',
+                                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                                },
+                                                '&.Mui-disabled': {
+                                                    color: "white",
+                                                    borderColor: "white",
+                                                    backgroundColor: "transparent",
+                                                    opacity: 1,
+                                                },
+                                            }}
+                                        >
+                                            Next
+                                        </Button>
+
+                                        <Button
+                                            onClick={() => setCurrentPage(totalPages)}
+                                            disabled={currentPage === totalPages}
+                                            variant="outlined"
+                                            size="small"
+                                            sx={{
+                                                minWidth: 80,
+                                                color: "white",
+                                                borderColor: "white",
+                                                backgroundColor: "transparent",
+                                                '&:hover': {
+                                                    borderColor: 'white',
+                                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                                },
+                                                '&.Mui-disabled': {
+                                                    color: "white",
+                                                    borderColor: "white",
+                                                    backgroundColor: "transparent",
+                                                    opacity: 1,
+                                                },
+                                            }}
+                                        >
+                                            Last
+                                        </Button>
+                                    </Box>
+                                </Box>
+                            </TableCell>
+                        </TableRow>
+                    </TableHead>
+                </Table>
+            </TableContainer>
 
 
 

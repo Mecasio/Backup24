@@ -86,6 +86,11 @@ const Login = ({ setIsAuthenticated }) => {
       localStorage.setItem("email", response.data.email);
       localStorage.setItem("role", response.data.role);
       localStorage.setItem("person_id", response.data.person_id);
+      localStorage.setItem("first_name", response.data.first_name || "");
+      localStorage.setItem("last_name", response.data.last_name || "");
+      localStorage.setItem("middle_name", response.data.middle_name || "");
+      localStorage.setItem("birthOfDate", response.data.birthOfDate || "");
+      localStorage.setItem("age", response.data.age || "");
 
       localStorage.setItem("applicantEmail", response.data.email);
 

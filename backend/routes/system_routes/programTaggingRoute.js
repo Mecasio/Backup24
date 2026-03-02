@@ -122,11 +122,11 @@ router.post("/program_tagging", async (req, res) => {
         year_level_id,
         semester_id,
         course_id,
-        lec_fee ?? 0,
-        lab_fee ?? 0,
-        iscomputer_lab ?? 0,
-        islaboratory_fee ?? 0,
-        is_nstp ?? 0,
+        Number(lec_fee) || 0,
+        Number(lab_fee) || 0,
+        Number(iscomputer_lab) || 0,
+        Number(islaboratory_fee) || 0,
+        Number(is_nstp) || 0,
         amount
       ]
     );
@@ -183,11 +183,11 @@ router.put("/program_tagging/:id", async (req, res) => {
         year_level_id,
         semester_id,
         course_id,
-        lec_fee ?? 0,
-        lab_fee ?? 0,
-        iscomputer_lab ?? 0,
-        islaboratory_fee ?? 0,
-        is_nstp ?? 0,
+        Number(lec_fee) || 0,
+        Number(lab_fee) || 0,
+        Number(iscomputer_lab) || 0,
+        Number(islaboratory_fee) || 0,
+        Number(is_nstp) || 0,
         amount,
         id
       ]

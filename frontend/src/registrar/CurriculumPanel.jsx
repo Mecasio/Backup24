@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
 import { SettingsContext } from "../App";
 import axios from "axios";
-import { Box, Typography, Button, Snackbar, Alert, Card, Paper, CardContent, TableContainer, Table, TableHead, TableCell, TableRow, TableBody, Switch } from "@mui/material";
+import {
+  Box, Typography, Button, Snackbar, FormControl, Select, InputLabel, MenuItem,
+  Alert, Card, Paper, CardContent, TableContainer, Table, TableHead, TableCell, TableRow, TableBody, Switch
+} from "@mui/material";
 import Unauthorized from "../components/Unauthorized";
 import LoadingOverlay from "../components/LoadingOverlay";
 import API_BASE_URL from "../apiConfig";
@@ -314,6 +317,7 @@ const CurriculumPanel = () => {
   };
 
 
+
   const filteredCurriculumList = curriculumList.filter((item) => {
     const words = searchQuery.trim().toLowerCase().split(" ").filter(Boolean);
 
@@ -327,12 +331,56 @@ const CurriculumPanel = () => {
     );
   });
 
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20); // adjust as needed
+
+  // Compute total pages
+  const totalPages = Math.ceil(filteredCurriculumList.length / itemsPerPage);
+
+  // Slice data for current page
+  const paginatedCurriculum = filteredCurriculumList.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   const formatSchoolYear = (yearDesc) => {
     if (!yearDesc) return "";
     const startYear = Number(yearDesc);
     if (isNaN(startYear)) return yearDesc; // safe fallback
     return `${startYear} - ${startYear + 1}`;
   };
+
+  const buttonStyles = {
+    minWidth: 70,
+    color: "white",
+    borderColor: "white",
+    backgroundColor: "transparent",
+    '&:hover': {
+      borderColor: 'white',
+      backgroundColor: 'rgba(255,255,255,0.1)',
+    },
+    '&.Mui-disabled': {
+      color: "white",
+      borderColor: "white",
+      backgroundColor: "transparent",
+      opacity: 1,
+    },
+  };
+
+  const selectStyles = {
+    fontSize: '12px',
+    height: 36,
+    color: 'white',
+    border: '1px solid white',
+    backgroundColor: 'transparent',
+    '.MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
+    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
+    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
+    '& svg': { color: 'white' },
+  };
+
 
 
   if (loading || hasAccess === null) {
@@ -385,18 +433,317 @@ const CurriculumPanel = () => {
 
       <hr style={{ border: "1px solid #ccc", width: "100%" }} />
       <br />
+      <br />
 
-      <TableContainer component={Paper} sx={{ width: '100%', border: `2px solid ${borderColor}`, mb: "40px" }}>
-        <Table>
-          <TableHead sx={{ backgroundColor: settings?.header_color || "#1976d2", }}>
+      {/* TOTAL + PAGINATION HEADER */}
+      <TableContainer component={Paper} sx={{ width: '100%', mt: 2 }}>
+        <Table size="small">
+          <TableHead sx={{ backgroundColor: settings?.header_color || "#6D2323" }}>
             <TableRow>
-              <TableCell sx={{ color: 'white', textAlign: "Center" }}>Curriculum Panel</TableCell>
+              <TableCell
+                colSpan={5}
+                sx={{
+                  border: `2px solid ${borderColor}`,
+                  py: 0.5,
+                  backgroundColor: settings?.header_color || "#6D2323",
+                  color: "white",
+                }}
+              >
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  flexWrap="wrap"
+                  sx={{ px: 1 }}
+                >
+                  {/* LEFT SIDE - TOTAL CURRICULUM */}
+                  <Typography fontSize="14px" fontWeight="bold" color="white">
+                    Total Curriculum: {filteredCurriculumList.length}
+                  </Typography>
+
+                  {/* RIGHT SIDE - PAGINATION */}
+                  <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+                    <Button
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      variant="outlined"
+                      size="small"
+                      sx={buttonStyles}
+                    >
+                      First
+                    </Button>
+
+                    <Button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      variant="outlined"
+                      size="small"
+                      sx={buttonStyles}
+                    >
+                      Prev
+                    </Button>
+
+                    {/* Page Select */}
+                    <FormControl size="small" sx={{ minWidth: 80 }}>
+                      <Select
+                        value={currentPage}
+                        onChange={(e) => setCurrentPage(Number(e.target.value))}
+                        displayEmpty
+                        sx={selectStyles}
+                        MenuProps={{
+                          PaperProps: {
+                            sx: { maxHeight: 200, backgroundColor: '#fff' },
+                          },
+                        }}
+                      >
+                        {Array.from({ length: totalPages }, (_, i) => (
+                          <MenuItem key={i + 1} value={i + 1}>
+                            Page {i + 1}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+
+                    <Typography fontSize="11px" color="white">
+                      of {totalPages} page{totalPages > 1 ? 's' : ''}
+                    </Typography>
+
+                    <Button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      variant="outlined"
+                      size="small"
+                      sx={buttonStyles}
+                    >
+                      Next
+                    </Button>
+
+                    <Button
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      variant="outlined"
+                      size="small"
+                      sx={buttonStyles}
+                    >
+                      Last
+                    </Button>
+                  </Box>
+                </Box>
+              </TableCell>
             </TableRow>
           </TableHead>
         </Table>
       </TableContainer>
+      <TableContainer>
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{
+
+                border: `2px solid ${borderColor}`, textAlign: "center",
+                color: "black",
+              }}>ID</TableCell>
+              <TableCell sx={{
+
+                border: `2px solid ${borderColor}`, textAlign: "center",
+                color: "black",
+              }}>Year</TableCell>
+              <TableCell sx={{
+
+                border: `2px solid ${borderColor}`, textAlign: "center",
+                color: "black",
+              }}>Program</TableCell>
+              <TableCell sx={{
+
+                border: `2px solid ${borderColor}`, textAlign: "center",
+                color: "black",
+              }} align="center">Active</TableCell>
+              <TableCell sx={{
+
+                border: `2px solid ${borderColor}`, textAlign: "center",
+                color: "black",
+              }} align="center">Actions</TableCell>
+            </TableRow>
+
+          </TableHead>
+
+          <TableBody>
+            {paginatedCurriculum.map((item, index) => (
+              <TableRow
+                key={item.curriculum_id}
+                hover
+                sx={{ "&:last-child td": { borderBottom: 0 } }}
+              >
+                <TableCell sx={{ border: `2px solid ${borderColor}`, textAlign: "center" }}> {index + 1}</TableCell>
+                <TableCell sx={{ border: `2px solid ${borderColor}`, textAlign: "center" }}>
+                  {formatAcademicYear(item.year_description)}
+                </TableCell >
+                <TableCell sx={{ border: `2px solid ${borderColor}` }}>
+                  <Typography fontWeight={500}>
+
+                    {`(${item.program_code}): ${item.program_description} (${Number(item.components) === 1
+                      ? "Manila Campus"
+                      : Number(item.components) === 2
+                        ? "Cavite Campus"
+                        : "—"
+                      })`}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {item.major ? ` (${item.major})` : ""}
+                  </Typography>
+                </TableCell>
+                <TableCell sx={{ border: `2px solid ${borderColor}` }} align="center">
+                  <Switch
+                    checked={item.lock_status === 1}
+                    onChange={() =>
+                      handleUpdateStatus(
+                        item.curriculum_id,
+                        item.lock_status
+                      )
+                    }
+                    color="success"
+                  />
+                </TableCell>
+                <TableCell
+                  sx={{ border: `2px solid ${borderColor}` }}
+                  align="center"
+                >
+                  <Button
+                    variant="contained"
+                    size="small"
+                    sx={{ backgroundColor: "green", color: "white", mr: 1 }}
+                    onClick={() => handleEdit(item)}
+
+                  >
+                    Edit
+                  </Button>
+
+                  <Button
+
+                    onClick={() => confirmDelete(item)}
+                    variant="contained"
+                    size="small"
+                    sx={{ backgroundColor: "#9E0000", color: "white" }}
+                  >
+                    Delete
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <TableContainer component={Paper} sx={{ width: '100%', }}>
+        <Table size="small">
+          <TableHead sx={{ backgroundColor: settings?.header_color || "#6D2323" }}>
+            <TableRow>
+              <TableCell
+                colSpan={5}
+                sx={{
+                  border: `2px solid ${borderColor}`,
+                  py: 0.5,
+                  backgroundColor: settings?.header_color || "#6D2323",
+                  color: "white",
+                }}
+              >
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  flexWrap="wrap"
+                  sx={{ px: 1 }}
+                >
+                  {/* LEFT SIDE - TOTAL CURRICULUM */}
+                  <Typography fontSize="14px" fontWeight="bold" color="white">
+                    Total Curriculum: {filteredCurriculumList.length}
+                  </Typography>
+
+                  {/* RIGHT SIDE - PAGINATION */}
+                  <Box display="flex" alignItems="center" gap={1} flexWrap="wrap">
+                    <Button
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      variant="outlined"
+                      size="small"
+                      sx={buttonStyles}
+                    >
+                      First
+                    </Button>
+
+                    <Button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      variant="outlined"
+                      size="small"
+                      sx={buttonStyles}
+                    >
+                      Prev
+                    </Button>
+
+                    {/* Page Select */}
+                    <FormControl size="small" sx={{ minWidth: 80 }}>
+                      <Select
+                        value={currentPage}
+                        onChange={(e) => setCurrentPage(Number(e.target.value))}
+                        displayEmpty
+                        sx={selectStyles}
+                        MenuProps={{
+                          PaperProps: {
+                            sx: { maxHeight: 200, backgroundColor: '#fff' },
+                          },
+                        }}
+                      >
+                        {Array.from({ length: totalPages }, (_, i) => (
+                          <MenuItem key={i + 1} value={i + 1}>
+                            Page {i + 1}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+
+                    <Typography fontSize="11px" color="white">
+                      of {totalPages} page{totalPages > 1 ? 's' : ''}
+                    </Typography>
+
+                    <Button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      variant="outlined"
+                      size="small"
+                      sx={buttonStyles}
+                    >
+                      Next
+                    </Button>
+
+                    <Button
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      variant="outlined"
+                      size="small"
+                      sx={buttonStyles}
+                    >
+                      Last
+                    </Button>
+                  </Box>
+                </Box>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+        </Table>
+      </TableContainer>
+      <br />
+      <br />
 
 
+      <TableContainer component={Paper} sx={{ width: '100%', border: `2px solid ${borderColor}`, }}>
+        <Table>
+          <TableHead sx={{ backgroundColor: settings?.header_color || "#1976d2", }}>
+            <TableRow>
+              <TableCell sx={{ color: 'white', textAlign: "Center" }}>Insert Curriculum</TableCell>
+            </TableRow>
+          </TableHead>
+        </Table>
+      </TableContainer>
       <Box sx={{ maxHeight: 750, overflowY: "auto" }}>
         <div
           style={{
@@ -417,10 +764,7 @@ const CurriculumPanel = () => {
               boxShadow: "0 0 10px rgba(0,0,0,0.1)",
             }}
           >
-            <Typography variant="h6" gutterBottom textAlign="center" style={{ color: subtitleColor, fontWeight: "bold" }} >
-              Add Curriculum
-            </Typography>
-
+        
             <div style={{ marginBottom: "15px" }}>
               <label style={{ fontWeight: "bold" }}>Curriculum Year:</label>
               <select
@@ -435,11 +779,17 @@ const CurriculumPanel = () => {
                 }}
               >
                 <option value="">Choose Year</option>
-                {yearList.map((year) => (
-                  <option key={year.year_id} value={year.year_id}>
-                    {formatAcademicYear(year.year_description)}
-                  </option>
-                ))}
+
+                {[...yearList]
+                  .sort(
+                    (a, b) =>
+                      Number(a.year_description) - Number(b.year_description)
+                  )
+                  .map((year) => (
+                    <option key={year.year_id} value={year.year_id}>
+                      {formatAcademicYear(year.year_description)}
+                    </option>
+                  ))}
               </select>
             </div>
 
@@ -472,130 +822,24 @@ const CurriculumPanel = () => {
               </select>
             </div>
 
-            <button
-              onClick={handleAddCurriculum}
-              style={{
-                width: "100%",
-                padding: "10px",
-                backgroundColor: "#1976d2", // typical Material UI primary blue
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
-            >
-              Insert
-            </button>
+
+
+            <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
+              <Button
+                onClick={handleAddCurriculum}
+                variant="contained"
+                sx={{
+                  width: "30%",
+
+                }}
+              >
+                Insert
+              </Button>
+            </Box>
 
           </div>
 
-          {/* RIGHT SECTION */}
-          <Card sx={{ border: `2px solid ${borderColor}`,   width: "900px", }} elevation={2}>
-            <CardContent>
-              <Typography variant="h6" gutterBottom textAlign="center" style={{ color: subtitleColor, fontWeight: "bold" }} >
-                Curriculum List
-              </Typography>
-              <TableContainer>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{
-                        backgroundColor: settings?.header_color || "#1976d2",
-                        border: `2px solid ${borderColor}`, textAlign: "center",
-                        color: "white",
-                      }}>ID</TableCell>
-                      <TableCell sx={{
-                        backgroundColor: settings?.header_color || "#1976d2",
-                        border: `2px solid ${borderColor}`, textAlign: "center",
-                        color: "white",
-                      }}>Year</TableCell>
-                      <TableCell sx={{
-                        backgroundColor: settings?.header_color || "#1976d2",
-                        border: `2px solid ${borderColor}`, textAlign: "center",
-                        color: "white",
-                      }}>Program</TableCell>
-                      <TableCell sx={{
-                        backgroundColor: settings?.header_color || "#1976d2",
-                        border: `2px solid ${borderColor}`, textAlign: "center",
-                        color: "white",
-                      }} align="center">Active</TableCell>
-                      <TableCell sx={{
-                        backgroundColor: settings?.header_color || "#1976d2",
-                        border: `2px solid ${borderColor}`, textAlign: "center",
-                        color: "white",
-                      }} align="center">Actions</TableCell>
-                    </TableRow>
 
-                  </TableHead>
-
-                  <TableBody>
-                    {filteredCurriculumList.map((item, index) => (
-                      <TableRow
-                        key={item.curriculum_id}
-                        hover
-                        sx={{ "&:last-child td": { borderBottom: 0 } }}
-                      >
-                        <TableCell sx={{ border: `2px solid ${borderColor}` }}> {index + 1}</TableCell>
-                        <TableCell sx={{ border: `2px solid ${borderColor}` }}>
-                          {formatAcademicYear(item.year_description)}
-                        </TableCell >
-                        <TableCell sx={{ border: `2px solid ${borderColor}` }}>
-                          <Typography fontWeight={500}>
-                            {formatSchoolYear(item.year_description)}:{" "}
-                            {`(${item.program_code}): ${item.program_description} (${Number(item.components) === 1
-                              ? "Manila Campus"
-                              : Number(item.components) === 2
-                                ? "Cavite Campus"
-                                : "—"
-                              })`}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {item.major ? ` (${item.major})` : ""}
-                          </Typography>
-                        </TableCell>
-                        <TableCell sx={{ border: `2px solid ${borderColor}` }} align="center">
-                          <Switch
-                            checked={item.lock_status === 1}
-                            onChange={() =>
-                              handleUpdateStatus(
-                                item.curriculum_id,
-                                item.lock_status
-                              )
-                            }
-                            color="success"
-                          />
-                        </TableCell>
-                        <TableCell
-                          sx={{ border: `2px solid ${borderColor}` }}
-                          align="center"
-                        >
-                          <Button
-                            variant="contained"
-                            size="small"
-                            sx={{ backgroundColor: "green", color: "white", mr: 1 }}
-                            onClick={() => handleEdit(item)}
-
-                          >
-                            Edit
-                          </Button>
-
-                          <Button
-
-                            onClick={() => confirmDelete(item)}
-                            variant="contained"
-                            size="small"
-                            sx={{ backgroundColor: "#9E0000", color: "white" }}
-                          >
-                            Delete
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </CardContent>
-          </Card>
 
         </div>
       </Box>

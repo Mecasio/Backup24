@@ -3,29 +3,34 @@ import { SettingsContext } from "../App";
 import axios from "axios";
 import {
   Box,
+  Button,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
+  Paper,
   TableContainer,
+  Table,
   TableHead,
   TableRow,
-  Paper,
-  Switch,
+  FormControl,
+  Select,
+  Card,
+  TableCell,
+  TextField,
+  MenuItem,
+  InputLabel,
+  Checkbox,
+  TableBody,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  FormControlLabel,
   Snackbar,
   Alert,
-  TextField,
-  Button,
+  DialogActions,
+  Switch
 } from "@mui/material";
 import Unauthorized from "../components/Unauthorized";
 import LoadingOverlay from "../components/LoadingOverlay";
 import API_BASE_URL from "../apiConfig";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-} from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 
 const ROLE_LABEL = {
@@ -69,19 +74,7 @@ const UserPageAccess = () => {
     if (reason === "clickaway") return;
     setSnack((prev) => ({ ...prev, open: false }));
   };
-  const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredUsers = allUsers.filter((u) => {
-    const q = searchQuery.toLowerCase();
-    const fullName = `${u.first_name} ${u.middle_name || ""} ${u.last_name}`.toLowerCase();
-
-    return (
-      u.employee_id.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q) ||
-      u.role.toLowerCase().includes(q) ||
-      fullName.includes(q)
-    );
-  });
 
 
 
@@ -161,6 +154,37 @@ const UserPageAccess = () => {
     }
   };
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(20); // change if you want
+
+  const [searchQuery, setSearchQuery] = useState("");
+
+
+  const filteredUsers = allUsers.filter((u) => {
+    const q = searchQuery.toLowerCase();
+    const fullName = `${u.first_name} ${u.middle_name || ""} ${u.last_name}`.toLowerCase();
+
+    return (
+      u.employee_id.toLowerCase().includes(q) ||
+      u.email.toLowerCase().includes(q) ||
+      u.role.toLowerCase().includes(q) ||
+      fullName.includes(q)
+    );
+  });
+  // Pagination Logic
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+
+  const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
+
+
+
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   // Update access privilege
   const handleToggleChange = async (pageId, hasAccessNow) => {
@@ -230,29 +254,218 @@ const UserPageAccess = () => {
 
       <hr style={{ border: "1px solid #ccc", width: "100%" }} />
       <br />
+      <br />
+
+      <TableContainer component={Paper} sx={{ width: '100%', }}>
+        <Table size="small">
+          <TableHead sx={{ backgroundColor: '#6D2323', color: "white" }}>
+            <TableRow>
+              <TableCell colSpan={10} sx={{ border: `2px solid ${borderColor}`, py: 0.5, backgroundColor: settings?.header_color || "#1976d2", color: "white" }}>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  {/* Left: Total Count */}
+                  <Typography fontSize="14px" fontWeight="bold" color="white">
+                    Total Admin Account: {filteredUsers.length}
+
+                  </Typography>
+
+                  {/* Right: Pagination Controls */}
+                  <Box display="flex" alignItems="center" gap={1}>
+                    {/* First & Prev */}
+                    <Button
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        minWidth: 80,
+                        color: "white",
+                        borderColor: "white",
+                        backgroundColor: "transparent",
+                        '&:hover': {
+                          borderColor: 'white',
+                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        },
+                        '&.Mui-disabled': {
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          opacity: 1,
+                        }
+                      }}
+                    >
+                      First
+                    </Button>
+
+                    <Button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        minWidth: 80,
+                        color: "white",
+                        borderColor: "white",
+                        backgroundColor: "transparent",
+                        '&:hover': {
+                          borderColor: 'white',
+                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        },
+                        '&.Mui-disabled': {
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          opacity: 1,
+                        }
+                      }}
+                    >
+                      Prev
+                    </Button>
 
 
+                    {/* Page Dropdown */}
+                    <FormControl size="small" sx={{ minWidth: 80 }}>
+                      <Select
+                        value={currentPage}
+                        onChange={(e) => setCurrentPage(Number(e.target.value))}
+                        displayEmpty
+                        sx={{
+                          fontSize: '12px',
+                          height: 36,
+                          color: 'white',
+                          border: '1px solid white',
+                          backgroundColor: 'transparent',
+                          '.MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'white',
+                          },
+                          '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'white',
+                          },
+                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'white',
+                          },
+                          '& svg': {
+                            color: 'white', // dropdown arrow icon color
+                          }
+                        }}
+                        MenuProps={{
+                          PaperProps: {
+                            sx: {
+                              maxHeight: 200,
+                              backgroundColor: '#fff', // dropdown background
+                            }
+                          }
+                        }}
+                      >
+                        {Array.from({ length: totalPages }, (_, i) => (
+                          <MenuItem key={i + 1} value={i + 1}>
+                            Page {i + 1}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+
+                    <Typography fontSize="11px" color="white">
+                      of {totalPages} page{totalPages > 1 ? 's' : ''}
+                    </Typography>
+
+
+                    {/* Next & Last */}
+                    <Button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        minWidth: 80,
+                        color: "white",
+                        borderColor: "white",
+                        backgroundColor: "transparent",
+                        '&:hover': {
+                          borderColor: 'white',
+                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        },
+                        '&.Mui-disabled': {
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          opacity: 1,
+                        }
+                      }}
+                    >
+                      Next
+                    </Button>
+
+                    <Button
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        minWidth: 80,
+                        color: "white",
+                        borderColor: "white",
+                        backgroundColor: "transparent",
+                        '&:hover': {
+                          borderColor: 'white',
+                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        },
+                        '&.Mui-disabled': {
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          opacity: 1,
+                        }
+                      }}
+                    >
+                      Last
+                    </Button>
+                  </Box>
+                </Box>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+        </Table>
+      </TableContainer>
       {/* USER LIST TABLE */}
-      <Paper sx={{ mb: 3 }}>
+      <Paper>
         <TableContainer>
           <Table>
-            <TableHead sx={{ backgroundColor: settings?.header_color || "#1976d2", }}>
+            <TableHead sx={{ backgroundColor: "#F5F5F5" }}>
               <TableRow>
-                <TableCell sx={{ color: "white", fontWeight: "bold", border: `2px solid ${borderColor}`, textAlign: "center" }}>Employee ID</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold", border: `2px solid ${borderColor}`, textAlign: "center" }}>Name</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold", border: `2px solid ${borderColor}`, textAlign: "center" }}>Email</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold", border: `2px solid ${borderColor}`, textAlign: "center" }}>Role</TableCell>
-                <TableCell sx={{ color: "white", fontWeight: "bold", border: `2px solid ${borderColor}`, textAlign: "center" }}>Action</TableCell>
+                <TableCell sx={{ color: "black", fontWeight: "bold", border: `2px solid ${borderColor}`, textAlign: "center" }}>Employee ID</TableCell>
+                <TableCell sx={{ color: "black", fontWeight: "bold", border: `2px solid ${borderColor}`, textAlign: "center" }}>Name</TableCell>
+                <TableCell sx={{ color: "black", fontWeight: "bold", border: `2px solid ${borderColor}`, textAlign: "center" }}>Email</TableCell>
+                <TableCell sx={{ color: "black", fontWeight: "bold", border: `2px solid ${borderColor}`, textAlign: "center" }}>Role</TableCell>
+                <TableCell sx={{ color: "black", fontWeight: "bold", border: `2px solid ${borderColor}`, textAlign: "center" }}>Status</TableCell>
+                <TableCell sx={{ color: "black", fontWeight: "bold", border: `2px solid ${borderColor}`, textAlign: "center" }}>Action</TableCell>
               </TableRow>
             </TableHead>
 
             <TableBody>
-              {filteredUsers.map((u) => (
+              {paginatedUsers.map((u, p) => (
+
                 <TableRow key={u.id}>
                   <TableCell sx={{ color: "black", border: `2px solid ${borderColor}`, textAlign: "center" }}>{u.employee_id}</TableCell>
                   <TableCell sx={{ color: "black", border: `2px solid ${borderColor}`, textAlign: "center" }}>{`${u.last_name}, ${u.first_name} ${u.middle_name || "."}`}</TableCell>
                   <TableCell sx={{ color: "black", border: `2px solid ${borderColor}`, textAlign: "center" }}>{u.email}</TableCell>
                   <TableCell sx={{ color: "black", border: `2px solid ${borderColor}`, textAlign: "center" }}>{u.role}</TableCell>
+                  <TableCell
+                    sx={{
+                      color: "black",
+                      textAlign: "center",
+                      border: `2px solid ${borderColor}`,
+                    }}
+                    align="center"
+                  >
+                    <Switch
+                      checked={!!pageAccess[p.id]} // ensure boolean
+                      onChange={() =>
+                        handleToggleChange(p.id, !!pageAccess[p.id]) // pass current value correctly
+                      }
+                      color="primary"
+                      size="medium"
+                    />
+                  </TableCell>
 
                   <TableCell sx={{ color: "black", border: `2px solid ${borderColor}`, textAlign: "center" }}>
                     <Button
@@ -269,6 +482,177 @@ const UserPageAccess = () => {
           </Table>
         </TableContainer>
       </Paper>
+
+      <TableContainer component={Paper} sx={{ width: '100%', }}>
+        <Table size="small">
+          <TableHead sx={{ backgroundColor: '#6D2323', color: "white" }}>
+            <TableRow>
+              <TableCell colSpan={10} sx={{ border: `2px solid ${borderColor}`, py: 0.5, backgroundColor: settings?.header_color || "#1976d2", color: "white" }}>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  {/* Left: Total Count */}
+                  <Typography fontSize="14px" fontWeight="bold" color="white">
+                    Total Admin Account: {filteredUsers.length}
+
+                  </Typography>
+
+                  {/* Right: Pagination Controls */}
+                  <Box display="flex" alignItems="center" gap={1}>
+                    {/* First & Prev */}
+                    <Button
+                      onClick={() => setCurrentPage(1)}
+                      disabled={currentPage === 1}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        minWidth: 80,
+                        color: "white",
+                        borderColor: "white",
+                        backgroundColor: "transparent",
+                        '&:hover': {
+                          borderColor: 'white',
+                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        },
+                        '&.Mui-disabled': {
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          opacity: 1,
+                        }
+                      }}
+                    >
+                      First
+                    </Button>
+
+                    <Button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        minWidth: 80,
+                        color: "white",
+                        borderColor: "white",
+                        backgroundColor: "transparent",
+                        '&:hover': {
+                          borderColor: 'white',
+                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        },
+                        '&.Mui-disabled': {
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          opacity: 1,
+                        }
+                      }}
+                    >
+                      Prev
+                    </Button>
+
+
+                    {/* Page Dropdown */}
+                    <FormControl size="small" sx={{ minWidth: 80 }}>
+                      <Select
+                        value={currentPage}
+                        onChange={(e) => setCurrentPage(Number(e.target.value))}
+                        displayEmpty
+                        sx={{
+                          fontSize: '12px',
+                          height: 36,
+                          color: 'white',
+                          border: '1px solid white',
+                          backgroundColor: 'transparent',
+                          '.MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'white',
+                          },
+                          '&:hover .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'white',
+                          },
+                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                            borderColor: 'white',
+                          },
+                          '& svg': {
+                            color: 'white', // dropdown arrow icon color
+                          }
+                        }}
+                        MenuProps={{
+                          PaperProps: {
+                            sx: {
+                              maxHeight: 200,
+                              backgroundColor: '#fff', // dropdown background
+                            }
+                          }
+                        }}
+                      >
+                        {Array.from({ length: totalPages }, (_, i) => (
+                          <MenuItem key={i + 1} value={i + 1}>
+                            Page {i + 1}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+
+                    <Typography fontSize="11px" color="white">
+                      of {totalPages} page{totalPages > 1 ? 's' : ''}
+                    </Typography>
+
+
+                    {/* Next & Last */}
+                    <Button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        minWidth: 80,
+                        color: "white",
+                        borderColor: "white",
+                        backgroundColor: "transparent",
+                        '&:hover': {
+                          borderColor: 'white',
+                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        },
+                        '&.Mui-disabled': {
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          opacity: 1,
+                        }
+                      }}
+                    >
+                      Next
+                    </Button>
+
+                    <Button
+                      onClick={() => setCurrentPage(totalPages)}
+                      disabled={currentPage === totalPages}
+                      variant="outlined"
+                      size="small"
+                      sx={{
+                        minWidth: 80,
+                        color: "white",
+                        borderColor: "white",
+                        backgroundColor: "transparent",
+                        '&:hover': {
+                          borderColor: 'white',
+                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        },
+                        '&.Mui-disabled': {
+                          color: "white",
+                          borderColor: "white",
+                          backgroundColor: "transparent",
+                          opacity: 1,
+                        }
+                      }}
+                    >
+                      Last
+                    </Button>
+                  </Box>
+                </Box>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+        </Table>
+      </TableContainer>
 
       <Dialog
         open={openModal}

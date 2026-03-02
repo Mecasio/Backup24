@@ -354,6 +354,7 @@ const SuperAdminApplicantList = () => {
         first_name: "",
         middle_name: "",
         document_status: "",
+        emailAddress: "",
         extension: "",
         generalAverage1: "",
         strand: "",
@@ -1045,9 +1046,17 @@ th {
                             setCurrentPage(1); // Corrected
                         }}
 
-                        InputProps={{
-                            startAdornment: <Search sx={{ mr: 1 }} />,
-                        }}
+                      sx={{
+                                  width: 450,
+                                  backgroundColor: "#fff",
+                                  borderRadius: 1,
+                                  "& .MuiOutlinedInput-root": {
+                                    borderRadius: "10px",
+                                  },
+                                }}
+                                InputProps={{
+                                  startAdornment: <SearchIcon sx={{ mr: 1, color: "gray" }} />,
+                                }}
                     />
                 </Box>
             </Box>
@@ -1056,7 +1065,7 @@ th {
             <hr style={{ border: "1px solid #ccc", width: "100%" }} />
 
             <br />
-     
+
 
 
             <TableContainer component={Paper} sx={{ width: '100%', border: `2px solid ${borderColor}`, }}>
@@ -1529,6 +1538,12 @@ th {
                             <TableCell sx={{ color: "white", textAlign: "center", width: "25%", py: 0.5, fontSize: "12px", border: `2px solid ${borderColor}` }}>
                                 Name
                             </TableCell>
+                            <TableCell sx={{ color: "white", textAlign: "center", width: "6%", py: 0.5, fontSize: "12px", border: `2px solid ${borderColor}` }}>
+                                Birth of Date
+                            </TableCell>
+                            <TableCell sx={{ color: "white", textAlign: "center", width: "6%", py: 0.5, fontSize: "12px", border: `2px solid ${borderColor}` }}>
+                                Email Address
+                            </TableCell>
                             <TableCell sx={{ color: "white", textAlign: "center", width: "10%", py: 0.5, fontSize: "12px", border: `2px solid ${borderColor}` }}>
                                 Program
                             </TableCell>
@@ -1548,11 +1563,9 @@ th {
                             <TableCell sx={{ color: "white", textAlign: "center", width: "15%", py: 0.5, fontSize: "12px", border: `2px solid ${borderColor}` }}>
                                 Remarks
                             </TableCell>
-                            {/*
-                            <TableCell sx={{ color: "white", textAlign: "center", width: "8%", py: 0.5, fontSize: "12px", border: `2px solid ${borderColor}` }}>
+                            {/* <TableCell sx={{ color: "white", textAlign: "center", width: "8%", py: 0.5, fontSize: "12px", border: `2px solid ${borderColor}` }}>
                                 Registrar Status
-                            </TableCell>
-                            */}
+                            </TableCell> */}
                         </TableRow>
                     </TableHead>
                     {/* --- Confirmation Dialog --- */}
@@ -1608,7 +1621,7 @@ th {
                             >
 
                                 {/* # */}
-                                <TableCell sx={{ textAlign: "center", border: `2px solid ${borderColor}` }}>
+                                <TableCell sx={{ textAlign: "center", border: `2px solid ${borderColor}`, fontSize: "12px" }}>
                                     {index + 1}
                                 </TableCell>
 
@@ -1639,13 +1652,16 @@ th {
                                             setConfirmOpen(true);
                                         }}
                                         sx={{
-                                            color: "maroon",
-                                            "&.Mui-checked": { color: "maroon" },
-                                            transform: "scale(1.1)",
-                                            p: 0,
+                                            color: mainButtonColor,
+                                            "&.Mui-checked": { color: mainButtonColor },
+                                            width: 25,
+                                            height: 25,
+                                            padding: 0,
+                                            '& svg': { width: 25, height: 25 }, // ensures the check icon scales correctly
                                         }}
                                     />
                                 </TableCell>
+
 
                                 {/* Applicant ID */}
                                 <TableCell
@@ -1653,6 +1669,8 @@ th {
                                         textAlign: "center",
                                         border: `2px solid ${borderColor}`,
                                         cursor: "pointer",
+                                        color: "blue",
+                                        fontSize: "12px"
                                     }}
                                     onClick={() => handleRowClick(person.person_id)}
                                 >
@@ -1665,25 +1683,63 @@ th {
                                         textAlign: "left",
                                         border: `2px solid ${borderColor}`,
                                         cursor: "pointer",
-                                        color: "blue"
+                                        color: "blue",
+                                        fontSize: "12px"
                                     }}
                                     onClick={() => handleRowClick(person.person_id)}
                                 >
                                     {`${person.last_name}, ${person.first_name} ${person.middle_name ?? ""} ${person.extension ?? ""}`}
                                 </TableCell>
 
+                                <TableCell
+                                    sx={{
+                                        textAlign: "center",
+                                        border: `2px solid ${borderColor}`,
+                                        fontSize: "12px"
+                                    }}
+                                >
+                                    {(() => {
+                                        if (!person.birthOfDate) return ""; // handle null/undefined
+
+                                        const isoDate = person.birthOfDate.split("T")[0]; // get YYYY-MM-DD
+                                        const date = new Date(isoDate);
+
+                                        // If invalid date, just return raw string
+                                        if (isNaN(date.getTime())) return isoDate;
+
+                                        // Format nicely
+                                        return date.toLocaleDateString("en-US", {
+                                            year: "numeric",
+                                            month: "long",
+                                            day: "numeric",
+                                        });
+                                    })()}
+                                </TableCell>
+
+
+
+                                <TableCell
+                                    sx={{
+                                        textAlign: "center", border: `2px solid ${borderColor}`,
+                                        fontSize: "12px"
+                                    }}
+
+                                >
+                                    {person.emailAddress || ""}
+                                </TableCell>
+
                                 {/* Program */}
-                                <TableCell sx={{ textAlign: "center", border: `2px solid ${borderColor}` }}>
+                                <TableCell sx={{ textAlign: "center", border: `2px solid ${borderColor}`, fontSize: "12px" }}>
                                     {person.program_code || ""}
                                 </TableCell>
 
                                 {/* SHS GWA */}
-                                <TableCell sx={{ textAlign: "center", border: `2px solid ${borderColor}` }}>
+                                <TableCell sx={{ textAlign: "center", border: `2px solid ${borderColor}`, fontSize: "12px" }}>
                                     {person.generalAverage1}
                                 </TableCell>
 
                                 {/* Strand */}
-                                <TableCell sx={{ textAlign: "center", border: `2px solid ${borderColor}` }}>
+                                <TableCell sx={{ textAlign: "center", border: `2px solid ${borderColor}`, fontSize: "12px" }}>
                                     {person.strand}
                                 </TableCell>
 
@@ -1707,18 +1763,19 @@ th {
                                 </TableCell>
 
                                 {/* Status */}
-                                <TableCell sx={{ textAlign: "center", border: `2px solid ${borderColor}` }}>
+                                <TableCell sx={{ textAlign: "center", border: `2px solid ${borderColor}`, fontSize: "12px" }}>
                                     {getApplicantStatus(person)}
                                 </TableCell>
 
                                 {/* Docs Button */}
                                 <TableCell
                                     sx={{
-                                        border: `2px solid ${borderColor}`,
+                                        border: `2px solid black`,
                                         textAlign: "center",
                                         verticalAlign: "middle",
-                                        p: 0,
 
+
+                                        p: 0,
                                     }}
                                 >
                                     <Box
@@ -1728,6 +1785,8 @@ th {
                                             alignItems: "center",
                                             height: "100%",
                                             minHeight: "42px",
+                                            marginRight: "10px",
+                                            marginLeft: "10px",
                                         }}
                                     >
                                         <Button
@@ -1780,6 +1839,68 @@ th {
                                         </Button>
                                     </Box>
                                 </TableCell>
+                                {/*
+                                                                                           <TableCell sx={{ textAlign: "center", border: "2px solid maroon" }}>
+                                                                                               {person.registrar_status === 1 ? (
+                                                                                                   <Box
+                                                                                                       sx={{
+                                                                                                           background: "#4CAF50",
+                                                                                                           color: "white",
+                                                                                                           borderRadius: 1,
+                                                                                                           p: 0.5,
+                                                                                                       }}
+                                                                                                   >
+                                                                                                       <Typography sx={{ fontWeight: "bold" }}>Submitted</Typography>
+                                                                                                   </Box>
+                                                                                               ) : person.registrar_status === 0 ? (
+                                                                                                   <Box
+                                                                                                       sx={{
+                                                                                                           background: "#F44336",
+                                                                                                           color: "white",
+                                                                                                           borderRadius: 1,
+                                                                                                           p: 0.5,
+                                                                                                       }}
+                                                                                                   >
+                                                                                                       <Typography sx={{ fontWeight: "bold" }}>
+                                                                                                           Unsubmitted / Incomplete
+                                                                                                       </Typography>
+                                                                                                   </Box>
+                                                                                               ) : (
+                                                                                                   <Box display="flex" justifyContent="center" gap={1}>
+                                                                                                       <Button
+                                                                                                           variant="contained"
+                                                                                                           onClick={() => {
+                                                                                                               setConfirmMessage(
+                                                                                                                   "Are you sure you want to set Registrar Status to Submitted?"
+                                                                                                               );
+                                                                                                               setConfirmAction(() => async () => {
+                                                                                                                   await handleRegistrarStatusChange(person.person_id, 1);
+                                                                                                               });
+                                                                                                               setConfirmOpen(true);
+                                                                                                           }}
+                                                                                                           sx={{ backgroundColor: "green", color: "white" }}
+                                                                                                       >
+                                                                                                           Submitted
+                                                                                                       </Button>
+                                                                                                       <Button
+                                                                                                           variant="contained"
+                                                                                                           onClick={() => {
+                                                                                                               setConfirmMessage(
+                                                                                                                   "Are you sure you want to set Registrar Status to Unsubmitted?"
+                                                                                                               );
+                                                                                                               setConfirmAction(() => async () => {
+                                                                                                                   await handleRegistrarStatusChange(person.person_id, 0);
+                                                                                                               });
+                                                                                                               setConfirmOpen(true);
+                                                                                                           }}
+                                                                                                           sx={{ backgroundColor: "red", color: "white" }}
+                                                                                                       >
+                                                                                                           Unsubmitted
+                                                                                                       </Button>
+                                                                                                   </Box>
+                                                                                               )}
+                                                                                           </TableCell>
+                                                                                           */}
                             </TableRow>
                         ))}
                     </TableBody>
@@ -1898,6 +2019,179 @@ th {
 
                 </Table>
             </TableContainer>
+
+              <TableContainer component={Paper} sx={{ width: '100%', }}>
+                <Table size="small">
+                    <TableHead sx={{ backgroundColor: settings?.header_color || "#1976d2", color: "white" }}>
+                        <TableRow>
+                            <TableCell colSpan={10} sx={{ border: `2px solid ${borderColor}`, py: 0.5, backgroundColor: settings?.header_color || "#1976d2", color: "white" }}>
+                                <Box display="flex" justifyContent="space-between" alignItems="center">
+                                    {/* Left: Total Count */}
+                                    <Typography fontSize="14px" fontWeight="bold" color="white">
+                                        Total Applicants: {filteredPersons.length}
+                                    </Typography>
+
+                                    {/* Right: Pagination Controls */}
+                                    <Box display="flex" alignItems="center" gap={1}>
+                                        {/* First & Prev */}
+                                        <Button
+                                            onClick={() => setCurrentPage(1)}
+                                            disabled={currentPage === 1}
+                                            variant="outlined"
+                                            size="small"
+                                            sx={{
+                                                minWidth: 80,
+                                                color: "white",
+                                                borderColor: "white",
+                                                backgroundColor: "transparent",
+                                                '&:hover': {
+                                                    borderColor: 'white',
+                                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                                },
+                                                '&.Mui-disabled': {
+                                                    color: "white",
+                                                    borderColor: "white",
+                                                    backgroundColor: "transparent",
+                                                    opacity: 1,
+                                                }
+                                            }}
+                                        >
+                                            First
+                                        </Button>
+
+                                        <Button
+                                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                            disabled={currentPage === 1}
+                                            variant="outlined"
+                                            size="small"
+                                            sx={{
+                                                minWidth: 80,
+                                                color: "white",
+                                                borderColor: "white",
+                                                backgroundColor: "transparent",
+                                                '&:hover': {
+                                                    borderColor: 'white',
+                                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                                },
+                                                '&.Mui-disabled': {
+                                                    color: "white",
+                                                    borderColor: "white",
+                                                    backgroundColor: "transparent",
+                                                    opacity: 1,
+                                                }
+                                            }}
+                                        >
+                                            Prev
+                                        </Button>
+
+
+                                        {/* Page Dropdown */}
+                                        <FormControl size="small" sx={{ minWidth: 80 }}>
+                                            <Select
+                                                value={currentPage}
+                                                onChange={(e) => setCurrentPage(Number(e.target.value))}
+                                                displayEmpty
+                                                sx={{
+                                                    fontSize: '12px',
+                                                    height: 36,
+                                                    color: 'white',
+                                                    border: '1px solid white',
+                                                    backgroundColor: 'transparent',
+                                                    '.MuiOutlinedInput-notchedOutline': {
+                                                        borderColor: 'white',
+                                                    },
+                                                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                                                        borderColor: 'white',
+                                                    },
+                                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                                        borderColor: 'white',
+                                                    },
+                                                    '& svg': {
+                                                        color: 'white', // dropdown arrow icon color
+                                                    }
+                                                }}
+                                                MenuProps={{
+                                                    PaperProps: {
+                                                        sx: {
+                                                            maxHeight: 200,
+                                                            backgroundColor: '#fff', // dropdown background
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                {Array.from({ length: totalPages }, (_, i) => (
+                                                    <MenuItem key={i + 1} value={i + 1}>
+                                                        Page {i + 1}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+
+                                        <Typography fontSize="11px" color="white">
+                                            of {totalPages} page{totalPages > 1 ? 's' : ''}
+                                        </Typography>
+
+
+                                        {/* Next & Last */}
+                                        <Button
+                                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                            disabled={currentPage === totalPages}
+                                            variant="outlined"
+                                            size="small"
+                                            sx={{
+                                                minWidth: 80,
+                                                color: "white",
+                                                borderColor: "white",
+                                                backgroundColor: "transparent",
+                                                '&:hover': {
+                                                    borderColor: 'white',
+                                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                                },
+                                                '&.Mui-disabled': {
+                                                    color: "white",
+                                                    borderColor: "white",
+                                                    backgroundColor: "transparent",
+                                                    opacity: 1,
+                                                }
+                                            }}
+                                        >
+                                            Next
+                                        </Button>
+
+                                        <Button
+                                            onClick={() => setCurrentPage(totalPages)}
+                                            disabled={currentPage === totalPages}
+                                            variant="outlined"
+                                            size="small"
+                                            sx={{
+                                                minWidth: 80,
+                                                color: "white",
+                                                borderColor: "white",
+                                                backgroundColor: "transparent",
+                                                '&:hover': {
+                                                    borderColor: 'white',
+                                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                                },
+                                                '&.Mui-disabled': {
+                                                    color: "white",
+                                                    borderColor: "white",
+                                                    backgroundColor: "transparent",
+                                                    opacity: 1,
+                                                }
+                                            }}
+                                        >
+                                            Last
+                                        </Button>
+                                    </Box>
+                                </Box>
+                            </TableCell>
+                        </TableRow>
+                    </TableHead>
+                </Table>
+            </TableContainer>
+
+
+
 
             <Snackbar
                 open={snack.open}

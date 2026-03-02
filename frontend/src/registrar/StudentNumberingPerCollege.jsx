@@ -106,48 +106,17 @@ const StudentNumbering = () => {
     }, []);
 
     const tabs = [
-      { label: "Admission Process For College", to: "/applicant_list", icon: <SchoolIcon fontSize="large" /> },
-      { label: "Applicant Form", to: "/registrar_dashboard1", icon: <AssignmentIcon fontSize="large" /> },
-      { label: "Student Requirements", to: "/registrar_requirements", icon: <AssignmentTurnedInIcon fontSize="large" /> },
-      { label: "Qualifying / Interview Exam Score", to: "/qualifying_interview_exam_scores", icon: <ScoreIcon fontSize="large" /> },
-      { label: "Student Numbering", to: "/student_numbering_per_college", icon: <DashboardIcon fontSize="large" /> },
-      { label: "Course Tagging", to: "/course_tagging", icon: <MenuBookIcon fontSize="large" /> },
-      { label: "Certificate of Registration", to: "/search_cor_for_college", icon: <SearchIcon fontSize="large" /> },
-  
+        { label: "Admission Process For College", to: "/applicant_list", icon: <SchoolIcon fontSize="large" /> },
+        { label: "Applicant Form", to: "/registrar_dashboard1", icon: <AssignmentIcon fontSize="large" /> },
+        { label: "Student Requirements", to: "/registrar_requirements", icon: <AssignmentTurnedInIcon fontSize="large" /> },
+        { label: "Qualifying / Interview Exam Score", to: "/qualifying_interview_exam_scores", icon: <ScoreIcon fontSize="large" /> },
+        { label: "Student Numbering", to: "/student_numbering_per_college", icon: <DashboardIcon fontSize="large" /> },
+        { label: "Course Tagging", to: "/course_tagging", icon: <MenuBookIcon fontSize="large" /> },
+        { label: "Certificate of Registration", to: "/search_cor_for_college", icon: <SearchIcon fontSize="large" /> },
+
 
 
     ];
-
-    const queryParams = new URLSearchParams(location.search);
-
-    useEffect(() => {
-        const queryParams = new URLSearchParams(location.search);
-        const personIdFromUrl = queryParams.get("person_id");
-
-        if (!personIdFromUrl) return;
-
-        // fetch info of that person
-        axios
-            .get(`${API_BASE_URL}/api/person_with_applicant/${personIdFromUrl}`)
-            .then((res) => {
-                if (res.data?.applicant_number) {
-
-                    // AUTO-INSERT applicant_number into search bar
-                    setSearchQuery(res.data.applicant_number);
-
-                    // If you have a fetchUploads() or fetchExamScore() — call it
-                    if (typeof fetchUploadsByApplicantNumber === "function") {
-                        fetchUploadsByApplicantNumber(res.data.applicant_number);
-                    }
-
-                    if (typeof fetchApplicants === "function") {
-                        fetchApplicants();
-                    }
-                }
-            })
-            .catch((err) => console.error("Auto search failed:", err));
-    }, [location.search]);
-
 
 
     const navigate = useNavigate();
@@ -555,7 +524,7 @@ const StudentNumbering = () => {
 
     // Put this at the very bottom before the return 
     if (loading || hasAccess === null) {
-       return <LoadingOverlay open={loading} message="Loading..." />;
+        return <LoadingOverlay open={loading} message="Loading..." />;
     }
 
     if (!hasAccess) {
@@ -607,7 +576,7 @@ const StudentNumbering = () => {
                 <DialogActions>
                     <Button
                         variant="contained"
-                        sx={{ backgroundColor: mainButtonColor, color: "white" }}
+
                         onClick={handleAuthSubmit}
                     >
                         Yes, I Confirm
@@ -619,7 +588,7 @@ const StudentNumbering = () => {
     }
 
     return (
-            <Box sx={{ height: "calc(100vh - 150px)", overflowY: "auto", paddingRight: 1, backgroundColor: "transparent", mt: 1, padding: 2 }}>
+        <Box sx={{ height: "calc(100vh - 150px)", overflowY: "auto", paddingRight: 1, backgroundColor: "transparent", mt: 1, padding: 2 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                 <Typography variant="h4" fontWeight="bold" sx={{ color: titleColor }}>
                     ASSIGN STUDENT NUMBER FOR COLLEGES
@@ -649,14 +618,15 @@ const StudentNumbering = () => {
                 />
             </Box>
             <hr style={{ border: "1px solid #ccc", width: "100%" }} />
-
+            <br />
+            <br />
             <Box
                 sx={{
                     display: "flex",
                     justifyContent: "space-between",
                     flexWrap: "nowrap", // ❌ prevent wrapping
                     width: "100%",
-                    mt: 3,
+
                     gap: 2,
                 }}
             >
@@ -830,8 +800,7 @@ const StudentNumbering = () => {
                                         <MenuItem key={dep.dprtmnt_id} value={dep.dprtmnt_name}>
                                             {dep.dprtmnt_name} ({dep.dprtmnt_code})
                                         </MenuItem>
-                                    ))}
-                                </Select>
+                                    ))}                                </Select>
                             </FormControl>
                         </Box>
 
@@ -1081,12 +1050,23 @@ const StudentNumbering = () => {
                             <Typography style={{ fontSize: "16px" }}>
                                 <strong>Applicant ID:</strong> {selectedPerson.applicant_number || "N/A"} <br />
                                 <strong>Name:</strong> {selectedPerson.first_name} {selectedPerson.middle_name} {selectedPerson.last_name}<br />
+                                <strong>Birth Of Date:</strong>{" "}
+                                {selectedPerson.birthOfDate
+                                    ? new Date(selectedPerson.birthOfDate).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                    })
+                                    : "N/A"}
+                                <br />
+                                <strong>Age:</strong> {selectedPerson.age}<br />
+                                <strong>Program Applied:</strong> ({selectedPerson.program_code}){selectedPerson.program_description}{selectedPerson.major}<br />
                                 <strong>Email Address:</strong> {selectedPerson.emailAddress}
                             </Typography>
 
                             <Button
                                 variant="contained"
-                                sx={{ mt: 2, backgroundColor: '#800000', color: 'white' }}
+                                sx={{ marginTop: "15px" }}
                                 onClick={confirmAssignNumber}   // 👈 directly run the assign logic
                             >
                                 Assign Student Number
@@ -1111,6 +1091,181 @@ const StudentNumbering = () => {
                 </Box>
             </Box>
 
+            <TableContainer component={Paper} sx={{ width: '100%' }}>
+                <Table size="small">
+                    <TableHead sx={{ backgroundColor: settings?.header_color || "#1976d2", color: "white" }}>
+                        <TableRow>
+                            <TableCell
+                                colSpan={10}
+                                sx={{
+                                    border: `2px solid ${borderColor}`,
+                                    py: 0.5,
+                                    backgroundColor: settings?.header_color || "#1976d2",
+                                    color: "white"
+                                }}
+                            >
+                                <Box display="flex" justifyContent="space-between" alignItems="center" >
+                                    {/* Left: Applicant List Count */}
+                                    <Typography fontSize="14px" fontWeight="bold" color="white">
+                                        Total Applicant's: {filteredPersons.length}
+                                    </Typography>
+
+                                    {/* Right: Pagination Controls */}
+                                    <Box display="flex" alignItems="center" gap={1}>
+                                        {/* First & Prev */}
+                                        <Button
+                                            onClick={() => setCurrentPage(1)}
+                                            disabled={currentPage === 1}
+                                            variant="outlined"
+                                            size="small"
+                                            sx={{
+                                                minWidth: 80,
+                                                color: "white",
+                                                borderColor: "white",
+                                                backgroundColor: "transparent",
+                                                '&:hover': {
+                                                    borderColor: 'white',
+                                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                                },
+                                                '&.Mui-disabled': {
+                                                    color: "white",
+                                                    borderColor: "white",
+                                                    backgroundColor: "transparent",
+                                                    opacity: 1,
+                                                },
+                                            }}
+                                        >
+                                            First
+                                        </Button>
+
+                                        <Button
+                                            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                                            disabled={currentPage === 1}
+                                            variant="outlined"
+                                            size="small"
+                                            sx={{
+                                                minWidth: 80,
+                                                color: "white",
+                                                borderColor: "white",
+                                                backgroundColor: "transparent",
+                                                '&:hover': {
+                                                    borderColor: 'white',
+                                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                                },
+                                                '&.Mui-disabled': {
+                                                    color: "white",
+                                                    borderColor: "white",
+                                                    backgroundColor: "transparent",
+                                                    opacity: 1,
+                                                },
+                                            }}
+                                        >
+                                            Prev
+                                        </Button>
+
+                                        {/* Page Dropdown */}
+                                        <FormControl size="small" sx={{ minWidth: 80 }}>
+                                            <Select
+                                                value={currentPage}
+                                                onChange={(e) => setCurrentPage(Number(e.target.value))}
+                                                displayEmpty
+                                                sx={{
+                                                    fontSize: '12px',
+                                                    height: 36,
+                                                    color: 'white',
+                                                    border: '1px solid white',
+                                                    backgroundColor: 'transparent',
+                                                    '.MuiOutlinedInput-notchedOutline': {
+                                                        borderColor: 'white',
+                                                    },
+                                                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                                                        borderColor: 'white',
+                                                    },
+                                                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                                                        borderColor: 'white',
+                                                    },
+                                                    '& svg': {
+                                                        color: 'white',
+                                                    }
+                                                }}
+                                                MenuProps={{
+                                                    PaperProps: {
+                                                        sx: {
+                                                            maxHeight: 200,
+                                                            backgroundColor: '#fff',
+                                                        }
+                                                    }
+                                                }}
+                                            >
+                                                {Array.from({ length: totalPages }, (_, i) => (
+                                                    <MenuItem key={i + 1} value={i + 1}>
+                                                        Page {i + 1}
+                                                    </MenuItem>
+                                                ))}
+                                            </Select>
+                                        </FormControl>
+
+                                        <Typography fontSize="11px" color="white">
+                                            of {totalPages} page{totalPages > 1 ? 's' : ''}
+                                        </Typography>
+
+                                        {/* Next & Last */}
+                                        <Button
+                                            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                                            disabled={currentPage === totalPages}
+                                            variant="outlined"
+                                            size="small"
+                                            sx={{
+                                                minWidth: 80,
+                                                color: "white",
+                                                borderColor: "white",
+                                                backgroundColor: "transparent",
+                                                '&:hover': {
+                                                    borderColor: 'white',
+                                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                                },
+                                                '&.Mui-disabled': {
+                                                    color: "white",
+                                                    borderColor: "white",
+                                                    backgroundColor: "transparent",
+                                                    opacity: 1,
+                                                },
+                                            }}
+                                        >
+                                            Next
+                                        </Button>
+
+                                        <Button
+                                            onClick={() => setCurrentPage(totalPages)}
+                                            disabled={currentPage === totalPages}
+                                            variant="outlined"
+                                            size="small"
+                                            sx={{
+                                                minWidth: 80,
+                                                color: "white",
+                                                borderColor: "white",
+                                                backgroundColor: "transparent",
+                                                '&:hover': {
+                                                    borderColor: 'white',
+                                                    backgroundColor: 'rgba(255,255,255,0.1)',
+                                                },
+                                                '&.Mui-disabled': {
+                                                    color: "white",
+                                                    borderColor: "white",
+                                                    backgroundColor: "transparent",
+                                                    opacity: 1,
+                                                },
+                                            }}
+                                        >
+                                            Last
+                                        </Button>
+                                    </Box>
+                                </Box>
+                            </TableCell>
+                        </TableRow>
+                    </TableHead>
+                </Table>
+            </TableContainer>
 
 
 

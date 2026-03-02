@@ -570,7 +570,7 @@ const AssignEntranceExam = () => {
               }}
             >
               <TableCell
-                colSpan={9}
+                colSpan={10}
                 sx={{
                   border: `2px solid ${borderColor}`,
                   py: 1,
@@ -684,6 +684,7 @@ const AssignEntranceExam = () => {
             {/* COLUMN HEADERS */}
             <TableRow>
               {[
+                "ID",
                 "Campus",
                 "Date",
                 "Building",
@@ -710,8 +711,9 @@ const AssignEntranceExam = () => {
           </TableHead>
 
           <TableBody>
-            {paginatedSchedules.map((s) => (
+            {paginatedSchedules.map((s, index) => (
               <TableRow key={`${s.id}-${s.day_description}`}>
+                <TableCell align="center" sx={cellStyle}>{index + 1}</TableCell>
                 <TableCell align="center" sx={cellStyle}>{s.branch}</TableCell>
                 <TableCell align="center" sx={cellStyle}>{formatDate(s.day_description)}</TableCell>
                 <TableCell align="center" sx={cellStyle}>{s.building_description}</TableCell>
@@ -720,7 +722,7 @@ const AssignEntranceExam = () => {
                 <TableCell align="center" sx={cellStyle}>{formatTime(s.end_time)}</TableCell>
                 <TableCell align="center" sx={cellStyle} >{s.proctor}</TableCell>
                 <TableCell align="center" sx={cellStyle}>{s.room_quota}</TableCell>
-                <TableCell align="center">
+                <TableCell align="center" sx={cellStyle}>
                   <Button
                     size="small"
                     variant="contained"
