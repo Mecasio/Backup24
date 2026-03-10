@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { SettingsContext } from "../App";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -123,7 +123,6 @@ const SideBar = ({ setIsAuthenticated, profileImage, setProfileImage }) => {
   const [hasAccess, setHasAccess] = useState(null);
   const [loading, setLoading] = useState(false);
 
-
   // Convert access list object to Set()
   function accessObjToSet(userAccessList) {
     const set = new Set();
@@ -182,7 +181,6 @@ const SideBar = ({ setIsAuthenticated, profileImage, setProfileImage }) => {
 
     setEmployeeID(empID);
     fetchUserAccessList(empID);
-
   }, []);
 
   // ✅ ACCESS LOADER
@@ -205,7 +203,6 @@ const SideBar = ({ setIsAuthenticated, profileImage, setProfileImage }) => {
 
   const groupedMenu = [
     {
-
       items: [
         { title: "Admission Management", path: "/admission_dashboard", icon: Business, page_id: 92 },
         { title: "Course Management", path: "/course_management", icon: LibraryBooks, page_id: 93 },
@@ -217,68 +214,23 @@ const SideBar = ({ setIsAuthenticated, profileImage, setProfileImage }) => {
     },
   ];
 
-  const ALL = Array.from({ length: 100 }, (_, i) => i + 1);
-
-  const ROLE_LABEL = {
-    admission: "Admission Officer",
-    enrollment: "Enrollment Officer",
-    clinic: "Clinic",
-    registrar: "Registrar",
-    superadmin: "Administrator"
-  };
-
-  const ROLE_PAGE_ACCESS = {
-    admission: [103, 92, 96, 73, 1, 2, 3, 4, 5, 7, 8, 9, 11, 33, 48, 52, 61, 66, 98, 115, 118],
-    enrollment: [102, 96, 73, 6, 10, 12, 17, 36, 37, 43, 44, 45, 46, 47, 49, 60, 92, 108, 109],
-    clinic: [101, 92, 96, 73, 24, 25, 26, 27, 28, 29, 30, 31, 19, 32],
-    registrar: [80, 104, 38, 73, 39, 40, 41, 42, 56, 13, 50, 62, 96, 92, 59, 105, 15, 101],
-    superadmin: ALL
-  };
-
-  function determineRoleFromPageAccess(accessList, ROLE_PAGE_ACCESS) {
-    // Sort arrays to ensure order doesn't affect comparison
-    const sortedAccess = [...accessList].sort((a, b) => a - b);
-
-    for (let role in ROLE_PAGE_ACCESS) {
-      const allowedPages = [...ROLE_PAGE_ACCESS[role]].sort((a, b) => a - b);
-
-      // Strict match: lengths must match and all elements must match
-      if (
-        sortedAccess.length === allowedPages.length &&
-        sortedAccess.every((pageId, idx) => pageId === allowedPages[idx])
-      ) {
-        return ROLE_LABEL[role];
-      }
-    }
-
-    return "Administrator"; // No exact match
-  }
-
-
-  const [determinedRole, setDeterminedRole] = useState("");
+  const [accessDescription, setAccessDescription] = useState("");
 
   useEffect(() => {
     if (!employeeID) return;
 
-    const fetchAccessAndDetermineRole = async () => {
+    const fetchAccessDescription = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/api/employee/${employeeID}`);
-
-        if (res.data.success) {
-          const accessList = res.data.accessList;
-          const role = determineRoleFromPageAccess(
-            accessList,
-            ROLE_PAGE_ACCESS
-          );
-
-          setDeterminedRole(role);
-        }
+        const res = await axios.get(
+          `${API_BASE_URL}/api/access_level/${employeeID}`
+        );
+        setAccessDescription(res.data?.access_description || "");
       } catch (error) {
-        console.error("Error determining role:", error);
+        console.error("Error fetching access level:", error);
       }
     };
 
-    fetchAccessAndDetermineRole();
+    fetchAccessDescription();
   }, [employeeID]);
 
   const Logout = () => {
@@ -629,7 +581,7 @@ const SideBar = ({ setIsAuthenticated, profileImage, setProfileImage }) => {
                     {personData.fname} {personData.lname}
                   </Typography>
                   <Typography variant="body2" color="maroon">
-                    {determinedRole}
+                    {accessDescription || "Administrator"}
                   </Typography>
                 </>
               ) : (

@@ -111,8 +111,7 @@ const AccountDashboard = () => {
       label: "SETTINGS",
       items: [
         { title: "SETTINGS", path: "/registrar_reset_password", icon: Settings, page_id: 73 },
-        { title: "STUDENT GRADE FILE", path: "/student_grade_file", icon: Settings, page_id: 115 },
-        { title: "SEARCH CERTIFICATE OF REGISTRATION", path: "/search_cor", icon: Search, page_id: 56 },
+        { title: "STUDENT GRADE FILE", path: "/student_grade_file", icon: Settings, page_id: 126 }
       ],
     },
     {

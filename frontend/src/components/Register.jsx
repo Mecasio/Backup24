@@ -335,12 +335,11 @@ const Register = () => {
                   type="text"
                   placeholder="Enter your last name"
                   value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
+                  onChange={(e) => setLastName(e.target.value.toUpperCase())}
                   onKeyDown={handleKeyDownRegister}
                   className="border"
                   style={{
                     paddingLeft: "2.5rem",
-                    textTransform: "Uppercase",
                     border: `2px solid ${borderColor}`,
                   }}
                 />
@@ -360,12 +359,11 @@ const Register = () => {
                   type="text"
                   placeholder="Enter your first name"
                   value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
+                  onChange={(e) => setFirstName(e.target.value.toUpperCase())}
                   onKeyDown={handleKeyDownRegister}
                   className="border"
                   style={{
                     paddingLeft: "2.5rem",
-                    textTransform: "Uppercase",
                     border: `2px solid ${borderColor}`,
                   }}
                 />
@@ -385,12 +383,11 @@ const Register = () => {
                   type="text"
                   placeholder="Enter your middle name"
                   value={middleName}
-                  onChange={(e) => setMiddleName(e.target.value)}
+                  onChange={(e) => setMiddleName(e.target.value.toUpperCase())}
                   onKeyDown={handleKeyDownRegister}
                   className="border"
                   style={{
                     paddingLeft: "2.5rem",
-                    textTransform: "Uppercase",
                     border: `2px solid ${borderColor}`,
                   }}
                 />
@@ -753,7 +750,7 @@ const Register = () => {
               variant="contained"
               onClick={() => setOpenReminder(false)}
               sx={{
-              
+
                 fontWeight: "bold",
                 textTransform: "none",
                 minWidth: "120px",

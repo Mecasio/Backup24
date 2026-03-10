@@ -8,14 +8,16 @@ const { db, db3 } = require('../database/database');
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-const ROLE_PAGE_ACCESS = {
-  admission: [103, 92, 96, 73, 1, 2, 3, 4, 5, 7, 8, 9, 11, 33, 48, 52, 61, 66, 98,],
-  enrollment: [102, 96, 73, 6, 10, 12, 17, 36, 37, 43, 44, 45, 46, 47, 49, 60, 92, 108, 109],
-  clinic: [101, 92, 96, 73, 24, 25, 26, 27, 28, 29, 30, 31, 19, 32],
-  registrar: [80, 104, 38, 73, 39, 40, 41, 42, 56, 13, 50, 62, 96, 92, 59, 105, 15, 101],
-  head: [102, 94, 96, 73, 6, 10, 12, 17, 36, 37, 43, 44, 45, 46, 47, 49, 60, 92, 108],
-  dean: [102, 94, 96, 73, 6, 10, 12, 17, 36, 37, 43, 44, 45, 46, 47, 49, 60, 92, 108],
-  superadmin: "ALL"
+const parseAccessPages = (rawAccessPage) => {
+  if (!rawAccessPage) return [];
+  if (Array.isArray(rawAccessPage)) return rawAccessPage;
+
+  try {
+    const parsed = JSON.parse(rawAccessPage);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (err) {
+    return [];
+  }
 };
 
 router.get("/get_employee", async (req, res) => {
@@ -43,17 +45,17 @@ router.post("/register_registrar", upload.single("profile_picture"), async (req,
       last_name,
       middle_name,
       first_name,
-      role,
       email,
       password,
       status,
-      dprtmnt_id
+      dprtmnt_id,
+      access_level
     } = req.body;
 
     const file = req.file;
 
     // 🧩 Validate required fields
-    if (!employee_id || !last_name || !first_name || !role || !email || !password) {
+    if (!employee_id || !last_name || !first_name || !email || !password || !access_level) {
       return res.status(400).json({ message: "All required fields must be filled" });
     }
 
@@ -108,8 +110,8 @@ router.post("/register_registrar", upload.single("profile_picture"), async (req,
     // 💾 Save registrar
     await db3.query(
       `INSERT INTO user_accounts 
-       (person_id, employee_id, last_name, middle_name, first_name, role, email, password, status, dprtmnt_id, profile_picture)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (person_id, employee_id, last_name, middle_name, first_name, role, email, password, status, dprtmnt_id, profile_picture, access_level)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         person_id,
         employee_id,
@@ -121,24 +123,30 @@ router.post("/register_registrar", upload.single("profile_picture"), async (req,
         hashedPassword,
         status || 1,
         deptValue,
-        profilePicName
+        profilePicName,
+        Number(access_level)
       ]
     );
 
-    // 📄 Page access
-    let pageIds = ROLE_PAGE_ACCESS[role];
+    // 📄 Page access from access_table
+    const [accessRows] = await db3.query(
+      "SELECT access_page FROM access_table WHERE access_id = ?",
+      [access_level]
+    );
 
-    if (role === "superadmin") {
-      const [allPages] = await db3.query("SELECT id FROM page_table");
-      pageIds = allPages.map(p => p.id);
+    if (!accessRows.length) {
+      return res.status(400).json({ message: "Invalid access level selected" });
     }
 
-    const values = pageIds.map(pageId => [1, pageId, employee_id]);
+    const pageIds = parseAccessPages(accessRows[0].access_page);
+    if (pageIds.length) {
+      const values = pageIds.map(pageId => [1, pageId, employee_id]);
 
-    await db3.query(
-      "INSERT INTO page_access (page_privilege, page_id, user_id) VALUES ?",
-      [values]
-    );
+      await db3.query(
+        "INSERT INTO page_access (page_privilege, page_id, user_id) VALUES ?",
+        [values]
+      );
+    }
 
     res.status(201).json({ message: "Registrar account created successfully!" });
 
@@ -241,7 +249,7 @@ router.put("/update_registrar/:id", upload.single("profile_picture"), async (req
 
     await db3.query(
       `UPDATE user_accounts 
-       SET employee_id=?, last_name=?, middle_name=?, first_name=?, role=?, email=?, status=?, dprtmnt_id=?, profile_picture=?
+       SET employee_id=?, last_name=?, middle_name=?, first_name=?, role=?, email=?, status=?, dprtmnt_id=?, profile_picture=?, access_level=?
        WHERE id=?`,
       [
         data.employee_id || current.employee_id,
@@ -253,9 +261,34 @@ router.put("/update_registrar/:id", upload.single("profile_picture"), async (req
         data.status ?? current.status,
         deptValue,
         finalFilename,
+        data.access_level ? Number(data.access_level) : current.access_level,
         id
       ]
     );
+
+    if (data.access_level) {
+      const newEmployeeId = data.employee_id || current.employee_id;
+      const [accessRows] = await db3.query(
+        "SELECT access_page FROM access_table WHERE access_id = ?",
+        [data.access_level]
+      );
+
+      if (accessRows.length) {
+        const pageIds = parseAccessPages(accessRows[0].access_page);
+
+        await db3.query("DELETE FROM page_access WHERE user_id = ?", [
+          newEmployeeId,
+        ]);
+
+        if (pageIds.length) {
+          const values = pageIds.map((pageId) => [1, pageId, newEmployeeId]);
+          await db3.query(
+            "INSERT INTO page_access (page_privilege, page_id, user_id) VALUES ?",
+            [values]
+          );
+        }
+      }
+    }
 
     res.json({
       success: true,

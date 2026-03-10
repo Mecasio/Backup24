@@ -133,6 +133,7 @@ const RegisterRegistrar = () => {
     };
 
     const [department, setDepartment] = useState([]);
+    const [accessLevels, setAccessLevels] = useState([]);
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
     const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -148,11 +149,11 @@ const RegisterRegistrar = () => {
         last_name: "",
         middle_name: "",
         first_name: "",
-        role: "",
         email: "",
         password: "",
         status: "",
         dprtmnt_id: "",
+        access_level: "",
         profile_picture: null, // ✅ holds the uploaded file
         preview: "", // ✅ for preview URL
 
@@ -201,6 +202,7 @@ const RegisterRegistrar = () => {
     useEffect(() => {
         fetchDepartments();
         fetchRegistrars();
+        fetchAccessLevels();
     }, []);
 
     // 📥 Fetch Departments
@@ -218,66 +220,21 @@ const RegisterRegistrar = () => {
         try {
             const res = await axios.get(`${API_BASE_URL}/api/registrars`);
             setRegistrars(res.data);
-            determineRolesForRegistrars(res.data);
         } catch (err) {
             console.error("❌ Registrar fetch error:", err);
             setErrorMessage("Failed to load registrar accounts");
         }
     };
 
-    const ALL = Array.from({ length: 100 }, (_, i) => i + 1);
-
-    const ROLE_LABEL = {
-        admission: "Admission Officer",
-        enrollment: "Enrollment Officer",
-        clinic: "Clinic",
-        registrar: "Registrar",
-        head: "Department Head",
-        dean: "Department Dean",
-        superadmin: "Administrator"
-    };
-
-    const ROLE_PAGE_ACCESS = {
-        admission: [103, 92, 96, 73, 1, 2, 3, 4, 5, 7, 8, 9, 11, 33, 48, 52, 61, 66, 98, 115, 118],
-        enrollment: [102, 96, 73, 6, 10, 12, 17, 36, 37, 43, 44, 45, 46, 47, 49, 60, 92, 108, 109],
-        clinic: [101, 92, 96, 73, 24, 25, 26, 27, 28, 29, 30, 31, 19, 32],
-        registrar: [80, 104, 38, 73, 39, 40, 41, 42, 56, 13, 50, 62, 96, 92, 59, 105, 15, 101],
-        head: [102, 94, 96, 73, 6, 10, 12, 17, 36, 37, 43, 44, 45, 46, 47, 49, 60, 92, 108],
-        dean: [102, 94, 96, 73, 6, 10, 12, 17, 36, 37, 43, 44, 45, 46, 47, 49, 60, 92, 108],
-        superadmin: ALL,
-    };
-
-    function determineRoleFromPageAccess(accessList, ROLE_PAGE_ACCESS) {
-        // Sort arrays to ensure order doesn't affect comparison
-        const sortedAccess = [...accessList].sort((a, b) => a - b);
-
-        for (let role in ROLE_PAGE_ACCESS) {
-            const allowedPages = [...ROLE_PAGE_ACCESS[role]].sort((a, b) => a - b);
-
-            // Strict match: lengths must match and all elements must match
-            if (
-                sortedAccess.length === allowedPages.length &&
-                sortedAccess.every((pageId, idx) => pageId === allowedPages[idx])
-            ) {
-                return ROLE_LABEL[role];
-            }
+    const fetchAccessLevels = async () => {
+        try {
+            const res = await axios.get(`${API_BASE_URL}/api/access_table`);
+            setAccessLevels(res.data || []);
+        } catch (err) {
+            console.error("❌ Access level fetch error:", err);
+            setErrorMessage("Failed to load access levels");
         }
-
-        return "Administrator"; // No exact match
-    }
-
-    const [determinedRoles, setDeterminedRoles] = useState({});
-
-    const determineRolesForRegistrars = (registrars) => {
-        const rolesMap = {};
-
-        registrars.forEach(r => {
-            rolesMap[r.employee_id] = r.role; // 🔥 USE DB ROLE DIRECTLY
-        });
-
-        setDeterminedRoles(rolesMap);
     };
-
 
     // Handle form field changes
     const handleChange = (e) => {
@@ -299,6 +256,7 @@ const RegisterRegistrar = () => {
             // Ensure numbers
             if (form.dprtmnt_id) fd.set("dprtmnt_id", Number(form.dprtmnt_id));
             if (form.status) fd.set("status", Number(form.status));
+            if (form.access_level) fd.set("access_level", Number(form.access_level));
 
             // Debug
             for (let pair of fd.entries()) console.log(pair[0], pair[1]);
@@ -358,9 +316,9 @@ const RegisterRegistrar = () => {
             last_name: r.last_name || "",
             email: r.email || "",
             password: "",
-            role: r.role,
             status: Number(r.status), // ✅ ensure numeric
             dprtmnt_id: r.dprtmnt_id || "",
+            access_level: r.access_level || "",
         });
         setOpenDialog(true);
     };
@@ -639,11 +597,11 @@ const RegisterRegistrar = () => {
                                                 last_name: "",
                                                 middle_name: "",
                                                 first_name: "",
-                                                role: "",
                                                 email: "",
                                                 password: "",
                                                 status: "",
                                                 dprtmnt_id: "",
+                                                access_level: "",
                                             });
                                             setOpenDialog(true);
                                         }}
@@ -730,7 +688,7 @@ const RegisterRegistrar = () => {
                                 "Full Name",
                                 "Email",
                                 "Department",
-                                "Position",
+                                "Access Level",
                                 "Actions",
                                 "Status",
 
@@ -782,7 +740,7 @@ const RegisterRegistrar = () => {
                                     </TableCell>
 
                                     <TableCell sx={{ textAlign: "center", border: `2px solid ${borderColor}` }}>
-                                        {determinedRoles[r.employee_id]}
+                                        {r.access_description || "N/A"}
                                     </TableCell>
 
 
@@ -961,16 +919,17 @@ const RegisterRegistrar = () => {
                             </Select>
                         </FormControl>
                         <FormControl fullWidth>
-                            <InputLabel id="role-select-label">Select Role</InputLabel>
+                            <InputLabel id="access-level-select-label">Access Level</InputLabel>
                             <Select
-                                labelId="role-select-label"
-                                value={form.role}
-                                label="Select Role"
-                                onChange={(e) => setForm({ ...form, role: e.target.value })}
+                                labelId="access-level-select-label"
+                                value={form.access_level}
+                                label="Access Level"
+                                onChange={(e) => setForm({ ...form, access_level: e.target.value })}
                             >
-                                {Object.keys(ROLE_PAGE_ACCESS).map((roleKey) => (
-                                    <MenuItem key={roleKey} value={roleKey}>
-                                        {roleKey.toUpperCase()}
+                                <MenuItem value="">Select Access Level</MenuItem>
+                                {accessLevels.map((access) => (
+                                    <MenuItem key={access.access_id} value={access.access_id}>
+                                        {access.access_description}
                                     </MenuItem>
                                 ))}
                             </Select>

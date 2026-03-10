@@ -26,20 +26,12 @@ import {
   Snackbar,
   Alert,
   DialogActions,
-  Switch
+  Switch,
 } from "@mui/material";
 import Unauthorized from "../components/Unauthorized";
 import LoadingOverlay from "../components/LoadingOverlay";
 import API_BASE_URL from "../apiConfig";
 import SearchIcon from "@mui/icons-material/Search";
-
-const ROLE_LABEL = {
-  admission: "Admission Officer",
-  enrollment: "Enrollment Officer",
-  clinic: "Clinic Staff",
-  registrar: "Registrar",
-  superadmin: "Administrator",
-};
 
 const UserPageAccess = () => {
   const settings = useContext(SettingsContext);
@@ -62,7 +54,10 @@ const UserPageAccess = () => {
   const [pageAccess, setPageAccess] = useState({});
   const [userRole, setUserRole] = useState("");
   const [openModal, setOpenModal] = useState(false);
-
+  const [openCreateModal, setOpenCreateModal] = useState(false);
+  const [accessDescription, setAccessDescription] = useState("");
+  const [createPageAccess, setCreatePageAccess] = useState({});
+  const [createPages, setCreatePages] = useState([]);
 
   const [snack, setSnack] = useState({
     open: false,
@@ -74,9 +69,6 @@ const UserPageAccess = () => {
     if (reason === "clickaway") return;
     setSnack((prev) => ({ ...prev, open: false }));
   };
-
-
-
 
   // Load settings
   useEffect(() => {
@@ -101,7 +93,9 @@ const UserPageAccess = () => {
 
   const checkAccess = async (empID) => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/page_access/${empID}/${pageId}`);
+      const res = await axios.get(
+        `${API_BASE_URL}/api/page_access/${empID}/${pageId}`,
+      );
       setHasAccess(res.data && res.data.page_privilege === 1);
     } catch {
       setHasAccess(false);
@@ -129,7 +123,7 @@ const UserPageAccess = () => {
     try {
       const pagesResp = await axios.get(`${API_BASE_URL}/api/pages`);
       const accessResp = await axios.get(
-        `${API_BASE_URL}/api/page_access/${user.employee_id}`
+        `${API_BASE_URL}/api/page_access/${user.employee_id}`,
       );
 
       const allPages = pagesResp.data || [];
@@ -159,10 +153,10 @@ const UserPageAccess = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-
   const filteredUsers = allUsers.filter((u) => {
     const q = searchQuery.toLowerCase();
-    const fullName = `${u.first_name} ${u.middle_name || ""} ${u.last_name}`.toLowerCase();
+    const fullName =
+      `${u.first_name} ${u.middle_name || ""} ${u.last_name}`.toLowerCase();
 
     return (
       u.employee_id.toLowerCase().includes(q) ||
@@ -171,6 +165,7 @@ const UserPageAccess = () => {
       fullName.includes(q)
     );
   });
+
   // Pagination Logic
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
 
@@ -178,9 +173,6 @@ const UserPageAccess = () => {
   const endIndex = startIndex + itemsPerPage;
 
   const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
-
-
-
 
   useEffect(() => {
     setCurrentPage(1);
@@ -197,9 +189,13 @@ const UserPageAccess = () => {
 
     try {
       if (newState) {
-        await axios.post(`${API_BASE_URL}/api/page_access/${selectedUser.employee_id}/${pageId}`);
+        await axios.post(
+          `${API_BASE_URL}/api/page_access/${selectedUser.employee_id}/${pageId}`,
+        );
       } else {
-        await axios.delete(`${API_BASE_URL}/api/page_access/${selectedUser.employee_id}/${pageId}`);
+        await axios.delete(
+          `${API_BASE_URL}/api/page_access/${selectedUser.employee_id}/${pageId}`,
+        );
       }
 
       setSnack({
@@ -210,25 +206,97 @@ const UserPageAccess = () => {
     } catch {
       // rollback
       setPageAccess((prev) => ({ ...prev, [pageId]: hasAccessNow }));
-      setSnack({ open: true, type: "error", message: "Failed to update access" });
+      setSnack({
+        open: true,
+        type: "error",
+        message: "Failed to update access",
+      });
+    }
+  };
+
+  const openCreateAccessModal = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/pages`);
+
+      const pagesData = res.data || [];
+
+      const defaultAccess = {};
+      pagesData.forEach((p) => {
+        defaultAccess[p.id] = false;
+      });
+
+      setCreatePages(pagesData);
+      setCreatePageAccess(defaultAccess);
+      setAccessDescription("");
+      setOpenCreateModal(true);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCreateToggle = (pageId) => {
+    setCreatePageAccess((prev) => ({
+      ...prev,
+      [pageId]: !prev[pageId],
+    }));
+  };
+
+  const saveAccess = async () => {
+    try {
+      const selectedPages = Object.keys(createPageAccess)
+        .filter((key) => createPageAccess[key])
+        .map((id) => Number(id));
+
+      if (!accessDescription.trim()) {
+        setSnack({
+          open: true,
+          severity: "warning",
+          message: "Description is required",
+        });
+        return;
+      }
+
+      await axios.post(`${API_BASE_URL}/api/access`, {
+        access_description: accessDescription,
+        access_page: selectedPages,
+      });
+
+      setSnack({
+        open: true,
+        severity: "success",
+        message: "Access created successfully",
+      });
+
+      setOpenCreateModal(false);
+    } catch (err) {
+      setSnack({
+        open: true,
+        severity: "error",
+        message: "Failed to create access",
+      });
     }
   };
 
   if (hasAccess === false) return <Unauthorized />;
 
   return (
-    <Box sx={{ height: "calc(100vh - 150px)", overflowY: "auto", paddingRight: 1, backgroundColor: "transparent", mt: 1, padding: 2 }}>
+    <Box
+      sx={{
+        height: "calc(100vh - 150px)",
+        overflowY: "auto",
+        paddingRight: 1,
+        backgroundColor: "transparent",
+        mt: 1,
+        padding: 2,
+      }}
+    >
       <Box
         display="flex"
         justifyContent="space-between"
         alignItems="center"
         mb={2}
       >
-        <Typography
-          variant="h4"
-          fontWeight="bold"
-          sx={{ color: titleColor }}
-        >
+        <Typography variant="h4" fontWeight="bold" sx={{ color: titleColor }}>
           USER PAGE ACCESS
         </Typography>
 
@@ -256,16 +324,27 @@ const UserPageAccess = () => {
       <br />
       <br />
 
-      <TableContainer component={Paper} sx={{ width: '100%', }}>
+      <TableContainer component={Paper} sx={{ width: "100%" }}>
         <Table size="small">
-          <TableHead sx={{ backgroundColor: '#6D2323', color: "white" }}>
+          <TableHead sx={{ backgroundColor: "#6D2323", color: "white" }}>
             <TableRow>
-              <TableCell colSpan={10} sx={{ border: `2px solid ${borderColor}`, py: 0.5, backgroundColor: settings?.header_color || "#1976d2", color: "white" }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
+              <TableCell
+                colSpan={10}
+                sx={{
+                  border: `2px solid ${borderColor}`,
+                  py: 0.5,
+                  backgroundColor: settings?.header_color || "#1976d2",
+                  color: "white",
+                }}
+              >
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
                   {/* Left: Total Count */}
                   <Typography fontSize="14px" fontWeight="bold" color="white">
                     Total Admin Account: {filteredUsers.length}
-
                   </Typography>
 
                   {/* Right: Pagination Controls */}
@@ -281,23 +360,25 @@ const UserPageAccess = () => {
                         color: "white",
                         borderColor: "white",
                         backgroundColor: "transparent",
-                        '&:hover': {
-                          borderColor: 'white',
-                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        "&:hover": {
+                          borderColor: "white",
+                          backgroundColor: "rgba(255,255,255,0.1)",
                         },
-                        '&.Mui-disabled': {
+                        "&.Mui-disabled": {
                           color: "white",
                           borderColor: "white",
                           backgroundColor: "transparent",
                           opacity: 1,
-                        }
+                        },
                       }}
                     >
                       First
                     </Button>
 
                     <Button
-                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(prev - 1, 1))
+                      }
                       disabled={currentPage === 1}
                       variant="outlined"
                       size="small"
@@ -306,21 +387,20 @@ const UserPageAccess = () => {
                         color: "white",
                         borderColor: "white",
                         backgroundColor: "transparent",
-                        '&:hover': {
-                          borderColor: 'white',
-                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        "&:hover": {
+                          borderColor: "white",
+                          backgroundColor: "rgba(255,255,255,0.1)",
                         },
-                        '&.Mui-disabled': {
+                        "&.Mui-disabled": {
                           color: "white",
                           borderColor: "white",
                           backgroundColor: "transparent",
                           opacity: 1,
-                        }
+                        },
                       }}
                     >
                       Prev
                     </Button>
-
 
                     {/* Page Dropdown */}
                     <FormControl size="small" sx={{ minWidth: 80 }}>
@@ -329,31 +409,31 @@ const UserPageAccess = () => {
                         onChange={(e) => setCurrentPage(Number(e.target.value))}
                         displayEmpty
                         sx={{
-                          fontSize: '12px',
+                          fontSize: "12px",
                           height: 36,
-                          color: 'white',
-                          border: '1px solid white',
-                          backgroundColor: 'transparent',
-                          '.MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'white',
+                          color: "white",
+                          border: "1px solid white",
+                          backgroundColor: "transparent",
+                          ".MuiOutlinedInput-notchedOutline": {
+                            borderColor: "white",
                           },
-                          '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'white',
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "white",
                           },
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'white',
+                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "white",
                           },
-                          '& svg': {
-                            color: 'white', // dropdown arrow icon color
-                          }
+                          "& svg": {
+                            color: "white", // dropdown arrow icon color
+                          },
                         }}
                         MenuProps={{
                           PaperProps: {
                             sx: {
                               maxHeight: 200,
-                              backgroundColor: '#fff', // dropdown background
-                            }
-                          }
+                              backgroundColor: "#fff", // dropdown background
+                            },
+                          },
                         }}
                       >
                         {Array.from({ length: totalPages }, (_, i) => (
@@ -365,13 +445,14 @@ const UserPageAccess = () => {
                     </FormControl>
 
                     <Typography fontSize="11px" color="white">
-                      of {totalPages} page{totalPages > 1 ? 's' : ''}
+                      of {totalPages} page{totalPages > 1 ? "s" : ""}
                     </Typography>
-
 
                     {/* Next & Last */}
                     <Button
-                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                      }
                       disabled={currentPage === totalPages}
                       variant="outlined"
                       size="small"
@@ -380,16 +461,16 @@ const UserPageAccess = () => {
                         color: "white",
                         borderColor: "white",
                         backgroundColor: "transparent",
-                        '&:hover': {
-                          borderColor: 'white',
-                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        "&:hover": {
+                          borderColor: "white",
+                          backgroundColor: "rgba(255,255,255,0.1)",
                         },
-                        '&.Mui-disabled': {
+                        "&.Mui-disabled": {
                           color: "white",
                           borderColor: "white",
                           backgroundColor: "transparent",
                           opacity: 1,
-                        }
+                        },
                       }}
                     >
                       Next
@@ -405,19 +486,27 @@ const UserPageAccess = () => {
                         color: "white",
                         borderColor: "white",
                         backgroundColor: "transparent",
-                        '&:hover': {
-                          borderColor: 'white',
-                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        "&:hover": {
+                          borderColor: "white",
+                          backgroundColor: "rgba(255,255,255,0.1)",
                         },
-                        '&.Mui-disabled': {
+                        "&.Mui-disabled": {
                           color: "white",
                           borderColor: "white",
                           backgroundColor: "transparent",
                           opacity: 1,
-                        }
+                        },
                       }}
                     >
                       Last
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      size="small"
+                      onClick={openCreateAccessModal}
+                    >
+                      Create Access
                     </Button>
                   </Box>
                 </Box>
@@ -432,23 +521,125 @@ const UserPageAccess = () => {
           <Table>
             <TableHead sx={{ backgroundColor: "#F5F5F5" }}>
               <TableRow>
-                <TableCell sx={{ color: "black", fontWeight: "bold", border: `2px solid ${borderColor}`, textAlign: "center" }}>Employee ID</TableCell>
-                <TableCell sx={{ color: "black", fontWeight: "bold", border: `2px solid ${borderColor}`, textAlign: "center" }}>Name</TableCell>
-                <TableCell sx={{ color: "black", fontWeight: "bold", border: `2px solid ${borderColor}`, textAlign: "center" }}>Email</TableCell>
-                <TableCell sx={{ color: "black", fontWeight: "bold", border: `2px solid ${borderColor}`, textAlign: "center" }}>Role</TableCell>
-                <TableCell sx={{ color: "black", fontWeight: "bold", border: `2px solid ${borderColor}`, textAlign: "center" }}>Status</TableCell>
-                <TableCell sx={{ color: "black", fontWeight: "bold", border: `2px solid ${borderColor}`, textAlign: "center" }}>Action</TableCell>
+                <TableCell
+                  sx={{
+                    color: "black",
+                    fontWeight: "bold",
+                    border: `2px solid ${borderColor}`,
+                    textAlign: "center",
+                  }}
+                >
+                  Employee ID
+                </TableCell>
+                <TableCell
+                  sx={{
+                    color: "black",
+                    fontWeight: "bold",
+                    border: `2px solid ${borderColor}`,
+                    textAlign: "center",
+                  }}
+                >
+                  Name
+                </TableCell>
+                <TableCell
+                  sx={{
+                    color: "black",
+                    fontWeight: "bold",
+                    border: `2px solid ${borderColor}`,
+                    textAlign: "center",
+                  }}
+                >
+                  Email
+                </TableCell>
+                <TableCell
+                  sx={{
+                    color: "black",
+                    fontWeight: "bold",
+                    border: `2px solid ${borderColor}`,
+                    textAlign: "center",
+                  }}
+                >
+                  Role
+                </TableCell>
+                <TableCell
+                  sx={{
+                    color: "black",
+                    fontWeight: "bold",
+                    border: `2px solid ${borderColor}`,
+                    textAlign: "center",
+                  }}
+                >
+                  Access Level
+                </TableCell>
+                <TableCell
+                  sx={{
+                    color: "black",
+                    fontWeight: "bold",
+                    border: `2px solid ${borderColor}`,
+                    textAlign: "center",
+                  }}
+                >
+                  Status
+                </TableCell>
+                <TableCell
+                  sx={{
+                    color: "black",
+                    fontWeight: "bold",
+                    border: `2px solid ${borderColor}`,
+                    textAlign: "center",
+                  }}
+                >
+                  Action
+                </TableCell>
               </TableRow>
             </TableHead>
 
             <TableBody>
               {paginatedUsers.map((u, p) => (
-
                 <TableRow key={u.id}>
-                  <TableCell sx={{ color: "black", border: `2px solid ${borderColor}`, textAlign: "center" }}>{u.employee_id}</TableCell>
-                  <TableCell sx={{ color: "black", border: `2px solid ${borderColor}`, textAlign: "center" }}>{`${u.last_name}, ${u.first_name} ${u.middle_name || "."}`}</TableCell>
-                  <TableCell sx={{ color: "black", border: `2px solid ${borderColor}`, textAlign: "center" }}>{u.email}</TableCell>
-                  <TableCell sx={{ color: "black", border: `2px solid ${borderColor}`, textAlign: "center" }}>{u.role}</TableCell>
+                  <TableCell
+                    sx={{
+                      color: "black",
+                      border: `2px solid ${borderColor}`,
+                      textAlign: "center",
+                    }}
+                  >
+                    {u.employee_id}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      color: "black",
+                      border: `2px solid ${borderColor}`,
+                      textAlign: "center",
+                    }}
+                  >{`${u.last_name}, ${u.first_name} ${u.middle_name || "."}`}</TableCell>
+                  <TableCell
+                    sx={{
+                      color: "black",
+                      border: `2px solid ${borderColor}`,
+                      textAlign: "center",
+                    }}
+                  >
+                    {u.email}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      color: "black",
+                      border: `2px solid ${borderColor}`,
+                      textAlign: "center",
+                    }}
+                  >
+                    {u.role}
+                  </TableCell>
+                  <TableCell
+                    sx={{
+                      color: "black",
+                      border: `2px solid ${borderColor}`,
+                      textAlign: "center",
+                    }}
+                  >
+                    {u.access_description}
+                  </TableCell>
                   <TableCell
                     sx={{
                       color: "black",
@@ -459,15 +650,21 @@ const UserPageAccess = () => {
                   >
                     <Switch
                       checked={!!pageAccess[p.id]} // ensure boolean
-                      onChange={() =>
-                        handleToggleChange(p.id, !!pageAccess[p.id]) // pass current value correctly
+                      onChange={
+                        () => handleToggleChange(p.id, !!pageAccess[p.id]) // pass current value correctly
                       }
                       color="primary"
                       size="medium"
                     />
                   </TableCell>
 
-                  <TableCell sx={{ color: "black", border: `2px solid ${borderColor}`, textAlign: "center" }}>
+                  <TableCell
+                    sx={{
+                      color: "black",
+                      border: `2px solid ${borderColor}`,
+                      textAlign: "center",
+                    }}
+                  >
                     <Button
                       variant="contained"
                       onClick={() => loadUserAccess(u)}
@@ -478,21 +675,31 @@ const UserPageAccess = () => {
                 </TableRow>
               ))}
             </TableBody>
-
           </Table>
         </TableContainer>
       </Paper>
 
-      <TableContainer component={Paper} sx={{ width: '100%', }}>
+      <TableContainer component={Paper} sx={{ width: "100%" }}>
         <Table size="small">
-          <TableHead sx={{ backgroundColor: '#6D2323', color: "white" }}>
+          <TableHead sx={{ backgroundColor: "#6D2323", color: "white" }}>
             <TableRow>
-              <TableCell colSpan={10} sx={{ border: `2px solid ${borderColor}`, py: 0.5, backgroundColor: settings?.header_color || "#1976d2", color: "white" }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
+              <TableCell
+                colSpan={10}
+                sx={{
+                  border: `2px solid ${borderColor}`,
+                  py: 0.5,
+                  backgroundColor: settings?.header_color || "#1976d2",
+                  color: "white",
+                }}
+              >
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
                   {/* Left: Total Count */}
                   <Typography fontSize="14px" fontWeight="bold" color="white">
                     Total Admin Account: {filteredUsers.length}
-
                   </Typography>
 
                   {/* Right: Pagination Controls */}
@@ -508,23 +715,25 @@ const UserPageAccess = () => {
                         color: "white",
                         borderColor: "white",
                         backgroundColor: "transparent",
-                        '&:hover': {
-                          borderColor: 'white',
-                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        "&:hover": {
+                          borderColor: "white",
+                          backgroundColor: "rgba(255,255,255,0.1)",
                         },
-                        '&.Mui-disabled': {
+                        "&.Mui-disabled": {
                           color: "white",
                           borderColor: "white",
                           backgroundColor: "transparent",
                           opacity: 1,
-                        }
+                        },
                       }}
                     >
                       First
                     </Button>
 
                     <Button
-                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.max(prev - 1, 1))
+                      }
                       disabled={currentPage === 1}
                       variant="outlined"
                       size="small"
@@ -533,21 +742,20 @@ const UserPageAccess = () => {
                         color: "white",
                         borderColor: "white",
                         backgroundColor: "transparent",
-                        '&:hover': {
-                          borderColor: 'white',
-                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        "&:hover": {
+                          borderColor: "white",
+                          backgroundColor: "rgba(255,255,255,0.1)",
                         },
-                        '&.Mui-disabled': {
+                        "&.Mui-disabled": {
                           color: "white",
                           borderColor: "white",
                           backgroundColor: "transparent",
                           opacity: 1,
-                        }
+                        },
                       }}
                     >
                       Prev
                     </Button>
-
 
                     {/* Page Dropdown */}
                     <FormControl size="small" sx={{ minWidth: 80 }}>
@@ -556,31 +764,31 @@ const UserPageAccess = () => {
                         onChange={(e) => setCurrentPage(Number(e.target.value))}
                         displayEmpty
                         sx={{
-                          fontSize: '12px',
+                          fontSize: "12px",
                           height: 36,
-                          color: 'white',
-                          border: '1px solid white',
-                          backgroundColor: 'transparent',
-                          '.MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'white',
+                          color: "white",
+                          border: "1px solid white",
+                          backgroundColor: "transparent",
+                          ".MuiOutlinedInput-notchedOutline": {
+                            borderColor: "white",
                           },
-                          '&:hover .MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'white',
+                          "&:hover .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "white",
                           },
-                          '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                            borderColor: 'white',
+                          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                            borderColor: "white",
                           },
-                          '& svg': {
-                            color: 'white', // dropdown arrow icon color
-                          }
+                          "& svg": {
+                            color: "white", // dropdown arrow icon color
+                          },
                         }}
                         MenuProps={{
                           PaperProps: {
                             sx: {
                               maxHeight: 200,
-                              backgroundColor: '#fff', // dropdown background
-                            }
-                          }
+                              backgroundColor: "#fff", // dropdown background
+                            },
+                          },
                         }}
                       >
                         {Array.from({ length: totalPages }, (_, i) => (
@@ -592,13 +800,14 @@ const UserPageAccess = () => {
                     </FormControl>
 
                     <Typography fontSize="11px" color="white">
-                      of {totalPages} page{totalPages > 1 ? 's' : ''}
+                      of {totalPages} page{totalPages > 1 ? "s" : ""}
                     </Typography>
-
 
                     {/* Next & Last */}
                     <Button
-                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      onClick={() =>
+                        setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                      }
                       disabled={currentPage === totalPages}
                       variant="outlined"
                       size="small"
@@ -607,16 +816,16 @@ const UserPageAccess = () => {
                         color: "white",
                         borderColor: "white",
                         backgroundColor: "transparent",
-                        '&:hover': {
-                          borderColor: 'white',
-                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        "&:hover": {
+                          borderColor: "white",
+                          backgroundColor: "rgba(255,255,255,0.1)",
                         },
-                        '&.Mui-disabled': {
+                        "&.Mui-disabled": {
                           color: "white",
                           borderColor: "white",
                           backgroundColor: "transparent",
                           opacity: 1,
-                        }
+                        },
                       }}
                     >
                       Next
@@ -632,16 +841,16 @@ const UserPageAccess = () => {
                         color: "white",
                         borderColor: "white",
                         backgroundColor: "transparent",
-                        '&:hover': {
-                          borderColor: 'white',
-                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        "&:hover": {
+                          borderColor: "white",
+                          backgroundColor: "rgba(255,255,255,0.1)",
                         },
-                        '&.Mui-disabled': {
+                        "&.Mui-disabled": {
                           color: "white",
                           borderColor: "white",
                           backgroundColor: "transparent",
                           opacity: 1,
-                        }
+                        },
                       }}
                     >
                       Last
@@ -661,29 +870,100 @@ const UserPageAccess = () => {
         fullWidth
       >
         <DialogTitle sx={{ fontWeight: "bold" }}>
-          Editing Access For: {selectedUser?.employee_id} | {`${selectedUser?.last_name}, ${selectedUser?.first_name} ${selectedUser?.middle_name || "."}`}
+          Editing Access For: {selectedUser?.employee_id} |{" "}
+          {`${selectedUser?.last_name}, ${selectedUser?.first_name} ${selectedUser?.middle_name || "."}`}
         </DialogTitle>
 
         <DialogContent dividers sx={{ maxHeight: "70vh" }}>
           <Paper sx={{ border: `2px solid ${borderColor}` }}>
             <TableContainer>
               <Table>
-                <TableHead sx={{ backgroundColor: settings?.header_color || "#1976d2" }}>
+                <TableHead
+                  sx={{ backgroundColor: settings?.header_color || "#1976d2" }}
+                >
                   <TableRow>
-                    <TableCell sx={{ color: "white", textAlign: "center", fontWeight: "bold", border: `2px solid ${borderColor}`, }}>#</TableCell>
-                    <TableCell sx={{ color: "white", textAlign: "center", fontWeight: "bold", border: `2px solid ${borderColor}`, }}>Page Description</TableCell>
-                    <TableCell sx={{ color: "white", textAlign: "center", fontWeight: "bold", border: `2px solid ${borderColor}`, }}>Page Group</TableCell>
-                    <TableCell sx={{ color: "white", textAlign: "center", fontWeight: "bold", border: `2px solid ${borderColor}`, }} align="center">Access</TableCell>
+                    <TableCell
+                      sx={{
+                        color: "white",
+                        textAlign: "center",
+                        fontWeight: "bold",
+                        border: `2px solid ${borderColor}`,
+                      }}
+                    >
+                      #
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        color: "white",
+                        textAlign: "center",
+                        fontWeight: "bold",
+                        border: `2px solid ${borderColor}`,
+                      }}
+                    >
+                      Page Description
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        color: "white",
+                        textAlign: "center",
+                        fontWeight: "bold",
+                        border: `2px solid ${borderColor}`,
+                      }}
+                    >
+                      Page Group
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        color: "white",
+                        textAlign: "center",
+                        fontWeight: "bold",
+                        border: `2px solid ${borderColor}`,
+                      }}
+                      align="center"
+                    >
+                      Access
+                    </TableCell>
                   </TableRow>
                 </TableHead>
 
                 <TableBody>
                   {pages.map((p, i) => (
                     <TableRow key={p.id}>
-                      <TableCell sx={{ color: "black", textAlign: "center", border: `2px solid ${borderColor}`, }}>{i + 1}</TableCell>
-                      <TableCell sx={{ color: "black", textAlign: "center", border: `2px solid ${borderColor}`, }}>{p.page_description}</TableCell>
-                      <TableCell sx={{ color: "black", textAlign: "center", border: `2px solid ${borderColor}`, }}>{p.page_group}</TableCell>
-                      <TableCell sx={{ color: "black", textAlign: "center", border: `2px solid ${borderColor}`, }} align="center">
+                      <TableCell
+                        sx={{
+                          color: "black",
+                          textAlign: "center",
+                          border: `2px solid ${borderColor}`,
+                        }}
+                      >
+                        {i + 1}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          color: "black",
+                          textAlign: "center",
+                          border: `2px solid ${borderColor}`,
+                        }}
+                      >
+                        {p.page_description}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          color: "black",
+                          textAlign: "center",
+                          border: `2px solid ${borderColor}`,
+                        }}
+                      >
+                        {p.page_group}
+                      </TableCell>
+                      <TableCell
+                        sx={{
+                          color: "black",
+                          textAlign: "center",
+                          border: `2px solid ${borderColor}`,
+                        }}
+                        align="center"
+                      >
                         <Switch
                           checked={pageAccess[p.id] || false}
                           onChange={() =>
@@ -694,15 +974,116 @@ const UserPageAccess = () => {
                     </TableRow>
                   ))}
                 </TableBody>
-
               </Table>
             </TableContainer>
           </Paper>
         </DialogContent>
 
         <DialogActions>
-          <Button variant="contained" color="error" onClick={() => setOpenModal(false)}>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => setOpenModal(false)}
+          >
             Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={openCreateModal}
+        onClose={() => setOpenCreateModal(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: "bold" }}>Create New Access</DialogTitle>
+
+        <DialogContent dividers>
+          <TextField
+            label="Description"
+            fullWidth
+            value={accessDescription}
+            onChange={(e) => setAccessDescription(e.target.value)}
+            sx={{ mb: 3 }}
+          />
+
+          <Paper sx={{ border: `2px solid ${borderColor}` }}>
+            <TableContainer>
+              <Table>
+                <TableHead
+                  sx={{ backgroundColor: settings?.header_color || "#1976d2" }}
+                >
+                  <TableRow>
+                    <TableCell
+                      sx={{
+                        color: "white",
+                        textAlign: "center",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      #
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        color: "white",
+                        textAlign: "center",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Page Description
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        color: "white",
+                        textAlign: "center",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Page Group
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        color: "white",
+                        textAlign: "center",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Access
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
+
+                <TableBody>
+                  {createPages.map((p, i) => (
+                    <TableRow key={p.id}>
+                      <TableCell align="center">{i + 1}</TableCell>
+                      <TableCell align="center">{p.page_description}</TableCell>
+                      <TableCell align="center">{p.page_group}</TableCell>
+                      <TableCell align="center">
+                        <Switch
+                          checked={createPageAccess[p.id] || false}
+                          onChange={() => handleCreateToggle(p.id)}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        </DialogContent>
+
+        <DialogActions>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => setOpenCreateModal(false)}
+          >
+            Cancel
+          </Button>
+
+          <Button variant="contained" color="success" onClick={saveAccess}>
+            Save Access
           </Button>
         </DialogActions>
       </Dialog>
@@ -721,7 +1102,6 @@ const UserPageAccess = () => {
           {snack.message}
         </Alert>
       </Snackbar>
-
     </Box>
   );
 };

@@ -3,8 +3,9 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const { db, db3 } = require('../database/database');
-
+const bcrypt = require("bcrypt");
 const router = express.Router();
+const QRCode = require("qrcode");
 const upload = multer({ storage: multer.memoryStorage() });
 
 const allowedFields = new Set([
@@ -44,7 +45,7 @@ const allowedFields = new Set([
   "vaccine1Brand", "vaccine1Date", "vaccine2Brand", "vaccine2Date",
   "booster1Brand", "booster1Date", "booster2Brand", "booster2Date",
   "chestXray", "cbc", "urinalysis", "otherworkups", "symptomsToday",
-  "remarks","termsOfAgreement", "created_at", "current_step"
+  "remarks", "termsOfAgreement", "created_at", "current_step"
 ]);
 
 router.get("/person/:id", async (req, res) => {
@@ -148,6 +149,166 @@ router.post("/upload-profile-picture", upload.single("profile_picture"), async (
   } catch (err) {
     console.error("Upload error:", err);
     res.status(500).send("Failed to upload image.");
+  }
+});
+
+router.post("/add-applicant", async (req, res) => {
+  const {
+    email,
+    password,
+    campus,
+    first_name,
+    middle_name,
+    last_name,
+    birthOfDate,
+    academicProgram,
+    applyingAs
+  } = req.body;
+
+  let person_id = null;
+
+  try {
+
+    if (!email || !password || !first_name || !last_name || !birthOfDate) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const [existingUser] = await db.query(
+      "SELECT * FROM user_accounts WHERE email = ?",
+      [email.trim().toLowerCase()]
+    );
+
+    if (existingUser.length > 0) {
+      return res.status(400).json({ message: "Email already exists" });
+    }
+
+
+
+    // ⭐ INSERT PERSON
+    const [personResult] = await db.query(
+      `INSERT INTO person_table
+      (campus, emailAddress, first_name, middle_name, last_name, birthOfDate, academicProgram, applyingAs, termsOfAgreement, current_step)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, 1)`,
+      [
+        campus || 1,
+        email.trim().toLowerCase(),
+        first_name.trim(),
+        middle_name || null,
+        last_name.trim(),
+        birthOfDate,
+        academicProgram,
+        applyingAs
+      ]
+    );
+
+    person_id = personResult.insertId;
+
+    // ⭐ USER ACCOUNT
+    await db.query(
+      `INSERT INTO user_accounts (person_id, email, password, role, status)
+       VALUES (?, ?, ?, 'applicant', 1)`,
+      [person_id, email.trim().toLowerCase(), hashedPassword]
+    );
+
+    // ------------------
+    // Applicant Numbering
+    // ------------------
+
+    const [activeYearResult] = await db3.query(`
+      SELECT yt.year_description, st.semester_code
+      FROM active_school_year_table sy
+      JOIN year_table yt ON yt.year_id = sy.year_id
+      JOIN semester_table st ON st.semester_id = sy.semester_id
+      WHERE sy.astatus = 1
+      LIMIT 1
+    `);
+
+    const year = String(activeYearResult[0].year_description).split("-")[0];
+    const semCode = activeYearResult[0].semester_code;
+
+    const [countRes] = await db.query(
+      "SELECT COUNT(*) AS count FROM applicant_numbering_table"
+    );
+
+    const padded = String(countRes[0].count + 1).padStart(5, "0");
+    const applicant_number = `${year}${semCode}${padded}`;
+
+    await db.query(
+      "INSERT INTO applicant_numbering_table (applicant_number, person_id) VALUES (?, ?)",
+      [applicant_number, person_id]
+    );
+
+    // ------------------
+    // Applicant Status
+    // ------------------
+
+
+
+
+    await db.query(
+      `INSERT INTO person_status_table 
+       (person_id, applicant_id, exam_status, requirements, residency, student_registration_status, exam_result, hs_ave, qualifying_result, interview_result)
+       VALUES (?, ?, 0, 0, 0, 0, 0, 0, 0, 0)`,
+      [person_id, applicant_number]
+    );
+
+    await db.query(
+      `INSERT INTO interview_applicants (schedule_id, applicant_id, email_sent, status)
+       VALUES (?, ?, 0, 'Waiting List')`,
+      [null, applicant_number]
+    );
+
+    // ------------------
+    // QR Code Generation
+    // ------------------
+
+    const qrData = `${process.env.DB_HOST_LOCAL}:5173/examination_profile/${applicant_number}`;
+    const qrData2 = `${process.env.DB_HOST_LOCAL}:5173/applicant_profile/${applicant_number}`;
+
+    const qrFilename = `${applicant_number}_qrcode.png`;
+    const qrFilename2 = `${applicant_number}_qrcode2.png`;
+
+    const qrPath = path.join(__dirname, "../../uploads/QrCodeGenerated", qrFilename);
+    const qrPath2 = path.join(__dirname, "../../uploads/QrCodeGenerated", qrFilename2);
+
+    // generate QR codes
+    await QRCode.toFile(qrPath, qrData, {
+      color: { dark: "#000", light: "#FFF" },
+      width: 300,
+    });
+
+    await QRCode.toFile(qrPath2, qrData2, {
+      color: { dark: "#000", light: "#FFF" },
+      width: 300,
+    });
+
+    // save QR filename
+    await db.query(
+      "UPDATE applicant_numbering_table SET qr_code = ? WHERE applicant_number = ?",
+      [qrFilename, applicant_number]
+    );
+
+    res.json({
+      success: true,
+      message: "Applicant created successfully",
+      person_id,
+      applicant_number
+    });
+
+  } catch (error) {
+
+    if (person_id) {
+      await db.query("DELETE FROM person_table WHERE person_id = ?", [person_id]);
+    }
+
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
   }
 });
 

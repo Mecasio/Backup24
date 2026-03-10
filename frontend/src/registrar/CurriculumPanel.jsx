@@ -854,7 +854,7 @@ const CurriculumPanel = () => {
       <br />
 
 
-      <TableContainer component={Paper} sx={{ width: '100%', border: `2px solid ${borderColor}`, }}>
+      <TableContainer component={Paper} sx={{ width: '50%', border: `2px solid ${borderColor}`, }}>
         <Table>
           <TableHead sx={{ backgroundColor: settings?.header_color || "#1976d2", }}>
             <TableRow>
@@ -863,7 +863,7 @@ const CurriculumPanel = () => {
           </TableHead>
         </Table>
       </TableContainer>
-      <Box sx={{ maxHeight: 750, overflowY: "auto" }}>
+      <Box sx={{ maxHeight: 750, overflowY: "auto", width: "50%" }}>
         <div
           style={{
             display: "flex",

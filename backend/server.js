@@ -35,11 +35,11 @@ app.use("/assets", express.static(path.join(__dirname, "assets")));
 const allowedOrigins = [
   'http://localhost:5173',
   'http://192.168.50.77:5173',
-  'http://192.168.0.108:5173',
+  'http://192.168.50.86:5173',
   'http://192.168.50.211:5173',
   'http://136.239.248.58:5173',
-  'http://192.168.0.108:5173',
-  'http://192.168.0.108:5173',
+  'http://192.168.50.86:5173',
+  'http://192.168.50.86:5173',
 ];
 
 app.use(
@@ -105,9 +105,11 @@ const programSlots = require("./routes/system_routes/programSlots");
 const departmentRoute = require("./routes/system_routes/dprmntRoute");
 const roomRegistrationRoute = require("./routes/system_routes/roomRegistrationRoute");
 const importRoutes = require("./routes/import");
+const accessRoutes = require("./routes/auth_routes/accessRoute");
 
 app.use("/", programRoute);
 app.use("/auth/", authRoute);
+app.use("/api/", accessRoutes);
 app.use("/form/", applicantFormRoute);
 app.use("/exampermit/", examPermit);
 app.use("/student/", studentRoute);
@@ -994,11 +996,14 @@ app.get("/api/registrars", async (req, res) => {
         ua.middle_name,
         ua.last_name,
         ua.email,
+        ua.access_level,
+        at.access_description,
         ua.role,
         ua.status,
         d.dprtmnt_name,
         d.dprtmnt_code
       FROM user_accounts ua
+      LEFT JOIN access_table at ON ua.access_level = at.access_id
       LEFT JOIN dprtmnt_table d ON ua.dprtmnt_id = d.dprtmnt_id
       WHERE ua.role IN ('registrar', 'admission', 'enrollment', 'clinic', 'superadmin')
       ORDER BY ua.id DESC;

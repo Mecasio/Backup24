@@ -98,9 +98,8 @@ const CourseTagging = () => {
   const [user, setUser] = useState("");
   const [userRole, setUserRole] = useState("");
 
-  ///////////
   const pageId = 17;
-
+  
   const [employeeID, setEmployeeID] = useState("");
 
   useEffect(() => {
