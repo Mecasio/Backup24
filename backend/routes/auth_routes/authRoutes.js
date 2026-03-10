@@ -11,6 +11,18 @@ const router = express.Router()
 let otpStore = {};
 let loginAttempts = {};
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+const calculateAge = (birthDate) => {
+  const date = new Date(birthDate);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const today = new Date();
+  let age = today.getFullYear() - date.getFullYear();
+  const m = today.getMonth() - date.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < date.getDate())) {
+    age -= 1;
+  }
+  return age;
+};
 
 // POST REGISTER (APPLICANT ONLY)
 router.post("/register", async (req, res) => {
@@ -25,6 +37,7 @@ router.post("/register", async (req, res) => {
     birthday,
     academicProgram
   } = req.body;
+  const normalizedEmail = email?.trim().toLowerCase();
 
   const [existingPerson] = await db.query(
     `SELECT * FROM person_table 
@@ -41,12 +54,12 @@ router.post("/register", async (req, res) => {
     });
   }
 
-  if (!email || !password) {
+  if (!normalizedEmail || !password) {
     return res.json({ success: false, message: "Please fill up all required fields" });
   }
 
   // ⭐⭐⭐ OTP VALIDATION ⭐⭐⭐
-  const stored = otpStore[email];
+  const stored = otpStore[normalizedEmail];
   const now = Date.now();
 
   if (!stored) {
@@ -54,7 +67,7 @@ router.post("/register", async (req, res) => {
   }
 
   if (stored.expiresAt < now) {
-    delete otpStore[email];
+    delete otpStore[normalizedEmail];
     return res.status(400).json({ success: false, message: "OTP has expired. Please request a new one." });
   }
 
@@ -62,7 +75,7 @@ router.post("/register", async (req, res) => {
     return res.status(400).json({ success: false, message: "Invalid OTP" });
   }
 
-  delete otpStore[email];
+  delete otpStore[normalizedEmail];
 
 
   let person_id = null;
@@ -77,39 +90,38 @@ router.post("/register", async (req, res) => {
 
     const [existingUser] = await db.query(
       "SELECT * FROM user_accounts WHERE email = ?",
-      [email.trim().toLowerCase()]
+      [normalizedEmail]
     );
 
     if (existingUser.length > 0) {
       return res.json({ success: false, message: "Email is already registered" });
     }
 
-    
-
     // ⭐⭐⭐ FIX: STORE EMAIL INTO person_table.emailAddress ⭐⭐⭐
+    const age = calculateAge(birthday);
+
     const [personResult] = await db.query(
       `INSERT INTO person_table 
-(campus, emailAddress, first_name, middle_name, last_name, birthOfDate, academicProgram, termsOfAgreement, current_step)
-VALUES (?, ?, ?, ?, ?, ?, ?, 0, 1)`,
+(campus, emailAddress, first_name, middle_name, last_name, birthOfDate, age, academicProgram, termsOfAgreement, current_step)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 1)`,
       [
         campus,
-        email.trim().toLowerCase(),
+        normalizedEmail,
         firstName.trim(),
         middleName?.trim() || null,
         lastName.trim(),
         birthday,
+        age,
         academicProgram
       ]
     );
 
-
     person_id = personResult.insertId;
 
-    // Insert account
     await db.query(
       `INSERT INTO user_accounts (person_id, email, password, role, status)
        VALUES (?, ?, ?, 'applicant', ?)`,
-      [person_id, email.trim().toLowerCase(), hashedPassword, 1]
+      [person_id, normalizedEmail, hashedPassword, 1]
     );
 
     // ------------------
@@ -577,12 +589,15 @@ router.post("/verify-otp", (req, res) => {
 // POST REQUEST OTP 
 router.post("/request-otp", async (req, res) => {
   const { email } = req.body;
-  if (!email) return res.status(400).json({ message: "Email is required" });
+  const normalizedEmail = email?.trim().toLowerCase();
+  if (!normalizedEmail) {
+    return res.status(400).json({ message: "Email is required" });
+  }
 
   // ❌ Prevent already registered emails
   const [existingUser] = await db.query(
     "SELECT * FROM user_accounts WHERE email = ?",
-    [email.trim().toLowerCase()]
+    [normalizedEmail]
   );
 
   if (existingUser.length > 0) {
@@ -590,7 +605,7 @@ router.post("/request-otp", async (req, res) => {
   }
 
   const now = Date.now();
-  const existing = otpStore[email];
+  const existing = otpStore[normalizedEmail];
 
   if (existing && existing.cooldownUntil > now) {
     const secondsLeft = Math.ceil((existing.cooldownUntil - now) / 1000);
@@ -598,7 +613,7 @@ router.post("/request-otp", async (req, res) => {
   }
 
   const otp = generateOTP();
-  otpStore[email] = {
+  otpStore[normalizedEmail] = {
     otp,
     expiresAt: now + 5 * 60 * 1000,
     cooldownUntil: now + 60 * 1000,
@@ -618,12 +633,12 @@ router.post("/request-otp", async (req, res) => {
 
     await transporter.sendMail({
       from: `"${shortTerm} OTP Verification" <${process.env.EMAIL_USER}>`,
-      to: email,
+      to: normalizedEmail,
       subject: `${shortTerm} OTP Code`,
       text: `Your ${shortTerm} OTP is: ${otp}. It is valid for 5 minutes.`,
     });
 
-    console.log(`✅ OTP sent to ${email}: ${otp}`);
+    console.log(`✅ OTP sent to ${normalizedEmail}: ${otp}`);
     res.json({ message: `${shortTerm} OTP sent to your email` });
 
   } catch (err) {
