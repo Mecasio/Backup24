@@ -109,7 +109,7 @@ const RegistrarResetPassword = () => {
     const fetchOtpSetting = async () => {
       try {
         const person_id = localStorage.getItem("person_id");
-        const res = await axios.get(`${API_BASE_URL}/get-otp-setting/user/${person_id}`);
+        const res = await axios.get(`${API_BASE_URL}/auth/get-otp-setting/user/${person_id}`);
         setOtpRequired(res.data.require_otp === 1);
       } catch (err) {
         console.error("Failed to load OTP setting for user", err);
@@ -125,7 +125,7 @@ const RegistrarResetPassword = () => {
 
     try {
       const person_id = localStorage.getItem("person_id");
-      const res = await axios.post(`${API_BASE_URL}/update-otp-setting`, {
+      const res = await axios.post(`${API_BASE_URL}/auth/update-otp-setting`, {
         type: "user",
         person_id,
         require_otp: newValue ? 1 : 0,

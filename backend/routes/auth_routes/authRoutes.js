@@ -24,6 +24,72 @@ const calculateAge = (birthDate) => {
   return age;
 };
 
+const AUTH_ACTION = "AUTH";
+
+function buildAuthMessage({ outcome, role, actorId, reason }) {
+  const safeActor = actorId || "unknown";
+  const safeRole = role || "unknown";
+  const base = `LOGIN ${outcome} - ${safeRole} (${safeActor})`;
+  return reason ? `${base} | Reason: ${reason}` : base;
+}
+
+function getAuthSeverity({ outcome }) {
+  if (outcome === "LOCKED") return "CRITICAL";
+  if (outcome === "FAILED") return "WARN";
+  if (outcome === "SUCCESS_AFTER_FAILURES") return "WARN";
+  return "INFO";
+}
+
+async function getApplicantNumberByPersonId(personId) {
+  if (!personId) return null;
+  try {
+    const [rows] = await db.query(
+      "SELECT applicant_number FROM applicant_numbering_table WHERE person_id = ? LIMIT 1",
+      [personId],
+    );
+    return rows?.[0]?.applicant_number || null;
+  } catch (err) {
+    console.error("Applicant number lookup failed:", err);
+    return null;
+  }
+}
+
+async function insertAuditLog({
+  actorId,
+  role,
+  resourceType,
+  resource,
+  outcome,
+  reason,
+  messageOverride,
+}) {
+  try {
+    const message = messageOverride || buildAuthMessage({
+      outcome,
+      role,
+      actorId,
+      reason,
+    });
+
+    await db.query(
+      `INSERT INTO audit_logs
+        (actor_id, role, action, resource_type, resource, message, severity)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        actorId || "unknown",
+        role || "unknown",
+        AUTH_ACTION,
+        resourceType || "unknown",
+        resource || "unknown",
+        message,
+        getAuthSeverity({ outcome }),
+      ],
+    );
+  } catch (err) {
+    console.error("Audit log insert failed:", err);
+  }
+}
+
 // POST REGISTER (APPLICANT ONLY)
 router.post("/register", async (req, res) => {
   const {
@@ -48,6 +114,15 @@ router.post("/register", async (req, res) => {
   );
 
   if (existingPerson.length > 0) {
+    await insertAuditLog({
+      actorId: normalizedEmail || "unknown",
+      role: "applicant",
+      resourceType: "applicant",
+      resource: normalizedEmail || "unknown",
+      outcome: "FAILED",
+      messageOverride: `REGISTER FAILED - ${normalizedEmail || "unknown"}`,
+      reason: "Applicant already exists",
+    });
     return res.status(400).json({
       success: false,
       message: "This applicant already exists in the system."
@@ -55,6 +130,15 @@ router.post("/register", async (req, res) => {
   }
 
   if (!normalizedEmail || !password) {
+    await insertAuditLog({
+      actorId: normalizedEmail || "unknown",
+      role: "applicant",
+      resourceType: "applicant",
+      resource: normalizedEmail || "unknown",
+      outcome: "FAILED",
+      messageOverride: `REGISTER FAILED - ${normalizedEmail || "unknown"}`,
+      reason: "Missing required fields",
+    });
     return res.json({ success: false, message: "Please fill up all required fields" });
   }
 
@@ -63,15 +147,42 @@ router.post("/register", async (req, res) => {
   const now = Date.now();
 
   if (!stored) {
+    await insertAuditLog({
+      actorId: normalizedEmail || "unknown",
+      role: "applicant",
+      resourceType: "applicant",
+      resource: normalizedEmail || "unknown",
+      outcome: "FAILED",
+      messageOverride: `REGISTER FAILED - ${normalizedEmail || "unknown"}`,
+      reason: "No OTP request found",
+    });
     return res.status(400).json({ success: false, message: "No OTP request found for this email" });
   }
 
   if (stored.expiresAt < now) {
     delete otpStore[normalizedEmail];
+    await insertAuditLog({
+      actorId: normalizedEmail || "unknown",
+      role: "applicant",
+      resourceType: "applicant",
+      resource: normalizedEmail || "unknown",
+      outcome: "FAILED",
+      messageOverride: `REGISTER FAILED - ${normalizedEmail || "unknown"}`,
+      reason: "OTP expired",
+    });
     return res.status(400).json({ success: false, message: "OTP has expired. Please request a new one." });
   }
 
   if (stored.otp !== otp.trim()) {
+    await insertAuditLog({
+      actorId: normalizedEmail || "unknown",
+      role: "applicant",
+      resourceType: "applicant",
+      resource: normalizedEmail || "unknown",
+      outcome: "FAILED",
+      messageOverride: `REGISTER FAILED - ${normalizedEmail || "unknown"}`,
+      reason: "Invalid OTP",
+    });
     return res.status(400).json({ success: false, message: "Invalid OTP" });
   }
 
@@ -94,6 +205,15 @@ router.post("/register", async (req, res) => {
     );
 
     if (existingUser.length > 0) {
+      await insertAuditLog({
+        actorId: normalizedEmail || "unknown",
+        role: "applicant",
+        resourceType: "applicant",
+        resource: normalizedEmail || "unknown",
+        outcome: "FAILED",
+        messageOverride: `REGISTER FAILED - ${normalizedEmail || "unknown"}`,
+        reason: "Email already registered",
+      });
       return res.json({ success: false, message: "Email is already registered" });
     }
 
@@ -199,11 +319,29 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, 1)`,
       campus: campus,
     });
 
+    await insertAuditLog({
+      actorId: normalizedEmail || "unknown",
+      role: "applicant",
+      resourceType: "applicant",
+      resource: normalizedEmail || "unknown",
+      outcome: "SUCCESS",
+      messageOverride: `REGISTER SUCCESS - ${normalizedEmail || "unknown"}`,
+    });
+
   } catch (error) {
     if (person_id) {
       await db.query("DELETE FROM person_table WHERE person_id = ?", [person_id]);
     }
     console.log(error);
+    await insertAuditLog({
+      actorId: normalizedEmail || "unknown",
+      role: "applicant",
+      resourceType: "applicant",
+      resource: normalizedEmail || "unknown",
+      outcome: "FAILED",
+      messageOverride: `REGISTER FAILED - ${normalizedEmail || "unknown"} `,
+      reason: "Internal server error",
+    });
     res.json({
       success: false,
       message: "Internal Server Error",
@@ -225,6 +363,14 @@ router.post("/login", async (req, res) => {
 
   if (record.lockUntil && record.lockUntil > now) {
     const sec = Math.ceil((record.lockUntil - now) / 1000);
+    await insertAuditLog({
+      actorId: loginCredentials,
+      role: "unknown",
+      resourceType: "unknown",
+      resource: loginCredentials,
+      outcome: "LOCKED",
+      reason: `Account locked (Attempt ${record.count || 3} out of 3)`,
+    });
     return res.json({ success: false, message: `Too many failed attempts. Try again in ${sec}s.` });
   }
 
@@ -237,6 +383,7 @@ router.post("/login", async (req, res) => {
           ua.email,
           ua.password,
           ua.employee_id,
+          snt.student_number AS student_number,
           ua.role,
           ua.require_otp,
           NULL AS profile_image,
@@ -260,6 +407,7 @@ router.post("/login", async (req, res) => {
           ua.email,
           ua.password,
           ua.employee_id,
+          NULL AS student_number,
           ua.role,
           ua.require_otp,
           ua.profile_image,
@@ -286,13 +434,32 @@ router.post("/login", async (req, res) => {
       if (record.count >= 3) {
         record.lockUntil = now + 3 * 60 * 1000;
         loginAttempts[loginCredentials] = record;
+        await insertAuditLog({
+          actorId: loginCredentials,
+          role: "unknown",
+          resourceType: "unknown",
+          resource: loginCredentials,
+          outcome: "LOCKED",
+          reason: `Invalid email or student number (Attempt ${record.count} out of 3)`,
+        });
         return res.json({ success: false, message: "Too many failed attempts. Locked for 3 minutes." });
       }
       loginAttempts[loginCredentials] = record;
+      await insertAuditLog({
+        actorId: loginCredentials,
+        role: "unknown",
+        resourceType: "unknown",
+        resource: loginCredentials,
+        outcome: "FAILED",
+        reason: `Invalid email or student number (Attempt ${record.count} out of 3)`,
+      });
       return res.json({ success: false, message: "Invalid email or student number" });
     }
 
     const user = results[0];
+    const actorId = user.employee_id || user.student_number || user.person_id || user.email;
+    const resourceType = user.employee_id ? "employee" : "student";
+    const resource = user.employee_id || user.student_number || user.person_id || user.email;
 
     // ======================================
     // 🔥 FIX: normalize require_otp properly
@@ -307,10 +474,27 @@ router.post("/login", async (req, res) => {
 
       if (record.count >= 3) {
         record.lockUntil = now + 3 * 60 * 1000;
+        loginAttempts[loginCredentials] = record;
+        await insertAuditLog({
+          actorId,
+          role: user.role,
+          resourceType,
+          resource,
+          outcome: "LOCKED",
+          reason: `Invalid password (Attempt ${record.count} out of 3)`,
+        });
         return res.json({ success: false, message: "Too many failed attempts. Locked for 3 minutes." });
       }
 
       loginAttempts[loginCredentials] = record;
+      await insertAuditLog({
+        actorId,
+        role: user.role,
+        resourceType,
+        resource,
+        outcome: "FAILED",
+        reason: `Invalid password (Attempt ${record.count} out of 3)`,
+      });
       return res.json({
         success: false,
         message: `Invalid Password or Email, You have ${remaining} attempt(s) remaining.`,
@@ -320,7 +504,15 @@ router.post("/login", async (req, res) => {
 
     // status check
     if (user.status === 0) {
-      return res.json({ success: false, message: "The user didn’t exist or account is inactive" });
+      await insertAuditLog({
+        actorId,
+        role: user.role,
+        resourceType,
+        resource,
+        outcome: "FAILED",
+        reason: "Inactive account",
+      });
+      return res.json({ success: false, message: "The user didn't exist or account is inactive" });
     }
 
     const [rows] = await db3.query(
@@ -329,6 +521,7 @@ router.post("/login", async (req, res) => {
 
 
     const accessList = rows.map(r => Number(r.page_id));
+    const failureCount = record.count || 0;
 
     // JWT
     const token = webtoken.sign(
@@ -355,6 +548,14 @@ router.post("/login", async (req, res) => {
         expiresAt: now + 5 * 60 * 1000,
         cooldownUntil: now + 5 * 60 * 1000,
       };
+      otpStore[user.email].authFailureCount = failureCount;
+      otpStore[user.email].auditContext = {
+        actorId,
+        role: user.role,
+        resourceType,
+        resource,
+      };
+      delete loginAttempts[loginCredentials];
 
       try {
         const [companyResult] = await db.query("SELECT short_term FROM company_settings WHERE id = 1");
@@ -401,6 +602,15 @@ router.post("/login", async (req, res) => {
     }
 
     // NO OTP REQUIRED
+    const successOutcome = failureCount >= 2 ? "SUCCESS_AFTER_FAILURES" : "SUCCESS";
+    await insertAuditLog({
+      actorId,
+      role: user.role,
+      resourceType,
+      resource,
+      outcome: successOutcome,
+    });
+    delete loginAttempts[loginCredentials];
     return res.json({
       success: true,
       requireOtp: false,
@@ -427,6 +637,22 @@ router.post("/login_applicant", async (req, res) => {
   if (!email || !password) {
     return res.status(400).json({ message: "All fields are required" });
   }
+  const loginKey = email.trim().toLowerCase();
+  const now = Date.now();
+  const record = loginAttempts[loginKey] || { count: 0, lockUntil: null };
+
+  if (record.lockUntil && record.lockUntil > now) {
+    const sec = Math.ceil((record.lockUntil - now) / 1000);
+    await insertAuditLog({
+      actorId: loginKey,
+      role: "applicant",
+      resourceType: "applicant",
+      resource: loginKey,
+      outcome: "LOCKED",
+      reason: `Account locked (Attempt ${record.count || 3} out of 3)`,
+    });
+    return res.json({ success: false, message: `Too many failed attempts. Try again in ${sec}s.` });
+  }
 
   try {
     // ✅ Fetch user
@@ -435,21 +661,77 @@ router.post("/login_applicant", async (req, res) => {
       LEFT JOIN person_table AS pt ON pt.person_id = ua.person_id
       WHERE email = ?
     `;
+
     const [results] = await db.query(query, [email]);
 
     if (results.length === 0) {
+      record.count++;
+      if (record.count >= 3) {
+        record.lockUntil = now + 3 * 60 * 1000;
+        loginAttempts[loginKey] = record;
+        await insertAuditLog({
+          actorId: loginKey,
+          role: "applicant",
+          resourceType: "applicant",
+          resource: loginKey,
+          outcome: "LOCKED",
+          reason: `Invalid email or password (Attempt ${record.count} out of 3)`,
+        });
+        return res.json({ success: false, message: "Too many failed attempts. Locked for 3 minutes." });
+      }
+      loginAttempts[loginKey] = record;
+      await insertAuditLog({
+        actorId: loginKey,
+        role: "applicant",
+        resourceType: "applicant",
+        resource: loginKey,
+        outcome: "FAILED",
+        reason: `Invalid email or password (Attempt ${record.count} out of 3)`,
+      });
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
     const user = results[0];
+    const existingApplicantNumber = await getApplicantNumberByPersonId(user.person_id);
+    const applicantActor = existingApplicantNumber || loginKey;
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
+      record.count++;
+      if (record.count >= 3) {
+        record.lockUntil = now + 3 * 60 * 1000;
+        loginAttempts[loginKey] = record;
+        await insertAuditLog({
+          actorId: applicantActor,
+          role: "applicant",
+          resourceType: "applicant",
+          resource: applicantActor,
+          outcome: "LOCKED",
+          reason: `Invalid password (Attempt ${record.count} out of 3)`,
+        });
+        return res.json({ success: false, message: "Too many failed attempts. Locked for 3 minutes." });
+      }
+      loginAttempts[loginKey] = record;
+      await insertAuditLog({
+        actorId: applicantActor,
+        role: "applicant",
+        resourceType: "applicant",
+        resource: applicantActor,
+        outcome: "FAILED",
+        reason: `Invalid password (Attempt ${record.count} out of 3)`,
+      });
       return res.json({ success: false, message: "Invalid Password or Email" });
     }
-
     if (user.status === 0) {
-      return res.json({ success: false, message: "The user didn’t exist or is inactive" });
+      await insertAuditLog({
+        actorId: applicantActor,
+        role: "applicant",
+        resourceType: "applicant",
+        resource: applicantActor,
+        outcome: "FAILED",
+        reason: "Inactive account",
+      });
+      return res.json({ success: false, message: "The user didn't exist or is inactive" });
     }
 
     const person_id = user.person_id;
@@ -518,6 +800,16 @@ router.post("/login_applicant", async (req, res) => {
       { expiresIn: "1h" }
     );
 
+    const successOutcome = record.count >= 2 ? "SUCCESS_AFTER_FAILURES" : "SUCCESS";
+    await insertAuditLog({
+      actorId: applicantNumber,
+      role: user.role,
+      resourceType: "applicant",
+      resource: applicantNumber,
+      outcome: successOutcome,
+    });
+    delete loginAttempts[loginKey];
+
     res.json({
       message: "Login successful",
       token,
@@ -542,7 +834,7 @@ router.post("/login_applicant", async (req, res) => {
 });
 
 // POST VERIFY OTP
-router.post("/verify-otp", (req, res) => {
+router.post("/verify-otp", async (req, res) => {
   const { email, otp } = req.body;
   if (!email || !otp)
     return res.status(400).json({ message: "Email and OTP are required" });
@@ -579,6 +871,17 @@ router.post("/verify-otp", (req, res) => {
     loginAttempts[email] = record;
     return res.status(400).json({ message: "Invalid OTP. Please try again." });
   }
+
+  const failureCount = stored?.authFailureCount || 0;
+  const auditContext = stored?.auditContext || {};
+  const successOutcome = failureCount >= 2 ? "SUCCESS_AFTER_FAILURES" : "SUCCESS";
+  await insertAuditLog({
+    actorId: auditContext.actorId || email,
+    role: auditContext.role || "unknown",
+    resourceType: auditContext.resourceType || "unknown",
+    resource: auditContext.resource || email,
+    outcome: successOutcome,
+  });
 
   delete otpStore[email];
   delete loginAttempts[email];
@@ -727,6 +1030,5 @@ router.post("/update-otp-setting", async (req, res) => {
     res.status(500).json({ message: "Server error updating OTP setting" });
   }
 });
-
 
 module.exports = router;

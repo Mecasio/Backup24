@@ -11,6 +11,7 @@ import {
     InputLabel,
     Select,
     MenuItem,
+    TextField
 } from "@mui/material";
 import LoadingOverlay from "../components/LoadingOverlay";
 import Unauthorized from "../components/Unauthorized";
@@ -185,23 +186,38 @@ const CoursePanelMap = () => {
     const [selectedCampus, setSelectedCampus] = useState("");
     const [selectedAcademicProgram, setSelectedAcademicProgram] = useState("");
 
-    const filteredCurriculumList = curriculumList.filter((item) => {
-        // 🏫 CAMPUS FILTER
-        if (selectedCampus !== "") {
-            if (Number(item.components) !== Number(selectedCampus)) {
-                return false;
-            }
-        }
+    const [searchCurriculum, setSearchCurriculum] = useState("");
 
-        // 🎓 ACADEMIC PROGRAM FILTER
-        if (selectedAcademicProgram !== "") {
-            if (Number(item.academic_program) !== Number(selectedAcademicProgram)) {
-                return false;
+    const filteredCurriculumList = curriculumList
+        .filter((item) => {
+            // 🏫 CAMPUS FILTER
+            if (selectedCampus !== "") {
+                if (Number(item.components) !== Number(selectedCampus)) {
+                    return false;
+                }
             }
-        }
 
-        return true;
-    });
+            // 🎓 ACADEMIC PROGRAM FILTER
+            if (selectedAcademicProgram !== "") {
+                if (Number(item.academic_program) !== Number(selectedAcademicProgram)) {
+                    return false;
+                }
+            }
+
+            return true;
+        })
+        .filter((item) => {
+            if (!searchCurriculum) return true;
+
+            const search = searchCurriculum.toLowerCase();
+
+            return (
+                item.program_code?.toLowerCase().includes(search) ||
+                item.program_description?.toLowerCase().includes(search) ||
+                item.major?.toLowerCase().includes(search) ||
+                item.year_description?.toString().includes(search)
+            );
+        });
 
 
 
@@ -338,7 +354,14 @@ const CoursePanelMap = () => {
                 </Select>
             </FormControl>
 
-
+            <Typography fontWeight={500}>Search Curriculum:</Typography>
+            <TextField
+                fullWidth
+                placeholder="Search Program Code, Program Description"
+                value={searchCurriculum}
+                onChange={(e) => setSearchCurriculum(e.target.value)}
+                sx={{ maxWidth: 400, mb: 3 }}
+            />
 
             <Typography fontWeight={500}>Select Curriculum:</Typography>
             <FormControl sx={{ minWidth: 400, mb: 4 }}>
@@ -489,7 +512,7 @@ const CoursePanelMap = () => {
                                                                 <th style={headerStyle}>#</th>
                                                                 <th style={headerStyle}>COURSE CODE</th>
                                                                 <th style={headerStyle}>COURSE DESCRIPTION</th>
-                                                               
+
                                                                 <th style={headerStyle}>CREDITED UNITS</th>
                                                                 <th style={headerStyle}>PREREQUISITES</th>
 
@@ -503,7 +526,7 @@ const CoursePanelMap = () => {
                                                                     <td style={{ ...cellStyle, textAlign: "center" }}>{index + 1}</td>
                                                                     <td style={cellStyle}>{course.course_code}</td>
                                                                     <td style={cellStyle}>{course.course_description}</td>
-                                                                   
+
                                                                     <td style={{ ...cellStyle, textAlign: "center" }}>
                                                                         {course.course_unit}
                                                                     </td>

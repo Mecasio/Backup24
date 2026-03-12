@@ -753,7 +753,7 @@ const ExaminationProfile = ({ personId }) => {
                         <div
                             style={{
                                 position: "absolute",
-                                top: "35%",
+                                top: "25%",
                                 left: "50%",
                                 transform: "translate(-50%, -50%)",
                                 fontSize: "120px",
@@ -857,7 +857,7 @@ const ExaminationProfile = ({ personId }) => {
 
                                         <td colSpan={40} style={{ height: "0.5in", textAlign: "center" }}>
                                             {/* Header */}
-                                            <table width="100%" style={{ borderCollapse: "collapse", marginTop: "30px", fontFamily: "Arial" }}>
+                                            <table width="100%" style={{ borderCollapse: "collapse", marginTop: "15px", fontFamily: "Arial" }}>
                                                 <tbody>
                                                     <tr>
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useRef } from "react";
 import { SettingsContext } from "../App";
 import axios from "axios";
 import API_BASE_URL from "../apiConfig";
-import { Box, Typography, Button, Snackbar, Alert, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
+import { Box, Typography, Button, Snackbar, Alert, FormControl, InputLabel, Select, MenuItem, TextField } from "@mui/material";
 import LoadingOverlay from "../components/LoadingOverlay";
 
 const CurriculumCourseMap = () => {
@@ -246,24 +246,38 @@ const CurriculumCourseMap = () => {
   const [selectedCampus, setSelectedCampus] = useState("");
   const [selectedAcademicProgram, setSelectedAcademicProgram] = useState("");
 
-  const filteredCurriculumList = curriculumList.filter((item) => {
-    // 🏫 CAMPUS FILTER
-    if (selectedCampus !== "") {
-      if (Number(item.components) !== Number(selectedCampus)) {
-        return false;
+  const [searchCurriculum, setSearchCurriculum] = useState("");
+
+  const filteredCurriculumList = curriculumList
+    .filter((item) => {
+      // 🏫 CAMPUS FILTER
+      if (selectedCampus !== "") {
+        if (Number(item.components) !== Number(selectedCampus)) {
+          return false;
+        }
       }
-    }
 
-    // 🎓 ACADEMIC PROGRAM FILTER
-    if (selectedAcademicProgram !== "") {
-      if (Number(item.academic_program) !== Number(selectedAcademicProgram)) {
-        return false;
+      // 🎓 ACADEMIC PROGRAM FILTER
+      if (selectedAcademicProgram !== "") {
+        if (Number(item.academic_program) !== Number(selectedAcademicProgram)) {
+          return false;
+        }
       }
-    }
 
-    return true;
-  });
+      return true;
+    })
+    .filter((item) => {
+      if (!searchCurriculum) return true;
 
+      const search = searchCurriculum.toLowerCase();
+
+      return (
+        item.program_code?.toLowerCase().includes(search) ||
+        item.program_description?.toLowerCase().includes(search) ||
+        item.major?.toLowerCase().includes(search) ||
+        item.year_description?.toString().includes(search)
+      );
+    });
 
   const yearLevelIdMap = {
     "First Year": 1,
@@ -658,7 +672,14 @@ const CurriculumCourseMap = () => {
         </Select>
       </FormControl>
 
-
+      <Typography fontWeight={500}>Search Curriculum:</Typography>
+      <TextField
+        fullWidth
+        placeholder="Search Program Code, Program Description"
+        value={searchCurriculum}
+        onChange={(e) => setSearchCurriculum(e.target.value)}
+        sx={{ maxWidth: 400, mb: 3 }}
+      />
 
       <Typography fontWeight={500}>Select Curriculum:</Typography>
       <FormControl sx={{ minWidth: 400, mb: 4 }}>
@@ -1241,7 +1262,7 @@ const CurriculumCourseMap = () => {
               </Box>
             </Box>
           )
-        )
+          )
       }
 
       {/* SNACKBAR */}

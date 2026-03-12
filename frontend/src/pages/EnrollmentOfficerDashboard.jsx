@@ -24,9 +24,10 @@ import GroupIcon from "@mui/icons-material/Groups";
 import SchoolIcon from "@mui/icons-material/School";
 import PersonIcon from "@mui/icons-material/Person";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell, PieChart, Pie, Legend, Tooltip as RechartsTooltip } from "recharts";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import { useNavigate } from "react-router-dom";
 import API_BASE_URL from "../apiConfig";
 import EaristLogo from "../assets/EaristLogo.png";
 import Unauthorized from "../components/Unauthorized";
@@ -36,6 +37,7 @@ import LoadingOverlay from "../components/LoadingOverlay";
 const EnrollingOfficerDashboard = ({ profileImage, setProfileImage }) => {
 
     const settings = useContext(SettingsContext);
+    const navigate = useNavigate();
 
     const [titleColor, setTitleColor] = useState("#000000");
     const [subtitleColor, setSubtitleColor] = useState("#555555");
@@ -86,6 +88,7 @@ const EnrollingOfficerDashboard = ({ profileImage, setProfileImage }) => {
     const [years, setYears] = useState([]);
     const [months, setMonths] = useState("January");
     const [selectedYear, setSelectedYear] = useState("");
+    const [enrollmentStats, setEnrollmentStats] = useState(null);
 
     const [employeeID, setEmployeeID] = useState("");
     const [hasAccess, setHasAccess] = useState(null);
@@ -152,11 +155,6 @@ const EnrollingOfficerDashboard = ({ profileImage, setProfileImage }) => {
             console.error("Access list failed:", err);
         }
     };
-
-
-
-
-
 
     const formattedDate = new Date().toLocaleDateString("en-US", {
         weekday: "short",
@@ -232,6 +230,25 @@ const EnrollingOfficerDashboard = ({ profileImage, setProfileImage }) => {
             .then((res) => setYears(res.data))
             .catch((err) => console.error(err));
     }, []);
+
+    useEffect(() => {
+        axios
+            .get(`${API_BASE_URL}/active_school_year`)
+            .then((res) => {
+                const active = res.data?.[0];
+                if (active?.year_id) {
+                    setSelectedYear(active.year_id);
+                }
+            })
+            .catch((err) => console.error(err));
+    }, []);
+
+    useEffect(() => {
+        if (years.length > 0 && !selectedYear) {
+            setSelectedYear(years[0].year_id);
+        }
+    }, [years, selectedYear]);
+
 
     const stats = [
         {
@@ -354,6 +371,15 @@ const EnrollingOfficerDashboard = ({ profileImage, setProfileImage }) => {
     const [hovered, setHovered] = useState(false);
     const fileInputRef = useRef(null);
 
+    const [userDep, setUserDepartment] = useState("");
+    const [programOptions, setProgramOptions] = useState([]);
+    const [selectedProgram, setSelectedProgram] = useState("");
+    const [programStats, setProgramStats] = useState({
+        total_applicants: 0,
+        applicants_week: 0,
+        applicants_month: 0,
+    });
+
     useEffect(() => {
         const person_id = localStorage.getItem("person_id");
         const role = localStorage.getItem("role");
@@ -405,6 +431,72 @@ const EnrollingOfficerDashboard = ({ profileImage, setProfileImage }) => {
         }
     };
 
+    const yearDescription = years.find((y) => String(y.year_id) === String(selectedYear))?.year_description || "";
+
+    useEffect(() => {
+        const email = localStorage.getItem("email");
+
+        if (email) {
+            axios
+                .get(`${API_BASE_URL}/api/admin_data/${email}`)
+                .then((res) => setUserDepartment(res.data?.dprtmnt_id || ""))
+                .catch((err) => console.error("Failed to fetch person data:", err));
+        }
+    }, [])
+
+    useEffect(() => {
+        if (!userDep) return;
+        axios
+            .get(`${API_BASE_URL}/api/applied_program/${userDep}`)
+            .then((res) => {
+                const options = Array.isArray(res.data) ? res.data : [];
+                setProgramOptions(options);
+                if (!selectedProgram && options.length > 0) {
+                    setSelectedProgram(options[0].curriculum_id);
+                }
+            })
+            .catch((err) => console.error("Failed to fetch programs:", err));
+    }, [userDep, selectedProgram]);
+
+    useEffect(() => {
+        if (!selectedProgram) {
+            setProgramStats({
+                total_applicants: 0,
+                applicants_week: 0,
+                applicants_month: 0,
+            });
+            return;
+        }
+
+        axios
+            .get(`${API_BASE_URL}/api/applicants/program/stats`, {
+                params: { program_id: selectedProgram },
+            })
+            .then((res) => {
+                setProgramStats(res.data || {
+                    total_applicants: 0,
+                    applicants_week: 0,
+                    applicants_month: 0,
+                });
+            })
+            .catch((err) => console.error("Failed to fetch program stats:", err));
+    }, [selectedProgram]);
+
+    useEffect(() => {
+        if (!yearDescription || !userDep) return;
+        axios
+            .get(
+                `${API_BASE_URL}/get_enrollment_statistic/college/${yearDescription}/${userDep}`,
+                { params: { yearDescription, userDep } }
+            )
+            .then((res) => {
+                setEnrollmentStats(res.data);
+                console.log("Data", res.data);
+            })
+            .catch((err) => console.error(err));
+    }, [yearDescription, userDep]);
+
+
     const sections = [
         { name: "Section A", students: 30 },
         { name: "Section B", students: 40 },
@@ -414,6 +506,18 @@ const EnrollingOfficerDashboard = ({ profileImage, setProfileImage }) => {
         { name: "Section F", students: 16 },
         { name: "Section G", students: 22 },
     ];
+
+    const enrollmentData = [
+        { name: "Techvoc", value: Number(enrollmentStats?.Techvoc) || 0 },
+        { name: "Graduate", value: Number(enrollmentStats?.Graduate) || 0 },
+        { name: "Undergraduate", value: Number(enrollmentStats?.Undergraduate) || 0 },
+        { name: "Returnee", value: Number(enrollmentStats?.Returnee) || 0 },
+        { name: "Shiftee", value: Number(enrollmentStats?.Shiftee) || 0 },
+        { name: "Foreign Student", value: Number(enrollmentStats?.ForeignStudent) || 0 },
+        { name: "Transferee", value: Number(enrollmentStats?.Transferee) || 0 },
+    ];
+
+    const enrollmentColors = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#7E57C2", "#26A69A", "#EC407A"];
 
 
     if (loading || hasAccess === null)
@@ -635,74 +739,29 @@ const EnrollingOfficerDashboard = ({ profileImage, setProfileImage }) => {
                                 color: "#6c6c6c",
                             }}
                         >
-                            PIE GRAPH HERE
-                        </Box>
-
-                        {/* Column Stats */}
-                        <Box sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 2 }}>
-                            <Box
-                                sx={{
-                                    width: 120,
-                                    p: 3,
-                                 background: "#FCBEBB",
-                                    border: "2px solid black",
-                                    borderRadius: 2,
-                                    textAlign: "center",
-                                }}
-                            >
-                                <Typography variant="h5" fontWeight="bold">
-                                    521
-                                </Typography>
-                                <Typography fontSize={14}>Regular</Typography>
-                            </Box>
-
-                            <Box
-                                sx={{
-                                    width: 120,
-                                    p: 3,
-                                   background: "#FCBEBB",
-                                    border: "2px solid black",
-                                    borderRadius: 2,
-                                    textAlign: "center",
-                                }}
-                            >
-                                <Typography variant="h5" fontWeight="bold">
-                                    62
-                                </Typography>
-                                <Typography fontSize={14}>Irregular</Typography>
-                            </Box>
-
-                            <Box
-                                sx={{
-                                    width: 120,
-                                    p: 3,
-                                     background: "#FCBEBB",
-                                    border: "2px solid black",
-                                    borderRadius: 2,
-                                    textAlign: "center",
-                                }}
-                            >
-                                <Typography variant="h5" fontWeight="bold">
-                                    32
-                                </Typography>
-                                <Typography fontSize={14}>Transferee</Typography>
-                            </Box>
-
-                            <Box
-                                sx={{
-                                    width: 120,
-                                    p: 3,
-                                      background: "#FCBEBB",
-                                    border: "2px solid black",
-                                    borderRadius: 2,
-                                    textAlign: "center",
-                                }}
-                            >
-                                <Typography variant="h5" fontWeight="bold">
-                                    7
-                                </Typography>
-                                <Typography fontSize={14}>Shiftee</Typography>
-                            </Box>
+                            {enrollmentData.some((d) => d.value > 0) ? (
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <PieChart>
+                                        <Pie
+                                            data={enrollmentData}
+                                            dataKey="value"
+                                            nameKey="name"
+                                            cx="50%"
+                                            cy="50%"
+                                            outerRadius={120}
+                                            label
+                                        >
+                                            {enrollmentData.map((_, i) => (
+                                                <Cell key={`cell-${i}`} fill={enrollmentColors[i % enrollmentColors.length]} />
+                                            ))}
+                                        </Pie>
+                                        <RechartsTooltip />
+                                        <Legend />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            ) : (
+                                <Typography color="text.secondary">No data available</Typography>
+                            )}
                         </Box>
                     </Box>
                 </Card>
@@ -735,11 +794,14 @@ const EnrollingOfficerDashboard = ({ profileImage, setProfileImage }) => {
                             <InputLabel>Select Program</InputLabel>
                             <Select
                                 label="Select Program"
-                                value={""}
-                                onChange={""}
+                                value={selectedProgram}
+                                onChange={(e) => setSelectedProgram(e.target.value)}
                             >
-                                <MenuItem value="CAS">COURSE 1</MenuItem>
-                                <MenuItem value="CEIS"> COURSE 2</MenuItem>
+                                {programOptions.map((opt) => (
+                                    <MenuItem key={opt.curriculum_id} value={opt.curriculum_id}>
+                                        {opt.program_code} - {opt.program_description}
+                                    </MenuItem>
+                                ))}
                             </Select>
                         </FormControl>
                         {/* Stats Boxes */}
@@ -756,7 +818,9 @@ const EnrollingOfficerDashboard = ({ profileImage, setProfileImage }) => {
                                         height: 90,
                                     }}
                                 >
-                                    <Typography variant="h6" fontWeight="bold" sx={{ marginTop: "9px" }}>521</Typography>
+                                    <Typography variant="h6" fontWeight="bold" sx={{ marginTop: "9px" }}>
+                                        {programStats.total_applicants || 0}
+                                    </Typography>
                                     <Typography fontSize={12}>Total Applicants</Typography>
                                 </Box>
                             </Grid>
@@ -773,7 +837,9 @@ const EnrollingOfficerDashboard = ({ profileImage, setProfileImage }) => {
                                         height: 90,
                                     }}
                                 >
-                                    <Typography variant="h6" fontWeight="bold" sx={{ marginTop: "9px" }}>73</Typography>
+                                    <Typography variant="h6" fontWeight="bold" sx={{ marginTop: "9px" }}>
+                                        {programStats.applicants_week || 0}
+                                    </Typography>
                                     <Typography fontSize={12}>This Week</Typography>
                                 </Box>
                             </Grid>
@@ -790,7 +856,9 @@ const EnrollingOfficerDashboard = ({ profileImage, setProfileImage }) => {
                                         height: 90,
                                     }}
                                 >
-                                    <Typography variant="h6" fontWeight="bold" sx={{ marginTop: "9px" }}>234</Typography>
+                                    <Typography variant="h6" fontWeight="bold" sx={{ marginTop: "9px" }}>
+                                        {programStats.applicants_month || 0}
+                                    </Typography>
                                     <Typography fontSize={12}>This Month</Typography>
                                 </Box>
                             </Grid>
@@ -1041,6 +1109,7 @@ const EnrollingOfficerDashboard = ({ profileImage, setProfileImage }) => {
                                 color="primary"
                                 fullWidth
                                 sx={{ textTransform: "none" }}
+                                onClick={() => navigate("/student_numbering_per_college")}
                             >
                                 Assign Student Number
                             </Button>
@@ -1050,6 +1119,7 @@ const EnrollingOfficerDashboard = ({ profileImage, setProfileImage }) => {
                                 color="secondary"
                                 fullWidth
                                 sx={{ textTransform: "none" }}
+                                onClick={() => navigate("/course_tagging_for_college")}
                             >
                                 Assign Subject To Student
                             </Button>

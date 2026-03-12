@@ -39,7 +39,7 @@ const allowedOrigins = [
   'http://192.168.50.211:5173',
   'http://136.239.248.62:5173',
   'http://192.168.50.62:5173',
-  'http://192.168.50.62:5173',
+  'http://192.168.50.65:5173',
 ];
 
 app.use(
@@ -3226,7 +3226,8 @@ app.get("/api-applicant-scoring", async (req, res) => {
         ON p.person_id = ps.person_id
       LEFT JOIN admission.interview_applicants ia
         ON ia.applicant_id = a.applicant_number
-
+      LEFT JOIN admission.exam_applicants ea ON a.applicant_number = ea.applicant_id
+      WHERE ea.email_sent = 1
       ORDER BY p.person_id ASC;
     `);
 
@@ -15591,6 +15592,35 @@ app.get("/api/applicants/department/year", async (req, res) => {
   }
 });
 
+app.get("/api/applicants/program/stats", async (req, res) => {
+  const { program_id } = req.query;
+
+  if (!program_id) {
+    return res.status(400).json({ error: "Missing program_id" });
+  }
+
+  try {
+    const [rows] = await db.query(
+      `
+      SELECT
+        COUNT(pt.person_id) AS total_applicants,
+        SUM(CASE WHEN pt.created_at BETWEEN DATE_SUB(NOW(), INTERVAL 7 DAY) AND NOW() THEN 1 ELSE 0 END) AS applicants_week,
+        SUM(CASE WHEN pt.created_at BETWEEN DATE_SUB(NOW(), INTERVAL 30 DAY) AND NOW() THEN 1 ELSE 0 END) AS applicants_month
+      FROM admission.person_status_table pst
+      INNER JOIN admission.person_table pt ON pst.person_id = pt.person_id
+      INNER JOIN enrollment.curriculum_table ct ON pt.program = ct.curriculum_id
+      WHERE ct.program_id = ?
+    `,
+      [program_id],
+    );
+
+    res.json(rows[0] || { total_applicants: 0, applicants_week: 0, applicants_month: 0 });
+  } catch (err) {
+    console.error("Program stats error:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
 app.get("/api/applicants/filter", async (req, res) => {
   let { department_id, program_code } = req.query;
 
@@ -15821,7 +15851,6 @@ app.get("/api/ecat-summary", async (req, res) => {
     `);
 
     res.json(rows);
-    console.log(rows);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
@@ -16126,13 +16155,14 @@ app.get("/get_enrollment_statistic", async (req, res) => {
 
     let query = `
       SELECT
-        SUM(CASE WHEN academicProgram = 'Techvoc' THEN 1 ELSE 0 END) AS Techvoc,
-        SUM(CASE WHEN academicProgram = 'Graduate' THEN 1 ELSE 0 END) AS Graduate,
+        SUM(CASE WHEN academicProgram = 2 THEN 1 ELSE 0 END) AS Techvoc,
+        SUM(CASE WHEN academicProgram = 1 THEN 1 ELSE 0 END) AS Graduate,
+        SUM(CASE WHEN academicProgram = 0 THEN 1 ELSE 0 END) AS Undergraduate,
         SUM(CASE WHEN classifiedAs = 'Returnee' THEN 1 ELSE 0 END) AS Returnee,
         SUM(CASE WHEN classifiedAs = 'Shiftee' THEN 1 ELSE 0 END) AS Shiftee,
         SUM(CASE WHEN classifiedAs = 'Foreign Student' THEN 1 ELSE 0 END) AS ForeignStudent,
         SUM(CASE WHEN classifiedAs = 'Transferee' THEN 1 ELSE 0 END) AS Transferee
-      FROM person_table
+      FROM person_table 
     `;
 
     const params = [];
@@ -16145,6 +16175,39 @@ app.get("/get_enrollment_statistic", async (req, res) => {
     const [rows] = await db3.execute(query, params);
 
     res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+app.get("/get_enrollment_statistic/college/:yearDescription/:userDep", async (req, res) => {
+  try {
+    const { yearDescription, userDep } = req.params;
+
+    if (!yearDescription || !userDep) {
+      return res.status(400).json({ error: "Missing required parameters: year, dprtmnt_id" });
+    }
+
+    const query = `
+      SELECT
+        SUM(CASE WHEN academicProgram = 2 THEN 1 ELSE 0 END) AS Techvoc,
+        SUM(CASE WHEN academicProgram = 1 THEN 1 ELSE 0 END) AS Graduate,
+        SUM(CASE WHEN academicProgram = 0 THEN 1 ELSE 0 END) AS Undergraduate,
+        SUM(CASE WHEN classifiedAs = 'Returnee' THEN 1 ELSE 0 END) AS Returnee,
+        SUM(CASE WHEN classifiedAs = 'Shiftee' THEN 1 ELSE 0 END) AS Shiftee,
+        SUM(CASE WHEN classifiedAs = 'Foreign Student' THEN 1 ELSE 0 END) AS ForeignStudent,
+        SUM(CASE WHEN classifiedAs = 'Transferee' THEN 1 ELSE 0 END) AS Transferee
+      FROM person_table 
+      INNER JOIN dprtmnt_curriculum_table 
+        ON person_table.program = dprtmnt_curriculum_table.curriculum_id
+      WHERE dprtmnt_curriculum_table.dprtmnt_id = ? AND YEAR(person_table.created_at) = ?
+    `;
+
+    const [rows] = await db3.query(query, [userDep, yearDescription]);
+
+    res.json(rows[0]);
+    console.log("DATA: ", rows[0])
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });

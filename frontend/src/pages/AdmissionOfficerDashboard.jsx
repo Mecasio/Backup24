@@ -175,10 +175,10 @@ const AdmissionOfficerDashboard = ({ profileImage, setProfileImage }) => {
           console.log("count", res.data);
           const d = res.data[0];
           setPieData([
-            { name: "Applied", value: 236 },
-            { name: "Scheduled", value: 16 },
-            { name: "Pending", value: 220 },
-            { name: "Finished", value: 215 },
+            { name: "Applied", value: Number(d.total_applied) || 0 },
+            { name: "Scheduled", value: Number(d.total_scheduled) || 0 },
+            { name: "Pending", value: Number(d.total_pending) || 0 },
+            { name: "Finished", value: Number(d.total_finished) || 0 },
           ]);
         })
         .catch((err) => console.error(err));

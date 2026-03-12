@@ -74,8 +74,8 @@ router.post("/register_registrar", upload.single("profile_picture"), async (req,
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // 👤 Create person record
-    const [personInsert] = await db3.query("INSERT INTO person_table () VALUES ()");
-    const person_id = personInsert.insertId;
+      // const [personInsert] = await db3.query("INSERT INTO person_table () VALUES ()");
+      // const person_id = personInsert.insertId;
 
     // 🖼 IMAGE HANDLING — SAME AS POST & PUT
     let profilePicName = null;
@@ -113,7 +113,7 @@ router.post("/register_registrar", upload.single("profile_picture"), async (req,
        (person_id, employee_id, last_name, middle_name, first_name, role, email, password, status, dprtmnt_id, profile_picture, access_level)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        person_id,
+        employee_id,
         employee_id,
         last_name,
         middle_name,

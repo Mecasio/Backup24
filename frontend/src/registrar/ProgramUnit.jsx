@@ -11,6 +11,7 @@ import {
     Alert,
     Select,
     MenuItem,
+    TextField
 } from "@mui/material";
 import Unauthorized from "../components/Unauthorized";
 import LoadingOverlay from "../components/LoadingOverlay";
@@ -258,23 +259,38 @@ const ProgramUnit = () => {
     const [selectedCampus, setSelectedCampus] = useState("");
     const [selectedAcademicProgram, setSelectedAcademicProgram] = useState("");
 
-    const filteredCurriculumList = curriculumList.filter((item) => {
-        // 🏫 CAMPUS FILTER
-        if (selectedCampus !== "") {
-            if (Number(item.components) !== Number(selectedCampus)) {
-                return false;
-            }
-        }
+    const [searchCurriculum, setSearchCurriculum] = useState("");
 
-        // 🎓 ACADEMIC PROGRAM FILTER
-        if (selectedAcademicProgram !== "") {
-            if (Number(item.academic_program) !== Number(selectedAcademicProgram)) {
-                return false;
+    const filteredCurriculumList = curriculumList
+        .filter((item) => {
+            // 🏫 CAMPUS FILTER
+            if (selectedCampus !== "") {
+                if (Number(item.components) !== Number(selectedCampus)) {
+                    return false;
+                }
             }
-        }
 
-        return true;
-    });
+            // 🎓 ACADEMIC PROGRAM FILTER
+            if (selectedAcademicProgram !== "") {
+                if (Number(item.academic_program) !== Number(selectedAcademicProgram)) {
+                    return false;
+                }
+            }
+
+            return true;
+        })
+        .filter((item) => {
+            if (!searchCurriculum) return true;
+
+            const search = searchCurriculum.toLowerCase();
+
+            return (
+                item.program_code?.toLowerCase().includes(search) ||
+                item.program_description?.toLowerCase().includes(search) ||
+                item.major?.toLowerCase().includes(search) ||
+                item.year_description?.toString().includes(search)
+            );
+        });
 
     const yearOrder = {
         "First Year": 1,
@@ -403,6 +419,15 @@ const ProgramUnit = () => {
                     <MenuItem value="2">Techvoc</MenuItem>
                 </Select>
             </FormControl>
+
+            <Typography fontWeight={500}>Search Curriculum:</Typography>
+            <TextField
+                fullWidth
+                placeholder="Search Program Code, Program Description"
+                value={searchCurriculum}
+                onChange={(e) => setSearchCurriculum(e.target.value)}
+                sx={{ maxWidth: 400, mb: 3 }}
+            />
 
 
             <Typography fontWeight={500}>Select Curriculum:</Typography>

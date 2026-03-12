@@ -1462,9 +1462,9 @@ th, td {
 
   const [selectedApplicants, setSelectedApplicants] = useState(new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [singleConfirmOpen, setSingleConfirmOpen] = useState(false);
   const [emailSender, setEmailSender] = useState("");
   const [dprtmntName, setDepartmentName] = useState("");
-
 
   useEffect(() => {
     const fetchActiveSenders = async () => {
@@ -1488,12 +1488,14 @@ th, td {
   useEffect(() => {
     const fetchDepartment = async () => {
       try {
-        const res = await axios.get(`${API_BASE_URL}/dprtmnt_curriculum/${adminData.dprtmnt_id}`);
+        const res = await axios.get(
+          `${API_BASE_URL}/dprtmnt_curriculum/${adminData.dprtmnt_id}`,
+        );
         setDepartmentName(res.data[0]?.dprtmnt_name);
       } catch (err) {
         console.error("Error fetching active senders:", err);
       }
-    }
+    };
 
     fetchDepartment();
   }, [adminData.dprtmnt_id]);
@@ -1575,7 +1577,7 @@ Thank you, best regards
 
     setSelectedApplicant(applicant?.applicant_number || null);
     setEmailMessage(defaultMessage);
-    setConfirmOpen(true);
+    setSingleConfirmOpen(true);
   };
 
   const confirmSendEmailSingle = async () => {
@@ -1662,7 +1664,78 @@ Thank you, best regards
     setLoading2(false);
   };
 
-  const confirmSendEmails = () => confirmSendEmailSingle();
+  const confirmSendEmails = async () => {
+    setLoading2(true);
+    const targets = selectedApplicant
+      ? persons.filter((p) => p.applicant_number === selectedApplicant)
+      : persons.filter((p) => p.interview_status === "Accepted");
+
+    if (targets.length === 0) {
+      setLoading2(false);
+      setSnack({
+        open: true,
+        message: "No applicants to send email to.",
+        severity: "warning",
+      });
+      return;
+    }
+
+    let successCount = 0;
+
+    for (const applicant of targets) {
+      // ✅ Try all possible email fields
+      const recipientEmail =
+        applicant.email || applicant.email_address || applicant.emailAddress;
+
+      if (!recipientEmail) {
+        console.warn(
+          `⚠️ Applicant ${applicant.applicant_number} has no email field`,
+        );
+        continue; // skip if no email available
+      }
+
+      try {
+        // Send email
+        await axios.post(`${API_BASE_URL}/api/send-email`, {
+          to: recipientEmail,
+          subject: emailSubject,
+          html: emailMessage.replace(/\n/g, "<br/>"),
+          senderName: emailSender,
+          user_person_id: userID,
+        });
+
+        // Mark as emailed
+        await axios.put(
+          `${API_BASE_URL}/api/interview_applicants/${applicant.applicant_number}/action`,
+        );
+
+        successCount++;
+      } catch (err) {
+        console.error(`❌ Failed for ${applicant.applicant_number}`, err);
+        // Continue to next instead of breaking everything
+      }
+
+      // optional: small delay to avoid spam blocking (100–300ms)
+      await new Promise((res) => setTimeout(res, 200));
+    }
+
+    // remove the successfully emailed applicants
+    setPersons((prev) =>
+      prev.filter(
+        (p) => !targets.some((t) => t.applicant_number === p.applicant_number),
+      ),
+    );
+
+    setSnack({
+      open: true,
+      message: `Emails sent to ${successCount} out of ${targets.length} applicants`,
+      severity: successCount === targets.length ? "success" : "warning",
+    });
+
+    setConfirmOpen(false);
+    setSelectedApplicant(null);
+    setLoading2(false);
+  };
 
   // Email fields - start empty
   const [emailSubject, setEmailSubject] = useState(
@@ -2587,17 +2660,17 @@ Thank you, best regards
                 color="error"
                 onClick={handleUnassignAll}
                 sx={{ minWidth: 150 }}
-              >
+              > 
                 Unassign All
               </Button>
 
               <Button
                 variant="contained"
                 color="success"
-                onClick={() => handleOpenDialogSingle(person)}
-                sx={{ width: "130px", height: "37px" }}
+                onClick={() => handleOpenDialog(null)}
+                sx={{ width: "160px", height: "37px" }}
               >
-                Send Email
+                Send Email to All
               </Button>
             </Box>
           </Box>
@@ -3331,6 +3404,71 @@ Thank you, best regards
 
           <Button
             onClick={confirmSendEmails}
+            color="success"
+            variant="contained"
+            sx={{ minWidth: "140px", height: "40px" }}
+          >
+            Send Emails
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={singleConfirmOpen}
+        onClose={() => setSingleConfirmOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ bgcolor: "#800000", color: "white" }}>
+          ✉️ Edit & Send Email
+        </DialogTitle>
+
+        <DialogContent dividers sx={{ p: 3 }}>
+          {/* Sender */}
+          <TextField
+            label="Sender"
+            value={dprtmntName}
+            fullWidth
+            InputProps={{ readOnly: true }}
+            sx={{ mb: 3 }}
+          />
+
+          {/* Subject */}
+          <TextField
+            label="Subject"
+            value={emailSubject}
+            onChange={(e) => setEmailSubject(e.target.value)}
+            fullWidth
+            sx={{ mb: 3 }}
+          />
+
+          {/* Message */}
+          <TextField
+            label="Message"
+            value={emailMessage}
+            onChange={(e) => setEmailMessage(e.target.value)}
+            fullWidth
+            multiline
+            minRows={10}
+            placeholder="Write your message here..."
+            sx={{
+              fontFamily: "monospace",
+              whiteSpace: "pre-wrap",
+            }}
+          />
+        </DialogContent>
+
+        <DialogActions sx={{ p: 2, justifyContent: "space-between" }}>
+          <Button
+            onClick={() => setSingleConfirmOpen(false)}
+            color="error"
+            variant="outlined"
+          >
+            Cancel
+          </Button>
+
+          <Button
+            onClick={confirmSendEmailSingle}
             color="success"
             variant="contained"
             sx={{ minWidth: "140px", height: "40px" }}

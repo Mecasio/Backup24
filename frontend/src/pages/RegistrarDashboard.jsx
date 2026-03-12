@@ -149,8 +149,6 @@ const Dashboard = ({ profileImage, setProfileImage }) => {
     }
   };
 
-
-
   const [dateTime, setDateTime] = useState(new Date());
 
   const formattedDate = new Date().toLocaleDateString("en-US", {
@@ -329,8 +327,6 @@ const Dashboard = ({ profileImage, setProfileImage }) => {
 
   const handlePrevMonth = () => setDate(new Date(year, month - 1, 1));
   const handleNextMonth = () => setDate(new Date(year, month + 1, 1));
-
-
   const [holidays, setHolidays] = useState({});
 
   useEffect(() => {
@@ -452,12 +448,12 @@ const Dashboard = ({ profileImage, setProfileImage }) => {
     axios.get(`${API_BASE_URL}/api/ecat-summary`)
       .then((res) => {
         console.log("count", res.data);
-        const d = res.data[0];
+        const d = res.data?.[0] || {};
         setPieData([
-          { name: "Applied", value: 236 },
-          { name: "Scheduled", value: 16 },
-          { name: "Pending", value: 220 },
-          { name: "Finished", value: 215 },
+          { name: "Applied", value: Number(d.total_applied) || 0 },
+          { name: "Scheduled", value: Number(d.total_scheduled) || 0 },
+          { name: "Pending", value: Number(d.total_pending) || 0 },
+          { name: "Finished", value: Number(d.total_finished) || 0 },
         ]);
       })
       .catch((err) => console.error(err));
@@ -469,7 +465,6 @@ const Dashboard = ({ profileImage, setProfileImage }) => {
         params: { year: selectedYear },
       })
       .then(res => {
-        console.log("Enrollment Data:", res.data);
         setData(res.data);
       })
       .catch(err => console.error(err));
@@ -486,6 +481,7 @@ const Dashboard = ({ profileImage, setProfileImage }) => {
   const enrollmentData = [
     { name: "Techvoc", value: Number(data.Techvoc) || 0 },
     { name: "Graduate", value: Number(data.Graduate) || 0 },
+    { name: "Undergraduate", value: Number(data.Undergraduate) || 0 },
     { name: "Returnee", value: Number(data.Returnee) || 0 },
     { name: "Shiftee", value: Number(data.Shiftee) || 0 },
     { name: "Foreign Student", value: Number(data.ForeignStudent) || 0 },
@@ -935,7 +931,7 @@ const Dashboard = ({ profileImage, setProfileImage }) => {
           <Grid item xs={12} md={4}>
             <Card
               sx={{
-                width: 600,
+                width: 900,
                 height: 700,
                 p: 3,
                 borderRadius: 3,
@@ -979,7 +975,7 @@ const Dashboard = ({ profileImage, setProfileImage }) => {
                   <Box
                     key={idx}
                     sx={{
-                      width: 86,
+                      width: "200px",
                       height: 90,
                       p: 2,
                       backgroundColor: "#fef9e1",
