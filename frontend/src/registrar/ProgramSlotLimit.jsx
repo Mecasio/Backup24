@@ -530,8 +530,13 @@ const ProgramSlotLimit = () => {
             />
           </FormControl>
 
+        </Box>
+
+
+        <Box width="100%" display="flex" gap={2} sx={{ mt: 3 }}>
           <Button
             variant="contained"
+            sx={{ minWidth: 250, height: 55 }}
             onClick={handleConfirmSave}
             disabled={!selectedProgram || !yearId || !semesterId}
           >
@@ -540,6 +545,7 @@ const ProgramSlotLimit = () => {
 
           <Button
             variant="contained"
+            sx={{ minWidth: 250, height: 55 }}
             onClick={handleConfirmSaveAll}
             disabled={
               !selectedDepartmentFilter ||
@@ -555,6 +561,7 @@ const ProgramSlotLimit = () => {
           <Button
             variant="contained"
             onClick={handleConfirmSaveAllPrograms}
+            sx={{ minWidth: 250, height: 55 }}
             disabled={!yearId || !semesterId || !maxSlots}
           >
             Save All

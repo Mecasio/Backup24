@@ -269,6 +269,7 @@ const RegistrarExamPermit = ({ personId }) => {
                 marginTop: "20px",
                 border: "2px solid black",
                 boxSizing: "border-box",
+                border: "2px solid black"
             }}
         >
             <style>{`
@@ -630,7 +631,7 @@ const RegistrarExamPermit = ({ personId }) => {
                                         width: "100%",
                                     }}
                                 >
-                                    <div style={{ display: "flex", alignItems: "center", marginTop: "-155px" }}>
+                                    <div style={{ display: "flex", alignItems: "center", marginTop: "-130px" }}>
                                         <label style={{ fontWeight: "bold", marginRight: "10px", width: "80px" }}>
                                             Room No.:
                                         </label>
@@ -639,7 +640,7 @@ const RegistrarExamPermit = ({ personId }) => {
                                                 flexGrow: 1,
                                                 borderBottom: "1px solid black",
                                                 fontFamily: "Arial",
-                                                width: "140px",
+                                                width: "150px",
                                             }}
                                         >
                                             {examSchedule?.room_description || ""}

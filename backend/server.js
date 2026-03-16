@@ -39,7 +39,7 @@ const allowedOrigins = [
   'http://192.168.50.211:5173',
   'http://136.239.248.62:5173',
   'http://192.168.50.62:5173',
-  'http://192.168.0.180:5173',
+  'http://192.168.50.53:5173',
 ];
 
 app.use(
@@ -2895,7 +2895,7 @@ app.get("/api/notifications", async (req, res) => {
 });
 
 // -------------------------------------------- GET APPLICANT ADMISSION DATA ------------------------------------------------//
-app.get("/api/all-applicants", async (req, res) => {
+app.get("/api/medical-applicants", async (req, res) => {
   try {
     const [rows] = await db.execute(`
       SELECT
@@ -2952,6 +2952,134 @@ app.get("/api/all-applicants", async (req, res) => {
       INNER JOIN enrollment.person_table AS pst ON p.emailAddress = pst.emailAddress
       INNER JOIN enrollment.student_numbering_table AS snt
         ON pst.person_id = snt.person_id
+
+      /* get aggregated missing_documents for display only */
+      LEFT JOIN (
+        SELECT
+          person_id,
+          GROUP_CONCAT(missing_documents SEPARATOR '||') AS all_missing_docs
+        FROM admission.requirement_uploads
+        GROUP BY person_id
+      ) AS ruagg ON ruagg.person_id = p.person_id
+
+      /* ✅ get the prioritized row per applicant */
+      LEFT JOIN admission.requirement_uploads AS ruprio
+        ON ruprio.upload_id = (
+          SELECT ru2.upload_id
+          FROM admission.requirement_uploads ru2
+          WHERE ru2.person_id = p.person_id
+          ORDER BY
+            CASE
+              WHEN ru2.document_status = 'Disapproved' THEN 1
+              WHEN ru2.document_status = 'Program Closed' THEN 2
+              WHEN ru2.document_status = 'Documents Verified & ECAT' THEN 3
+              WHEN ru2.document_status = 'On process' THEN 4
+              ELSE 5
+            END ASC,
+            ru2.upload_id DESC
+          LIMIT 1
+        )
+
+      LEFT JOIN admission.person_status_table AS ps
+        ON p.person_id = ps.person_id
+
+      /* ✅ subquery: count verified docs for this applicant */
+      LEFT JOIN (
+        SELECT person_id, COUNT(DISTINCT requirements_id) AS verified_count
+        FROM admission.requirement_uploads
+        WHERE document_status = 'Documents Verified & ECAT'
+          AND requirements_id IN (1,2,3,4)
+        GROUP BY person_id
+      ) AS vdocs ON vdocs.person_id = p.person_id
+
+      ORDER BY p.last_name ASC, p.first_name ASC
+    `);
+
+    // Parse aggregated missing_documents into array (if present)
+    const merged = rows.map((r) => {
+      let mergedDocs = [];
+      if (r.all_missing_docs) {
+        const parts = r.all_missing_docs.split("||");
+        const all = parts.flatMap((item) => {
+          try {
+            if (!item || item === "null") return [];
+            return JSON.parse(item);
+          } catch {
+            return [];
+          }
+        });
+        mergedDocs = [...new Set(all)];
+      }
+      return {
+        ...r,
+        missing_documents: mergedDocs,
+      };
+    });
+
+    res.json(merged);
+  } catch (err) {
+    console.error("❌ Error fetching all applicants:", err);
+    res.status(500).send("Server error");
+  }
+});
+
+
+app.get("/api/all-applicants", async (req, res) => {
+  try {
+    const [rows] = await db.execute(`
+      SELECT
+        snt.student_number,
+        p.person_id,
+        p.last_name,
+        p.first_name,
+        p.middle_name,
+        p.extension,
+        p.program,
+        pgt.program_code,
+        p.emailAddress,
+        p.generalAverage,
+        p.generalAverage1,
+        p.campus,
+        p.created_at,
+        p.birthOfDate,
+        p.gender,
+        p.strand,
+        a.applicant_number,
+        SUBSTRING(a.applicant_number, 5, 1) AS middle_code,
+        ea.schedule_id,
+        ees.day_description AS exam_day,
+        ees.room_description AS exam_room,
+        ees.start_time AS exam_start_time,
+        ees.end_time AS exam_end_time,
+
+        /* latest prioritized upload id for this person */
+        ruprio.upload_id AS upload_id,
+        ruprio.submitted_medical,
+
+        /* ✅ allow NULL values to pass through */
+        ruprio.submitted_documents,
+        ruprio.registrar_status,
+
+        /* collect missing_documents across uploads if you still want to show aggregated missing docs */
+        ruagg.all_missing_docs,
+
+        ruprio.document_status,
+        ruprio.created_at AS last_updated,
+        ps.exam_status,
+
+        /* ✅ NEW: how many required docs are verified */
+        COALESCE(vdocs.verified_count, 0) AS required_docs_verified
+
+      FROM admission.person_table AS p
+      LEFT JOIN admission.applicant_numbering_table AS a
+        ON p.person_id = a.person_id
+      LEFT JOIN admission.exam_applicants AS ea
+        ON a.applicant_number = ea.applicant_id
+      LEFT JOIN admission.entrance_exam_schedule AS ees
+        ON ea.schedule_id = ees.schedule_id
+       LEFT JOIN enrollment.program_table AS pgt ON p.program = pgt.program_id
+      LEFT JOIN enrollment.student_numbering_table AS snt
+        ON p.person_id = snt.person_id
 
       /* get aggregated missing_documents for display only */
       LEFT JOIN (
@@ -15140,9 +15268,25 @@ app.post(
 app.get("/api/student_status/:person_id", async (req, res) => {
   const { person_id } = req.params;
   try {
+    const [applicantEmail] = await db.query(
+      `SELECT emailAddress FROM person_table WHERE person_id = ?`, [person_id]
+    )
+
+    if(applicantEmail.length === 0) {
+      return res.status(500).json({message: "Email Address not found"})
+    }
+
+    const [studentPersonID] = await db3.query(
+      `SELECT person_id FROM person_table WHERE emailAddress = ?`, [applicantEmail[0].emailAddress]
+    );
+
+    if(studentPersonID.length === 0) {
+      return res.status(500).json({message: "Person Id of this email is not found"})
+    }
+
     const [rows] = await db3.query(
       "SELECT student_number FROM student_numbering_table WHERE person_id = ?",
-      [person_id],
+      [studentPersonID[0].person_id],
     );
 
     if (rows.length > 0 && rows[0].student_number) {

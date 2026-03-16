@@ -1211,25 +1211,16 @@ const ExaminationProfile = ({ personId }) => {
                                                     justifyContent: "space-between", // space text & QR
                                                 }}
                                             >
-                                                <div style={{ display: "flex", alignItems: "center", marginTop: "-148px" }}>
-                                                    <label
-                                                        style={{
-                                                            fontWeight: "bold",
-                                                            whiteSpace: "nowrap",
-                                                            marginRight: "10px",
-                                                        }}
-                                                    >
-                                                        Room No. :
+                                                <div style={{ display: "flex", alignItems: "center", marginTop: "-130px" }}>
+                                                    <label style={{ fontWeight: "bold", marginRight: "10px", width: "80px" }}>
+                                                        Room No.:
                                                     </label>
                                                     <span
                                                         style={{
                                                             flexGrow: 1,
                                                             borderBottom: "1px solid black",
-                                                            height: "1.2em",
                                                             fontFamily: "Arial",
-                                                            marginRight: "20px",
-                                                            width: "140px",
-                                                            textAlign: "left"
+                                                            width: "150px",
                                                         }}
                                                     >
                                                         {examSchedule?.room_description || ""}

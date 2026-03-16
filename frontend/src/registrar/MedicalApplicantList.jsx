@@ -298,7 +298,7 @@ const MedicalApplicantList = () => {
     // ⬇️ Add this inside ApplicantList component, before useEffect
     const fetchApplicants = async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/api/all-applicants`);
+            const res = await fetch(`${API_BASE_URL}/api/medical-applicants`);
             const data = await res.json();
             setPersons(data);
         } catch (err) {
@@ -339,7 +339,7 @@ const MedicalApplicantList = () => {
 
     useEffect(() => {
         // Replace this with your actual API endpoint
-        fetch(`${API_BASE_URL}/api/all-applicants`)
+        fetch(`${API_BASE_URL}/api/medical-applicants`)
             .then((res) => res.json())
             .then((data) => setPersons(data)) // ✅ Correct
 
@@ -347,7 +347,7 @@ const MedicalApplicantList = () => {
 
     useEffect(() => {
         socket.current.on("document_status_updated", () => {
-            fetch(`${API_BASE_URL}/api/all-applicants`)
+            fetch(`${API_BASE_URL}/api/medical-applicants`)
                 .then((res) => res.json())
                 .then((data) => setPersons(data));
         });
@@ -537,7 +537,7 @@ const MedicalApplicantList = () => {
     }
 
     useEffect(() => {
-        fetch(`${API_BASE_URL}/api/all-applicants`) // 👈 This is the new endpoint
+        fetch(`${API_BASE_URL}/api/medical-applicants`) // 👈 This is the new endpoint
             .then((res) => res.json())
 
             .catch((err) => console.error("Error fetching applicants:", err));

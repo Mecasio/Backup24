@@ -21,19 +21,19 @@ const parseAccessPages = (rawAccessPage) => {
 };
 
 router.get("/get_employee", async (req, res) => {
-  try{
+  try {
     const [rows] = await db3.query(`
       SELECT id, employee_id, first_name, last_name, middle_name, email, role AS position, dprtmnt_id FROM user_accounts WHERE role != 'student';  
     `)
 
-    if(rows.length === 0) {
-      res.status(400).json({message: "Theres no employee found in the record"});
+    if (rows.length === 0) {
+      res.status(400).json({ message: "Theres no employee found in the record" });
     }
 
     res.json(rows);
     console.log("Data: ", rows);
   } catch (err) {
-    res.status(500).json({message: "Internal Server Error", err});
+    res.status(500).json({ message: "Internal Server Error", err });
   }
 })
 
@@ -74,8 +74,8 @@ router.post("/register_registrar", upload.single("profile_picture"), async (req,
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // 👤 Create person record
-      // const [personInsert] = await db3.query("INSERT INTO person_table () VALUES ()");
-      // const person_id = personInsert.insertId;
+    // const [personInsert] = await db3.query("INSERT INTO person_table () VALUES ()");
+    // const person_id = personInsert.insertId;
 
     // 🖼 IMAGE HANDLING — SAME AS POST & PUT
     let profilePicName = null;
@@ -107,13 +107,20 @@ router.post("/register_registrar", upload.single("profile_picture"), async (req,
     // 🏷 Department NULL allowed
     const deptValue = dprtmnt_id === "" ? null : dprtmnt_id;
 
+    const [registrar] = await db3.query(
+      `SELECT MAX(person_id) AS latest_person_id FROM user_accounts;`
+    );
+
+    const personIdForRegistrar = registrar[0].latest_person_id;
+
+
     // 💾 Save registrar
     await db3.query(
       `INSERT INTO user_accounts 
        (person_id, employee_id, last_name, middle_name, first_name, role, email, password, status, dprtmnt_id, profile_picture, access_level)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
-        employee_id,
+        personIdForRegistrar + 1,
         employee_id,
         last_name,
         middle_name,
