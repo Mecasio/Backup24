@@ -9,19 +9,21 @@ const router = express.Router();
 /* ===================== FILE UPLOAD ===================== */
 
 const allowedExtensions = [".png", ".jpg", ".jpeg", ".pdf"];
+const uploadsRoot = path.join(__dirname, "..", "..", "uploads");
 
 const settingsStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, "../uploads");
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-    cb(null, uploadDir);
+    if (!fs.existsSync(uploadsRoot)) {
+      fs.mkdirSync(uploadsRoot, { recursive: true });
+    }
+    cb(null, uploadsRoot);
   },
   filename: (req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase();
 
     if (!allowedExtensions.includes(ext)) {
       return cb(
-        new Error("Invalid file type. Only PNG, JPG, JPEG, or PDF allowed.")
+        new Error("Invalid file type. Only PNG, JPG, JPEG, or PDF allowed."),
       );
     }
 
@@ -38,10 +40,10 @@ const settingsUpload = multer({ storage: settingsStorage });
 const deleteOldFile = (fileUrl) => {
   if (!fileUrl) return;
 
-  const filePath = path.join(__dirname, "..", fileUrl.replace(/^\//, ""));
+  const filePath = path.join(__dirname, "..", "..", fileUrl.replace(/^\//, ""));
   fs.unlink(filePath, (err) => {
-    if (err) console.error("Delete error:", err.message);
-    else console.log("Deleted:", filePath);
+    if (err) console.error(`Error deleting old file: ${err.message}`);
+    else console.log(`Deleted old file: ${filePath}`);
   });
 };
 
@@ -50,7 +52,7 @@ const deleteOldFile = (fileUrl) => {
 router.get("/settings", async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM company_settings WHERE id = 1"
+      "SELECT * FROM company_settings WHERE id = 1",
     );
 
     if (rows.length === 0) {
@@ -70,12 +72,25 @@ router.get("/settings", async (req, res) => {
         sidebar_button_color: "#000000",
         title_color: "#000000",
         subtitle_color: "#555555",
+        branches: [],
       });
     }
 
-    res.json(rows[0]);
+    const settings = rows[0];
+
+    if (settings.branches) {
+      try {
+        settings.branches = JSON.parse(settings.branches);
+      } catch (err) {
+        settings.branches = [];
+      }
+    } else {
+      settings.branches = [];
+    }
+
+    res.json(settings);
   } catch (err) {
-    console.error("❌ Fetch settings error:", err);
+    console.error("❌ Error fetching settings:", err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -104,6 +119,7 @@ router.post(
         sidebar_button_color,
         title_color,
         subtitle_color,
+        branches,
       } = req.body;
 
       const logoUrl = req.files?.logo
@@ -115,16 +131,32 @@ router.post(
         : null;
 
       const [rows] = await db.query(
-        "SELECT * FROM company_settings WHERE id = 1"
+        "SELECT * FROM company_settings WHERE id = 1",
       );
 
-      /* ========= UPDATE ========= */
+      let parsedBranches = "[]";
+      if (typeof branches !== "undefined") {
+        try {
+          parsedBranches = Array.isArray(branches)
+            ? JSON.stringify(branches)
+            : JSON.stringify(JSON.parse(branches));
+        } catch (err) {
+          parsedBranches = "[]";
+        }
+      }
+
       if (rows.length > 0) {
-        const oldLogo = rows[0].logo_url;
-        const oldBg = rows[0].bg_image;
+        const currentSettings = rows[0];
+        const oldLogo = currentSettings.logo_url;
+        const oldBg = currentSettings.bg_image;
+
+        if (typeof branches === "undefined") {
+          parsedBranches = currentSettings.branches || "[]";
+        }
 
         let query = `
-          UPDATE company_settings SET
+          UPDATE company_settings
+          SET
             company_name=?,
             short_term=?,
             address=?,
@@ -137,22 +169,26 @@ router.post(
             stepper_color=?,
             sidebar_button_color=?,
             title_color=?,
-            subtitle_color=?`;
+            subtitle_color=?,
+            branches=?`;
 
         const params = [
-          company_name || "",
-          short_term || "",
-          address || "",
-          header_color || "#ffffff",
-          footer_text || "",
-          footer_color || "#ffffff",
-          main_button_color || "#ffffff",
-          sub_button_color || "#ffffff",
-          border_color || "#000000",
-          stepper_color || "#000000",
-          sidebar_button_color || "#000000",
-          title_color || "#000000",
-          subtitle_color || "#555555",
+          company_name ?? currentSettings.company_name ?? "",
+          short_term ?? currentSettings.short_term ?? "",
+          address ?? currentSettings.address ?? "",
+          header_color ?? currentSettings.header_color ?? "#ffffff",
+          footer_text ?? currentSettings.footer_text ?? "",
+          footer_color ?? currentSettings.footer_color ?? "#ffffff",
+          main_button_color ?? currentSettings.main_button_color ?? "#ffffff",
+          sub_button_color ?? currentSettings.sub_button_color ?? "#ffffff",
+          border_color ?? currentSettings.border_color ?? "#000000",
+          stepper_color ?? currentSettings.stepper_color ?? "#000000",
+          sidebar_button_color ??
+            currentSettings.sidebar_button_color ??
+            "#000000",
+          title_color ?? currentSettings.title_color ?? "#000000",
+          subtitle_color ?? currentSettings.subtitle_color ?? "#555555",
+          parsedBranches,
         ];
 
         if (logoUrl) {
@@ -169,22 +205,25 @@ router.post(
 
         await db.query(query, params);
 
-        if (logoUrl && oldLogo !== logoUrl) deleteOldFile(oldLogo);
-        if (bgImageUrl && oldBg !== bgImageUrl) deleteOldFile(oldBg);
+        if (logoUrl && oldLogo && oldLogo !== logoUrl) deleteOldFile(oldLogo);
+        if (bgImageUrl && oldBg && oldBg !== bgImageUrl) deleteOldFile(oldBg);
 
-        return res.json({ success: true, message: "Settings updated" });
+        return res.json({
+          success: true,
+          message: "Settings updated successfully.",
+        });
       }
 
-      /* ========= INSERT ========= */
       const insertQuery = `
-        INSERT INTO company_settings (
-          company_name, short_term, address, header_color,
-          footer_text, footer_color, logo_url, bg_image,
-          main_button_color, sub_button_color, border_color,
-          stepper_color, sidebar_button_color,
-          title_color, subtitle_color
+        INSERT INTO company_settings
+        (
+          company_name, short_term, address, header_color, footer_text, footer_color,
+          logo_url, bg_image,
+          main_button_color, sub_button_color, border_color, stepper_color, sidebar_button_color,
+          title_color, subtitle_color,
+          branches
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
       await db.query(insertQuery, [
         company_name || "",
@@ -202,21 +241,22 @@ router.post(
         sidebar_button_color || "#000000",
         title_color || "#000000",
         subtitle_color || "#555555",
+        parsedBranches,
       ]);
 
-      res.json({ success: true, message: "Settings created" });
+      res.json({ success: true, message: "Settings created successfully." });
     } catch (err) {
-      console.error("❌ Save settings error:", err);
+      console.error("❌ Error in /api/settings:", err);
       res.status(500).json({ error: err.message });
     }
-  }
+  },
 );
 
 /* ===================== GET BRANCHES ===================== */
 router.get("/branches", async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT * FROM company_branches ORDER BY branch_name"
+      "SELECT * FROM company_branches ORDER BY branch_name",
     );
     res.json(rows);
   } catch (err) {
@@ -224,7 +264,6 @@ router.get("/branches", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 /* ===================== ADD BRANCH ===================== */
 router.post("/branches", async (req, res) => {
@@ -237,7 +276,7 @@ router.post("/branches", async (req, res) => {
 
     const [exists] = await db.query(
       "SELECT branch_id FROM company_branches WHERE branch_name = ?",
-      [branch_name]
+      [branch_name],
     );
 
     if (exists.length > 0) {
@@ -246,7 +285,7 @@ router.post("/branches", async (req, res) => {
 
     await db.query(
       "INSERT INTO company_branches (branch_name) VALUES (?)",
-      [branch_name]
+      [branch_name],
     );
 
     res.json({ success: true, message: "Branch added" });
@@ -256,7 +295,6 @@ router.post("/branches", async (req, res) => {
   }
 });
 
-
 /* ===================== UPDATE BRANCH ===================== */
 router.put("/branches/:id", async (req, res) => {
   try {
@@ -265,7 +303,7 @@ router.put("/branches/:id", async (req, res) => {
 
     await db.query(
       "UPDATE company_branches SET branch_name = ? WHERE branch_id = ?",
-      [branch_name, id]
+      [branch_name, id],
     );
 
     res.json({ success: true, message: "Branch updated" });
@@ -275,13 +313,12 @@ router.put("/branches/:id", async (req, res) => {
   }
 });
 
-
 /* ===================== DELETE BRANCH ===================== */
 router.delete("/branches/:id", async (req, res) => {
   try {
     await db.query(
       "DELETE FROM company_branches WHERE branch_id = ?",
-      [req.params.id]
+      [req.params.id],
     );
 
     res.json({ success: true, message: "Branch deleted" });

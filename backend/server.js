@@ -1,4 +1,4 @@
-const express = require("express");
+﻿const express = require("express");
 const mysql = require("mysql2/promise");
 const cors = require("cors");
 const webtoken = require("jsonwebtoken");
@@ -33,13 +33,13 @@ app.use(
 app.use("/assets", express.static(path.join(__dirname, "assets")));
 
 const allowedOrigins = [
-  'http://localhost:5173',
-  'http://192.168.50.77:5173',
-  'http://192.168.50.62:5173',
-  'http://192.168.50.211:5173',
-  'http://136.239.248.62:5173',
-  'http://192.168.0.180:5173',
-  'http://192.168.50.54:5173',
+  "http://localhost:5173",
+  "http://192.168.50.77:5173",
+  "http://192.168.50.62:5173",
+  "http://192.168.50.211:5173",
+  "http://136.239.248.62:5173",
+  "http://192.168.0.180:5173",
+  "http://192.168.50.54:5173",
 ];
 
 app.use(
@@ -49,11 +49,11 @@ app.use(
       if (allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'));
+        callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
-  })
+  }),
 );
 
 const io = new Server(http, {
@@ -92,9 +92,9 @@ const verifyDocumentSchedule = require("./routes/admission_routes/verifyDocument
 const QualifyingInterviewExam = require("./routes/admission_routes/QualifyingInterviewExam");
 const medicalExamRoute = require("./routes/admission_routes/medicalExamRoute");
 const qrCodeForStudents = require("./routes/qrCodeForStudents");
-const studentPayment = require('./routes/payment/studentScholarship');
-const receiptCounter = require('./routes/payment/receiptCounter');
-const matriculationPayment = require('./routes/payment/matriculation');
+const studentPayment = require("./routes/payment/studentScholarship");
+const receiptCounter = require("./routes/payment/receiptCounter");
+const matriculationPayment = require("./routes/payment/matriculation");
 const programRoute = require("./routes/system_routes/programRoute");
 const requirementsRoute = require("./routes/system_routes/requirementsRoute");
 const applicantRoutes = require("./routes/reset_password_routes/applicantresetpasswordRoutes");
@@ -105,9 +105,15 @@ const announcementRoute = require("./routes/system_routes/announcement");
 const programSlots = require("./routes/system_routes/programSlots");
 const departmentRoute = require("./routes/system_routes/dprmntRoute");
 const roomRegistrationRoute = require("./routes/system_routes/roomRegistrationRoute");
+const departmentRoomRoute = require("./routes/system_routes/departmentRoom");
+const departmentSectionRoute = require("./routes/system_routes/departmentSection");
+const courseTaggingRoute = require("./routes/system_routes/courseTagging");
+const settingsRoute = require("./routes/system_routes/settingsRoute");
 const importRoutes = require("./routes/import");
 const accessRoutes = require("./routes/auth_routes/accessRoute");
 const userPageAccess = require("./routes/auth_routes/userPageAccessRoute");
+const dprtmntCurriculum = require("./routes/system_routes/dprtmntCurriculum");
+const section = require("./routes/system_routes/section");
 
 app.use("/", userPageAccess);
 app.use("/", programRoute);
@@ -138,9 +144,15 @@ app.use("/", facultyRoutes);
 app.use("/", registrarRoutes);
 app.use("/api", announcementRoute);
 app.use("/api", programSlots);
+app.use("/api", departmentRoomRoute);
 app.use("/", departmentRoute);
 app.use("/", roomRegistrationRoute);
 app.use("/", requirementsRoute);
+app.use("/", dprtmntCurriculum);
+app.use("/", departmentSectionRoute);
+app.use("/", courseTaggingRoute);
+app.use("/api", settingsRoute);
+app.use("/", section);
 
 const uploadPath = path.join(__dirname, "uploads");
 
@@ -202,7 +214,11 @@ app.get("/student_data", (req, res) => {
 });
 
 app.get("/curriculum_panel_template", (req, res) => {
-  const filePath = path.join(__dirname, "excelfiles", "CurriculumPanelTemplate.xlsx");
+  const filePath = path.join(
+    __dirname,
+    "excelfiles",
+    "CurriculumPanelTemplate.xlsx",
+  );
   res.download(filePath, "CurriculumPanelTemplate.xlsx", (err) => {
     if (err) {
       console.error("Error sending file:", err);
@@ -212,7 +228,11 @@ app.get("/curriculum_panel_template", (req, res) => {
 });
 
 app.get("/course_panel_template", (req, res) => {
-  const filePath = path.join(__dirname, "excelfiles", "CoursePanelTemplate.xlsx");
+  const filePath = path.join(
+    __dirname,
+    "excelfiles",
+    "CoursePanelTemplate.xlsx",
+  );
   res.download(filePath, "CoursePanelTemplate.xlsx", (err) => {
     if (err) {
       console.error("Error sending file:", err);
@@ -222,7 +242,11 @@ app.get("/course_panel_template", (req, res) => {
 });
 
 app.get("/program_tagging_template", (req, res) => {
-  const filePath = path.join(__dirname, "excelfiles", "ProgramTaggingTemplate.xlsx");
+  const filePath = path.join(
+    __dirname,
+    "excelfiles",
+    "ProgramTaggingTemplate.xlsx",
+  );
   res.download(filePath, "ProgramTaggingTemplate.xlsx", (err) => {
     if (err) {
       console.error("Error sending file:", err);
@@ -232,7 +256,11 @@ app.get("/program_tagging_template", (req, res) => {
 });
 
 app.get("/program_panel_template", (req, res) => {
-  const filePath = path.join(__dirname, "excelfiles", "ProgramPanelTemplate.xlsx");
+  const filePath = path.join(
+    __dirname,
+    "excelfiles",
+    "ProgramPanelTemplate.xlsx",
+  );
   res.download(filePath, "ProgramPanelTemplate.xlsx", (err) => {
     if (err) {
       console.error("Error sending file:", err);
@@ -297,7 +325,7 @@ const profileStorage = multer.diskStorage({
     const { id } = req.params;
 
     try {
-      // ✅ Get registrar info
+      // âœ… Get registrar info
       const [rows] = await db3.query(
         "SELECT employee_id, role, profile_picture FROM user_accounts WHERE id = ?",
         [id],
@@ -308,19 +336,19 @@ const profileStorage = multer.diskStorage({
       const registrar = rows[0];
       const ext = path.extname(file.originalname).toLowerCase();
 
-      // ✅ Get Philippine year
+      // âœ… Get Philippine year
       const philTime = new Date().toLocaleString("en-US", {
         timeZone: "Asia/Manila",
       });
       const year = new Date(philTime).getFullYear();
 
-      // ✅ Construct filename based on employee_id + year
+      // âœ… Construct filename based on employee_id + year
       const employeeID = registrar.employee_id || "unknown";
       const filename = `${employeeID}_profile_image_${year}${ext}`;
 
       cb(null, filename);
     } catch (err) {
-      console.error("❌ Error generating filename:", err);
+      console.error("âŒ Error generating filename:", err);
       cb(err);
     }
   },
@@ -344,7 +372,7 @@ const announcementStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = path.join(__dirname, "uploads", "announcement");
 
-    // ✅ CREATE FOLDER IF NOT EXISTS
+    // âœ… CREATE FOLDER IF NOT EXISTS
     fs.mkdirSync(dir, { recursive: true });
 
     cb(null, dir);
@@ -355,7 +383,6 @@ const announcementStorage = multer.diskStorage({
 });
 
 const announcementUpload = multer({ storage: announcementStorage });
-
 
 // Ito
 const upload = multer({ storage: multer.memoryStorage() });
@@ -402,16 +429,14 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// ✅ Verify transporter at startup
+// âœ… Verify transporter at startup
 transporter.verify((error, success) => {
   if (error) {
-    console.error("❌ Email transporter error:", error);
+    console.error("âŒ Email transporter error:", error);
   } else {
-    console.log("✅ Email transporter is ready");
+    console.log("âœ… Email transporter is ready");
   }
 });
-
-
 
 const getDbHost = () => {
   if (process.env.NODE_ENV === "production") {
@@ -464,444 +489,17 @@ db.query(`
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
   );
 `);
-//----------------------------Settings----------------------------//
-const allowedExtensions = [".png", ".jpg", ".jpeg", ".pdf"];
-
-const settingsStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, "uploads");
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (!allowedExtensions.includes(ext)) {
-      return cb(
-        new Error("Invalid file type. Only PNG, JPG, JPEG, or PDF allowed."),
-      );
-    }
-
-    if (file.fieldname === "logo") cb(null, "Logo" + ext);
-    else if (file.fieldname === "bg_image") cb(null, "Background" + ext);
-    else cb(null, Date.now() + ext);
-  },
-});
-
-const settingsUpload = multer({ storage: settingsStorage });
-
-const deleteOldFile = (fileUrl) => {
-  if (!fileUrl) return;
-  const filePath = path.join(__dirname, fileUrl.replace(/^\//, ""));
-  fs.unlink(filePath, (err) => {
-    if (err) console.error(`Error deleting old file: ${err.message}`);
-    else console.log(`Deleted old file: ${filePath}`);
-  });
-};
-
-// ✅ GET Settings
-// ✅ GET Settings
-app.get("/api/settings", async (req, res) => {
-  try {
-    const [rows] = await db.query(
-      "SELECT * FROM company_settings WHERE id = 1",
-    );
-
-    if (rows.length === 0) {
-      return res.json({
-        company_name: "",
-        short_term: "",
-        address: "",
-        header_color: "#ffffff",
-        footer_text: "",
-        footer_color: "#ffffff",
-        logo_url: null,
-        bg_image: null,
-
-        main_button_color: "#ffffff",
-        sub_button_color: "#ffffff",
-        border_color: "#000000",
-        stepper_color: "#000000",
-        sidebar_button_color: "#000000",
-
-        title_color: "#000000",
-        subtitle_color: "#555555",
-
-        // ✅ NEW
-        branches: [],
-      });
-    }
-
-    const settings = rows[0];
-
-    // ✅ parse JSON branches
-    settings.branches = settings.branches
-      ? JSON.parse(settings.branches)
-      : [];
-
-    res.json(settings);
-  } catch (err) {
-    console.error("❌ Error fetching settings:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-
-
-// ✅ POST Settings
-app.post(
-  "/api/settings",
-  settingsUpload.fields([
-    { name: "logo", maxCount: 1 },
-    { name: "bg_image", maxCount: 1 },
-  ]),
-  async (req, res) => {
-    try {
-      const {
-        company_name,
-        short_term,
-        address,
-        header_color,
-        footer_text,
-        footer_color,
-
-        main_button_color,
-        sub_button_color,
-        border_color,
-        stepper_color,
-        sidebar_button_color,
-
-        title_color,
-        subtitle_color,
-
-        // ✅ NEW
-        branches,
-      } = req.body;
-
-      console.log("REQ.BODY:", req.body);
-      console.log("BRANCHES RAW:", branches);
-
-      const logoUrl = req.files["logo"]
-        ? `/uploads/${req.files["logo"][0].filename}`
-        : null;
-
-      const bgImageUrl = req.files["bg_image"]
-        ? `/uploads/${req.files["bg_image"][0].filename}`
-        : null;
-
-      const [rows] = await db.query(
-        "SELECT * FROM company_settings WHERE id = 1",
-      );
-
-      if (rows.length > 0) {
-        const currentSettings = rows[0];
-        const oldLogo = rows[0].logo_url;
-        const oldBg = rows[0].bg_image;
-        let parsedBranches = currentSettings.branches || "[]";
-
-        if (typeof branches !== "undefined") {
-          try {
-            parsedBranches = Array.isArray(branches)
-              ? JSON.stringify(branches)
-              : JSON.stringify(JSON.parse(branches));
-          } catch (e) {
-            parsedBranches = currentSettings.branches || "[]";
-          }
-        }
-
-        let query = `
-          UPDATE company_settings
-          SET
-            company_name=?,
-            short_term=?,
-            address=?,
-            header_color=?,
-            footer_text=?,
-            footer_color=?,
-
-            main_button_color=?,
-            sub_button_color=?,
-            border_color=?,
-            stepper_color=?,
-            sidebar_button_color=?,
-
-            title_color=?,
-            subtitle_color=?,
-
-            branches=?`;
-
-        const params = [
-          company_name ?? currentSettings.company_name ?? "",
-          short_term ?? currentSettings.short_term ?? "",
-          address ?? currentSettings.address ?? "",
-          header_color ?? currentSettings.header_color ?? "#ffffff",
-          footer_text ?? currentSettings.footer_text ?? "",
-          footer_color ?? currentSettings.footer_color ?? "#ffffff",
-
-          main_button_color ??
-          currentSettings.main_button_color ??
-          "#ffffff",
-          sub_button_color ?? currentSettings.sub_button_color ?? "#ffffff",
-          border_color ?? currentSettings.border_color ?? "#000000",
-          stepper_color ?? currentSettings.stepper_color ?? "#000000",
-          sidebar_button_color ??
-          currentSettings.sidebar_button_color ??
-          "#000000",
-
-          title_color ?? currentSettings.title_color ?? "#000000",
-          subtitle_color ?? currentSettings.subtitle_color ?? "#555555",
-
-          // ✅ NEW
-          parsedBranches,
-        ];
-
-        if (logoUrl) {
-          query += ", logo_url=?";
-          params.push(logoUrl);
-        }
-
-        if (bgImageUrl) {
-          query += ", bg_image=?";
-          params.push(bgImageUrl);
-        }
-
-        query += " WHERE id = 1";
-
-        await db.query(query, params);
-
-        if (logoUrl && oldLogo && oldLogo !== logoUrl) deleteOldFile(oldLogo);
-        if (bgImageUrl && oldBg && oldBg !== bgImageUrl) deleteOldFile(oldBg);
-
-        return res.json({
-          success: true,
-          message: "Settings updated successfully.",
-        });
-      } else {
-        const insertQuery = `
-          INSERT INTO company_settings
-          (
-            company_name, short_term, address, header_color, footer_text, footer_color,
-            logo_url, bg_image,
-            main_button_color, sub_button_color, border_color, stepper_color, sidebar_button_color,
-            title_color, subtitle_color,
-            branches
-          )
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-        await db.query(insertQuery, [
-          company_name || "",
-          short_term || "",
-          address || "",
-          header_color || "#ffffff",
-          footer_text || "",
-          footer_color || "#ffffff",
-          logoUrl,
-          bgImageUrl,
-
-          main_button_color || "#ffffff",
-          sub_button_color || "#ffffff",
-          border_color || "#000000",
-          stepper_color || "#000000",
-          sidebar_button_color || "#000000",
-
-          title_color || "#000000",
-          subtitle_color || "#555555",
-
-          // ✅ NEW
-          parsedBranches,
-        ]);
-
-        res.json({ success: true, message: "Settings created successfully." });
-      }
-    } catch (err) {
-      console.error("❌ Error in /api/settings:", err);
-      res.status(500).json({ error: err.message });
-    }
-  },
-);
-
-
 
 //----------------------------End Settings----------------------------//
 
 /*---------------------------------START---------------------------------------*/
 const ipAddress = getDbHost();
 // ----------------- REGISTER -----------------
-app.post("/register", async (req, res) => {
-  const { email, password, campus, otp } = req.body;
-
-  if (!email || !password) {
-    return res.json({
-      success: false,
-      message: "Please fill up all required fields",
-    });
-  }
-
-  // ⭐⭐⭐ OTP VALIDATION ⭐⭐⭐
-  const stored = otpStore[email];
-  const now = Date.now();
-
-  if (!stored) {
-    return res
-      .status(400)
-      .json({ success: false, message: "No OTP request found for this email" });
-  }
-
-  if (stored.expiresAt < now) {
-    delete otpStore[email];
-    return res.status(400).json({
-      success: false,
-      message: "OTP has expired. Please request a new one.",
-    });
-  }
-
-  if (stored.otp !== otp.trim()) {
-    return res.status(400).json({ success: false, message: "Invalid OTP" });
-  }
-
-  delete otpStore[email];
-
-  let person_id = null;
-
-  try {
-    const [[company]] = await db.query(
-      "SELECT company_name FROM company_settings WHERE id = 1",
-    );
-    const companyName = company?.company_name || "Main Campus";
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const [existingUser] = await db.query(
-      "SELECT * FROM user_accounts WHERE email = ?",
-      [email.trim().toLowerCase()],
-    );
-
-    if (existingUser.length > 0) {
-      return res.json({
-        success: false,
-        message: "Email is already registered",
-      });
-    }
-
-    const campusValue = campus?.trim()
-      ? campus.trim()
-      : `${companyName} - Main`;
-
-    // ⭐⭐⭐ FIX: STORE EMAIL INTO person_table.emailAddress ⭐⭐⭐
-    const [personResult] = await db.query(
-      `INSERT INTO person_table (campus, emailAddress, termsOfAgreement, current_step)
-       VALUES (?, ?, 1, 1)`,
-      [campusValue, email.trim().toLowerCase()],
-    );
-
-    person_id = personResult.insertId;
-
-    // Insert account
-    await db.query(
-      `INSERT INTO user_accounts (person_id, email, password, role)
-       VALUES (?, ?, ?, 'applicant')`,
-      [person_id, email.trim().toLowerCase(), hashedPassword],
-    );
-
-    // ------------------
-    // Applicant Numbering
-    // ------------------
-    const [activeYearResult] = await db3.query(`
-      SELECT yt.year_description, st.semester_code
-      FROM active_school_year_table sy
-      JOIN year_table yt ON yt.year_id = sy.year_id
-      JOIN semester_table st ON st.semester_id = sy.semester_id
-      WHERE sy.astatus = 1
-      LIMIT 1
-    `);
-
-    if (activeYearResult.length === 0) {
-      throw new Error("No active school year/semester found.");
-    }
-
-    const year = String(activeYearResult[0].year_description).split("-")[0];
-    const semCode = activeYearResult[0].semester_code;
-
-    const [countRes] = await db.query(
-      "SELECT COUNT(*) AS count FROM applicant_numbering_table",
-    );
-
-    const padded = String(countRes[0].count + 1).padStart(5, "0");
-    const applicant_number = `${year}${semCode}${padded}`;
-
-    await db.query(
-      "INSERT INTO applicant_numbering_table (applicant_number, person_id) VALUES (?, ?)",
-      [applicant_number, person_id],
-    );
-
-    // Ensure QrCodeGenerated folder exists
-    const qrFolder = path.join(__dirname, "./uploads/QrCodeGenerated");
-    if (!fs.existsSync(qrFolder)) {
-      fs.mkdirSync(qrFolder, { recursive: true });
-    }
-
-    // QR Codes
-    const qrData = `${process.env.DB_HOST_LOCAL}:5173/examination_profile/${applicant_number}`;
-    const qrData2 = `${process.env.DB_HOST_LOCAL}:5173/applicant_profile/${applicant_number}`;
-    const qrFilename = `${applicant_number}_qrcode.png`;
-    const qrFilename2 = `${applicant_number}_qrcode2.png`;
-
-    // Save QR codes in QrCodeGenerated folder
-    const qrPath = path.join(qrFolder, qrFilename);
-    const qrPath2 = path.join(qrFolder, qrFilename2);
-
-    await QRCode.toFile(qrPath, qrData, {
-      color: { dark: "#000", light: "#FFF" },
-      width: 300,
-    });
-
-    await QRCode.toFile(qrPath2, qrData2, {
-      color: { dark: "#000", light: "#FFF" },
-      width: 300,
-    });
-
-    // Update DB with just the filename (or you can store relative path)
-    await db.query(
-      "UPDATE applicant_numbering_table SET qr_code = ? WHERE applicant_number = ?",
-      [qrFilename, applicant_number],
-    );
-
-    await db.query(
-      `INSERT INTO person_status_table
-       (person_id, applicant_id, exam_status, requirements, residency, student_registration_status, exam_result, hs_ave, qualifying_result, interview_result)
-       VALUES (?, ?, 0, 0, 0, 0, 0, 0, 0, 0)`,
-      [person_id, applicant_number],
-    );
-
-    await db.query(
-      `INSERT INTO interview_applicants (schedule_id, applicant_id, email_sent, status)
-       VALUES (?, ?, 0, 'Waiting List')`,
-      [null, applicant_number],
-    );
-
-    res.status(201).json({
-      success: true,
-      message: "Registered Successfully",
-      person_id,
-      applicant_number,
-      campus: campusValue,
-    });
-  } catch (error) {
-    if (person_id) {
-      await db.query("DELETE FROM person_table WHERE person_id = ?", [
-        person_id,
-      ]);
-    }
-    res.json({
-      success: false,
-      message: "Internal Server Error",
-      error: error.message,
-    });
-  }
-});
 
 const ROLE_PAGE_ACCESS = {
   admission: [
-    103, 92, 96, 73, 1, 2, 3, 4, 5, 7, 8, 9, 11, 33, 48, 52, 61, 66, 98, 115, 118,
+    103, 92, 96, 73, 1, 2, 3, 4, 5, 7, 8, 9, 11, 33, 48, 52, 61, 66, 98, 115,
+    118,
   ],
   enrollment: [
     102, 96, 73, 6, 10, 12, 17, 36, 37, 43, 44, 45, 46, 47, 49, 60, 92, 108,
@@ -919,118 +517,6 @@ const ROLE_PAGE_ACCESS = {
   ],
   superadmin: "ALL",
 };
-
-app.post(
-  "/register_registrar",
-  upload.single("profile_picture"),
-  async (req, res) => {
-    try {
-      const {
-        employee_id,
-        last_name,
-        middle_name,
-        first_name,
-        role,
-        email,
-        password,
-        status,
-        dprtmnt_id,
-      } = req.body;
-
-      const file = req.file;
-
-      // 🧩 Validate required fields
-      if (
-        !employee_id ||
-        !last_name ||
-        !first_name ||
-        !role ||
-        !email ||
-        !password
-      ) {
-        return res
-          .status(400)
-          .json({ message: "All required fields must be filled" });
-      }
-
-      // 🧠 Normalize email before checking duplicates
-      const normalizedEmail = email.toLowerCase().trim();
-
-      // 🧩 Check for duplicate email
-      const [existing] = await db3.query(
-        "SELECT * FROM user_accounts WHERE LOWER(email) = ?",
-        [normalizedEmail],
-      );
-      if (existing.length > 0) {
-        return res.status(400).json({ message: "Email already exists" });
-      }
-
-      // 🔒 Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // 👤 Create person record first
-      const [personInsert] = await db3.query(
-        "INSERT INTO person_table () VALUES ()",
-      );
-      const person_id = personInsert.insertId;
-
-      // 🖼️ Handle file upload
-      let profilePicName = null;
-      if (file) {
-        profilePicName = `${employee_id}_profile_${Date.now()}${path.extname(file.originalname)}`;
-        fs.writeFileSync(
-          path.join(__dirname, "uploads", profilePicName),
-          file.buffer,
-        );
-      }
-
-      // 🏷 Department NULL allowed
-      const deptValue = dprtmnt_id === "" ? null : dprtmnt_id;
-
-      // 💾 Save registrar record
-      await db3.query(
-        `INSERT INTO user_accounts
-       (person_id, employee_id, last_name, middle_name, first_name, role, email, password, status, dprtmnt_id, profile_picture)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          person_id,
-          employee_id,
-          last_name,
-          middle_name,
-          first_name,
-          "registrar",
-          normalizedEmail,
-          hashedPassword,
-          status || 1,
-          deptValue,
-          profilePicName,
-        ],
-      );
-
-      // 📄 Page Access Assignment
-      let pageIds = ROLE_PAGE_ACCESS[role];
-
-      if (role === "superadmin") {
-        pageIds = Array.from({ length: 100 }, (_, i) => i + 1);
-      }
-
-      const values = pageIds.map((pageId) => [1, pageId, employee_id]);
-
-      await db3.query(
-        "INSERT INTO page_access (page_privilege, page_id, user_id) VALUES ?",
-        [values],
-      );
-
-      res
-        .status(201)
-        .json({ message: "Registrar account created successfully!" });
-    } catch (error) {
-      console.error("❌ Error creating registrar account:", error);
-      res.status(500).json({ message: "Internal Server Error" });
-    }
-  },
-);
-
 app.get("/api/registrars", async (req, res) => {
   try {
     const sql = `
@@ -1058,124 +544,10 @@ app.get("/api/registrars", async (req, res) => {
     const [results] = await db3.query(sql);
     res.json(results);
   } catch (error) {
-    console.error("❌ Server error:", error);
+    console.error("âŒ Server error:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
-
-// ✅ Actual upload + database update route
-app.put(
-  "/update_registrar/:id",
-  profileUpload.single("profile_picture"),
-  async (req, res) => {
-    const { id } = req.params;
-    const data = req.body;
-    const file = req.file;
-    console.log("hello");
-
-    try {
-      const [existing] = await db3.query(
-        "SELECT * FROM user_accounts WHERE id = ?",
-        [id],
-      );
-      if (existing.length === 0) {
-        return res.status(404).json({ message: "Registrar not found" });
-      }
-
-      const current = existing[0];
-
-      // 🚫 Prevent duplicate email (except current email)
-      if (
-        data.email &&
-        data.email.toLowerCase() !== current.email.toLowerCase()
-      ) {
-        const [emailExists] = await db3.query(
-          "SELECT id FROM user_accounts WHERE LOWER(email)=? AND id!=?",
-          [data.email.toLowerCase(), id],
-        );
-
-        if (emailExists.length > 0) {
-          return res.status(400).json({ message: "Email already exists" });
-        }
-      }
-
-      // 🖼 Handle profile picture
-      let finalFilename = current.profile_picture;
-
-      if (file) {
-        const ext = path.extname(file.originalname);
-        finalFilename = `${current.employee_id}_profile_${Date.now()}${ext}`;
-
-        const uploadPath = path.join(__dirname, "uploads", finalFilename);
-
-        // Delete old file
-        if (current.profile_picture) {
-          const old = path.join(__dirname, "uploads", current.profile_picture);
-          if (fs.existsSync(old)) fs.unlinkSync(old);
-        }
-
-        // Save new one
-        fs.writeFileSync(uploadPath, file.buffer);
-      }
-
-      // Allow NULL department
-      const deptValue = data.dprtmnt_id === "" ? null : data.dprtmnt_id;
-
-      // 🔄 Update user record
-      await db3.query(
-        `UPDATE user_accounts
-       SET employee_id=?, last_name=?, middle_name=?, first_name=?, role=?, email=?, status=?, dprtmnt_id=?, profile_picture=?
-       WHERE id=?`,
-        [
-          data.employee_id || current.employee_id,
-          data.last_name || current.last_name,
-          data.middle_name || current.middle_name,
-          data.first_name || current.first_name,
-          "registrar",
-          data.email.toLowerCase(),
-          data.status ?? current.status,
-          deptValue,
-          finalFilename,
-          id,
-        ],
-      );
-
-      // 🔄 Update page access if role changed
-      if (data.role && data.role !== current.role) {
-        await db3.query("DELETE FROM page_access WHERE user_id = ?", [
-          current.employee_id,
-        ]);
-
-        let pages = ROLE_PAGE_ACCESS[data.role];
-
-        if (data.role === "superadmin") {
-          const [allPages] = await db3.query("SELECT id FROM page_table");
-          for (const row of allPages) {
-            await db3.query(
-              "INSERT INTO page_access (page_privilege, page_id, user_id) VALUES (1, ?, ?)",
-              [row.id, current.employee_id],
-            );
-          }
-        } else {
-          for (const pageId of pages) {
-            await db3.query(
-              "INSERT INTO page_access (page_privilege, page_id, user_id) VALUES (1, ?, ?)",
-              [pageId, current.employee_id],
-            );
-          }
-        }
-      }
-
-      res.json({
-        success: true,
-        message: "Registrar updated successfully",
-      });
-    } catch (error) {
-      console.error("❌ Error updating registrar:", error);
-      res.status(500).json({ error: "Internal Server Error" });
-    }
-  },
-);
 
 app.post(
   "/update_registrar/:id",
@@ -1209,7 +581,7 @@ app.post(
         filename: finalFilename,
       });
     } catch (error) {
-      console.error("❌ Error updating registrar:", error);
+      console.error("âŒ Error updating registrar:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
@@ -1257,7 +629,7 @@ app.put("/update_registrar_status/:id", async (req, res) => {
 // SAVE EXAM SCORE - POST /api/exam/save
 // ===============================
 app.post("/api/exam/save", async (req, res) => {
-  console.log("🔥 /api/exam/save HIT", req.body);
+  console.log("ðŸ”¥ /api/exam/save HIT", req.body);
 
   try {
     const {
@@ -1336,7 +708,7 @@ app.post("/api/exam/save", async (req, res) => {
         const oldVal = oldData[subj.key];
 
         if ((oldVal ?? null) != (subj.newVal ?? null)) {
-          const message = `📝 Entrance Exam updated (${subj.label}: ${oldVal ?? 0} → ${subj.newVal ?? 0}) for Applicant #${applicant_number}`;
+          const message = `ðŸ“ Entrance Exam updated (${subj.label}: ${oldVal ?? 0} â†’ ${subj.newVal ?? 0}) for Applicant #${applicant_number}`;
 
           await db.query(
             `INSERT INTO notifications (type, message, applicant_number, actor_email, actor_name, timestamp)
@@ -1381,7 +753,7 @@ app.post("/api/exam/save", async (req, res) => {
 
     const saved = savedRows[0] || null;
 
-    // 🔥 Normalize keys to lowercase so React UI updates instantly
+    // ðŸ”¥ Normalize keys to lowercase so React UI updates instantly
     const normalized = {
       person_id: saved.person_id,
       english: Number(saved.English),
@@ -1400,7 +772,7 @@ app.post("/api/exam/save", async (req, res) => {
       saved: normalized,
     });
   } catch (err) {
-    console.error("🔥 ERROR saving exam:", err);
+    console.error("ðŸ”¥ ERROR saving exam:", err);
     return res.status(500).json({
       error: "Failed to save exam data",
       details: String(err.message || err),
@@ -1408,7 +780,7 @@ app.post("/api/exam/save", async (req, res) => {
   }
 });
 
-// ✅ Unified Save or Update for Qualifying / Interview Scores (with duplicate-safe notifications)
+// âœ… Unified Save or Update for Qualifying / Interview Scores (with duplicate-safe notifications)
 app.post("/api/interview/save", async (req, res) => {
   try {
     const {
@@ -1482,7 +854,7 @@ app.post("/api/interview/save", async (req, res) => {
       const newFinal = totalAve.toFixed(2);
 
       // Build message text showing both scores
-      const message = `📝 Qualifying Exam: ${oldExam} → ${qExam} | Interview: ${oldInterview} → ${qInterview} | Final Rating: ${oldFinal} → ${newFinal} for Applicant #${applicant_number}`;
+      const message = `ðŸ“ Qualifying Exam: ${oldExam} â†’ ${qExam} | Interview: ${oldInterview} â†’ ${qInterview} | Final Rating: ${oldFinal} â†’ ${newFinal} for Applicant #${applicant_number}`;
 
       // One single notification per applicant per day
       await db.query(
@@ -1528,9 +900,7 @@ app.post("/api/interview/save", async (req, res) => {
   }
 });
 
-
-
-// ✅ Get user_accounts.id using person_id
+// âœ… Get user_accounts.id using person_id
 app.get("/api/get_user_account_id/:person_id", async (req, res) => {
   const { person_id } = req.params;
   try {
@@ -1542,7 +912,7 @@ app.get("/api/get_user_account_id/:person_id", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     res.json({ user_account_id: rows[0].id });
   } catch (err) {
-    console.error("❌ Error fetching user_account_id:", err);
+    console.error("âŒ Error fetching user_account_id:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
@@ -1579,11 +949,11 @@ app.get("/api/students", async (req, res) => {
       WHERE ua.role = 'student' ;
     `;
 
-    // ✅ Since db3 is a promise-based connection, use await
+    // âœ… Since db3 is a promise-based connection, use await
     const [results] = await db3.query(sql);
     res.json(results);
   } catch (error) {
-    console.error("❌ Server error:", error);
+    console.error("âŒ Server error:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -1665,7 +1035,7 @@ app.post(
         .status(201)
         .json({ message: "Registrar account created successfully!" });
     } catch (error) {
-      console.error("❌ Error creating registrar account:", error);
+      console.error("âŒ Error creating registrar account:", error);
       res
         .status(500)
         .json({ message: "Internal Server Error", error: error.message });
@@ -1787,7 +1157,7 @@ app.put(
 
       res.json({ success: true, message: "Student updated successfully!" });
     } catch (error) {
-      console.error("❌ Error updating student:", error);
+      console.error("âŒ Error updating student:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
@@ -1805,13 +1175,10 @@ app.put("/update_student_status/:id", async (req, res) => {
     ]);
     res.json({ success: true, message: `Student status updated to ${status}` });
   } catch (error) {
-    console.error("❌ Error updating student status:", error);
+    console.error("âŒ Error updating student status:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-//IMPORT
-
 
 //GET ADMITTED USERS (UPDATED!)
 app.get("/admitted_users", async (req, res) => {
@@ -1825,49 +1192,6 @@ app.get("/admitted_users", async (req, res) => {
     res.status(500).send({ message: "INTERNAL SERVER ERROR!!" });
   }
 });
-
-//TRANSFER ENROLLED USER INTO ENROLLMENT (UPDATED!)
-app.post("/transfer", async (req, res) => {
-  const { person_id } = req.body;
-
-  try {
-    const fetchQuery = "SELECT * FROM user_accounts WHERE person_id = ?";
-    const [result1] = await db.query(fetchQuery, [person_id]);
-
-    if (result1.length === 0) {
-      return res
-        .status(404)
-        .send({ message: "User not found in the database" });
-    }
-
-    const user = result1[0];
-
-    const insertPersonQuery =
-      "INSERT INTO person_table (first_name, middle_name, last_name) VALUES (?, ?, ?)";
-    const [personResult] = await db3.query(insertPersonQuery, [
-      user.first_name,
-      user.middle_name,
-      user.last_name,
-    ]);
-
-    const newPersonId = personResult.insertId;
-
-    const insertUserQuery =
-      "INSERT INTO user_accounts (person_id, email, password) VALUES (?, ?, ?)";
-    await db3.query(insertUserQuery, [newPersonId, user.email, user.password]);
-
-    console.log("User transferred successfully:", user.email);
-    return res
-      .status(200)
-      .send({ message: "User transferred successfully", email: user.email });
-  } catch (error) {
-    console.error("ERROR: ", error);
-    return res
-      .status(500)
-      .send({ message: "Something went wrong in the server", error });
-  }
-});
-
 // Get applicant_number by person_id
 app.get("/api/applicant_number/:person_id", async (req, res) => {
   const { person_id } = req.params;
@@ -1901,7 +1225,7 @@ const getShortLabel = async (desc) => {
       );
 
     if (rows.length > 0) {
-      return rows[0].short_label; // ✅ return short_label directly from DB
+      return rows[0].short_label; // âœ… return short_label directly from DB
     } else {
       return "Unknown"; // no match found
     }
@@ -1921,7 +1245,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
   }
 
   try {
-    // ✅ Fetch description & short_label in one query
+    // âœ… Fetch description & short_label in one query
     const [rows] = await db.query(
       "SELECT description, short_label FROM requirements_table WHERE id = ?",
       [requirements_id],
@@ -1930,13 +1254,13 @@ app.post("/upload", upload.single("file"), async (req, res) => {
     if (!rows.length)
       return res.status(404).json({ message: "Requirement not found" });
 
-    // ✅ Use short_label directly from DB
+    // âœ… Use short_label directly from DB
     const shortLabel = await getShortLabel(rows[0].description);
 
     const year = new Date().getFullYear();
     const ext = path.extname(req.file.originalname).toLowerCase();
 
-    // ✅ Fetch applicant number
+    // âœ… Fetch applicant number
     const [appRows] = await db.query(
       "SELECT applicant_number FROM applicant_numbering_table WHERE person_id = ?",
       [person_id],
@@ -1950,11 +1274,11 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
     const applicant_number = appRows[0].applicant_number;
 
-    // ✅ Construct final filename using short_label from DB
+    // âœ… Construct final filename using short_label from DB
     const filename = `${applicant_number}_${shortLabel}_${year}${ext}`;
     const finalPath = path.join(__dirname, "uploads", filename);
 
-    // ✅ Remove existing file if exists
+    // âœ… Remove existing file if exists
     const [existingFiles] = await db.query(
       `SELECT upload_id, file_path FROM requirement_uploads
        WHERE person_id = ? AND requirements_id = ? AND file_path LIKE ?`,
@@ -1973,7 +1297,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
       ]);
     }
 
-    // ✅ Write file to disk
+    // âœ… Write file to disk
     await fs.promises.writeFile(finalPath, req.file.buffer);
 
     const filePath = `${filename}`;
@@ -1991,10 +1315,9 @@ app.post("/upload", upload.single("file"), async (req, res) => {
   }
 });
 
+// âœ… Upload Route
 
-// ✅ Upload Route
-
-// 📌 Helper function to fetch actor info
+// ðŸ“Œ Helper function to fetch actor info
 async function getActorInfo(user_person_id) {
   let actorEmail = "earistmis@gmail.com";
   let actorName = "SYSTEM";
@@ -2029,7 +1352,7 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
   }
 
   try {
-    // 🔹 Applicant info
+    // ðŸ”¹ Applicant info
     const [[appInfo]] = await db.query(
       `
       SELECT ant.applicant_number, pt.last_name, pt.first_name, pt.middle_name
@@ -2043,7 +1366,7 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
     const applicant_number = appInfo?.applicant_number || "Unknown";
     const fullName = `${appInfo?.last_name || ""}, ${appInfo?.first_name || ""} ${appInfo?.middle_name?.charAt(0) || ""}.`;
 
-    // 🔹 Requirement description + short label
+    // ðŸ”¹ Requirement description + short label
     const [descRows] = await db.query(
       "SELECT description, short_label FROM requirements_table WHERE id = ?",
       [requirements_id],
@@ -2054,13 +1377,13 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
 
     const { description, short_label } = descRows[0];
 
-    // ✅ Use the short_label directly from DB
+    // âœ… Use the short_label directly from DB
     const shortLabel = short_label || "Unknown";
 
     const year = new Date().getFullYear();
     const ext = path.extname(req.file.originalname).toLowerCase();
 
-    // ✅ Construct filename
+    // âœ… Construct filename
     const filename = `${applicant_number}_${shortLabel}_${year}${ext}`;
     const uploadDir = path.join(
       __dirname,
@@ -2076,7 +1399,7 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
 
     const finalPath = path.join(uploadDir, filename);
 
-    // 🔹 Delete any existing file for the same applicant + requirement
+    // ðŸ”¹ Delete any existing file for the same applicant + requirement
     const [existingFiles] = await db.query(
       `SELECT upload_id, file_path FROM requirement_uploads
        WHERE person_id = ? AND requirements_id = ?`,
@@ -2103,7 +1426,7 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
       ]);
     }
 
-    // 🔹 Save new file
+    // ðŸ”¹ Save new file
     await fs.promises.writeFile(finalPath, req.file.buffer);
 
     await db.query(
@@ -2119,7 +1442,7 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
       ],
     );
 
-    res.status(201).json({ message: "✅ Upload successful" });
+    res.status(201).json({ message: "âœ… Upload successful" });
   } catch (err) {
     console.error("Upload error:", err);
     res
@@ -2128,12 +1451,12 @@ app.post("/api/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-// ✅ ADMIN DELETE
+// âœ… ADMIN DELETE
 app.delete("/admin/uploads/:uploadId", async (req, res) => {
   const { uploadId } = req.params;
 
   try {
-    // 1️⃣ Get upload row (file + person_id)
+    // 1ï¸âƒ£ Get upload row (file + person_id)
     const [uploadRows] = await db.query(
       "SELECT person_id, file_path FROM requirement_uploads WHERE upload_id = ?",
       [uploadId],
@@ -2144,7 +1467,7 @@ app.delete("/admin/uploads/:uploadId", async (req, res) => {
 
     const { person_id: personId, file_path: filePath } = uploadRows[0];
 
-    // 2️⃣ Applicant info
+    // 2ï¸âƒ£ Applicant info
     const [[appInfo]] = await db.query(
       `
       SELECT ant.applicant_number, pt.last_name, pt.first_name, pt.middle_name
@@ -2158,33 +1481,33 @@ app.delete("/admin/uploads/:uploadId", async (req, res) => {
     const applicant_number = appInfo?.applicant_number || "Unknown";
     const fullName = `${appInfo?.last_name || ""}, ${appInfo?.first_name || ""} ${appInfo?.middle_name?.charAt(0) || ""}.`;
 
-    // 3️⃣ Actor (admin performing the action)
+    // 3ï¸âƒ£ Actor (admin performing the action)
     const user_person_id = req.headers["x-person-id"];
     const { actorEmail, actorName } = await getActorInfo(user_person_id);
 
-    // 4️⃣ Delete physical file
+    // 4ï¸âƒ£ Delete physical file
     if (filePath) {
       const fullPath = path.join(applicantDocsDir, filePath);
 
       try {
         await fs.promises.unlink(fullPath);
-        console.log("🗑️ File deleted:", fullPath);
+        console.log("ðŸ—‘ï¸ File deleted:", fullPath);
       } catch (err) {
         if (err.code === "ENOENT") {
-          console.warn("⚠️ File already missing:", fullPath);
+          console.warn("âš ï¸ File already missing:", fullPath);
         } else {
           console.error("File delete error:", err);
         }
       }
     }
 
-    // 5️⃣ Delete DB record
+    // 5ï¸âƒ£ Delete DB record
     await db.query("DELETE FROM requirement_uploads WHERE upload_id = ?", [
       uploadId,
     ]);
 
-    // 6️⃣ Log notification
-    const message = `🗑️ Deleted document (Applicant #${applicant_number} - ${fullName})`;
+    // 6ï¸âƒ£ Log notification
+    const message = `ðŸ—‘ï¸ Deleted document (Applicant #${applicant_number} - ${fullName})`;
     await db.query(
       "INSERT INTO notifications (type, message, applicant_number, actor_email, actor_name, timestamp) VALUES (?, ?, ?, ?, ?, NOW())",
       ["delete", message, applicant_number, actorEmail, actorName],
@@ -2199,14 +1522,14 @@ app.delete("/admin/uploads/:uploadId", async (req, res) => {
       timestamp: new Date().toISOString(),
     });
 
-    res.status(200).json({ message: "✅ Upload deleted successfully." });
+    res.status(200).json({ message: "âœ… Upload deleted successfully." });
   } catch (error) {
     console.error("Delete error:", error);
     res.status(500).json({ error: "Failed to delete the upload." });
   }
 });
 
-// ✅ Updated: Return uploads joined with requirement details
+// âœ… Updated: Return uploads joined with requirement details
 app.get("/uploads/:personId", async (req, res) => {
   const personId = req.params.personId;
   if (!personId) return res.status(400).json({ error: "Missing person ID" });
@@ -2316,8 +1639,8 @@ app.put("/api/interview_applicants/:applicant_id/status", async (req, res) => {
   }
 });
 
-// ✅ UPDATE Remarks ONLY (no notification, no io.emit, no evaluator lookup)
-// ✅ Update remarks only
+// âœ… UPDATE Remarks ONLY (no notification, no io.emit, no evaluator lookup)
+// âœ… Update remarks only
 app.put("/uploads/remarks/:upload_id", async (req, res) => {
   const { upload_id } = req.params;
   const { remarks, user_id } = req.body;
@@ -2337,7 +1660,7 @@ app.put("/uploads/remarks/:upload_id", async (req, res) => {
   }
 });
 
-// ✅ Update status only
+// âœ… Update status only
 app.put("/uploads/status/:upload_id", async (req, res) => {
   const { upload_id } = req.params;
   const { status, user_id } = req.body;
@@ -2390,22 +1713,22 @@ app.put("/api/registrar-status/:person_id", async (req, res) => {
     }
 
     res.json({
-      message: "✅ Registrar status updated for all docs",
+      message: "âœ… Registrar status updated for all docs",
       registrar_status,
     });
   } catch (err) {
-    console.error("❌ Error updating registrar status:", err);
+    console.error("âŒ Error updating registrar status:", err);
     res.status(500).json({ error: "Failed to update registrar status" });
   }
 });
 
-// ✅ Update submitted_documents by upload_id (but apply to ALL docs of that applicant)
+// âœ… Update submitted_documents by upload_id (but apply to ALL docs of that applicant)
 app.put("/api/submitted-documents/:upload_id", async (req, res) => {
   const { upload_id } = req.params;
   const { submitted_documents, user_person_id } = req.body;
 
   try {
-    // 1️⃣ Find person_id
+    // 1ï¸âƒ£ Find person_id
     const [[row]] = await db.query(
       "SELECT person_id FROM admission.requirement_uploads WHERE upload_id = ?",
       [upload_id],
@@ -2414,7 +1737,7 @@ app.put("/api/submitted-documents/:upload_id", async (req, res) => {
 
     const person_id = row.person_id;
 
-    // 2️⃣ Applicant info
+    // 2ï¸âƒ£ Applicant info
     const [[appInfo]] = await db.query(
       `
       SELECT ant.applicant_number, pt.last_name, pt.first_name, pt.middle_name
@@ -2428,7 +1751,7 @@ app.put("/api/submitted-documents/:upload_id", async (req, res) => {
     const applicant_number = appInfo?.applicant_number || "Unknown";
     const fullName = `${appInfo?.last_name || ""}, ${appInfo?.first_name || ""} ${appInfo?.middle_name?.charAt(0) || ""}.`;
 
-    // 3️⃣ Actor info (FULL FORMAT identical to exam/save)
+    // 3ï¸âƒ£ Actor info (FULL FORMAT identical to exam/save)
     let actorEmail = "earistmis@gmail.com";
     let actorName = "SYSTEM";
 
@@ -2454,7 +1777,7 @@ app.put("/api/submitted-documents/:upload_id", async (req, res) => {
       }
     }
 
-    // 4️⃣ Toggle + message
+    // 4ï¸âƒ£ Toggle + message
     let type, message;
 
     if (submitted_documents === 1) {
@@ -2470,7 +1793,7 @@ app.put("/api/submitted-documents/:upload_id", async (req, res) => {
       );
 
       type = "submit";
-      message = `✅ Requirements submitted by Applicant #${applicant_number} - ${fullName}`;
+      message = `âœ… Requirements submitted by Applicant #${applicant_number} - ${fullName}`;
     } else {
       await db.query(
         `
@@ -2484,10 +1807,10 @@ app.put("/api/submitted-documents/:upload_id", async (req, res) => {
       );
 
       type = "unsubmit";
-      message = `↩️ Requirements unsubmitted for Applicant #${applicant_number} - ${fullName}`;
+      message = `â†©ï¸ Requirements unsubmitted for Applicant #${applicant_number} - ${fullName}`;
     }
 
-    // ✅ Prevent duplicate notifications per day (same as exam/save)
+    // âœ… Prevent duplicate notifications per day (same as exam/save)
     await db.query(
       `INSERT INTO notifications (type, message, applicant_number, actor_email, actor_name, timestamp)
        SELECT ?, ?, ?, ?, ?, NOW()
@@ -2509,7 +1832,7 @@ app.put("/api/submitted-documents/:upload_id", async (req, res) => {
       ],
     );
 
-    // ✅ Emit socket event
+    // âœ… Emit socket event
     io.emit("notification", {
       type,
       message,
@@ -2521,14 +1844,14 @@ app.put("/api/submitted-documents/:upload_id", async (req, res) => {
 
     res.json({ success: true, message });
   } catch (err) {
-    console.error("❌ Error toggling submitted documents:", err);
+    console.error("âŒ Error toggling submitted documents:", err);
     res.status(500).json({ error: "Failed to toggle submitted documents" });
   }
 });
 
 app.get("/api/verified-exam-applicants", async (req, res) => {
   try {
-    // 1️⃣ Get all verifiable Regular requirement IDs dynamically
+    // 1ï¸âƒ£ Get all verifiable Regular requirement IDs dynamically
     const [reqRows] = await db.query(`
       SELECT id
       FROM requirements_table
@@ -2536,7 +1859,7 @@ app.get("/api/verified-exam-applicants", async (req, res) => {
       AND is_verifiable = 1
     `);
 
-    // 2️⃣ Convert the list of IDs into an array
+    // 2ï¸âƒ£ Convert the list of IDs into an array
     const requirementIds = reqRows.map((r) => r.id);
 
     if (requirementIds.length === 0) {
@@ -2545,10 +1868,10 @@ app.get("/api/verified-exam-applicants", async (req, res) => {
         .json({ error: "No verifiable Main requirements found." });
     }
 
-    // 3️⃣ Construct placeholders for the IN clause dynamically
+    // 3ï¸âƒ£ Construct placeholders for the IN clause dynamically
     const placeholders = requirementIds.map(() => "?").join(",");
 
-    // 4️⃣ Use those IDs in the main query
+    // 4ï¸âƒ£ Use those IDs in the main query
     const [rows] = await db.query(
       `
       SELECT
@@ -2581,7 +1904,7 @@ app.get("/api/verified-exam-applicants", async (req, res) => {
 
     res.json(rows);
   } catch (err) {
-    console.error("❌ Error fetching verified exam applicants:", err);
+    console.error("âŒ Error fetching verified exam applicants:", err);
     res.status(500).json({ error: "Failed to fetch verified exam applicants" });
   }
 });
@@ -2598,7 +1921,7 @@ app.put("/api/update-requirements/:person_id", async (req, res) => {
     );
     res.json({ success: true, message: "Requirements updated" });
   } catch (error) {
-    console.error("❌ Error updating requirements:", error);
+    console.error("âŒ Error updating requirements:", error);
     res
       .status(500)
       .json({ success: false, error: "Failed to update requirements" });
@@ -2627,14 +1950,14 @@ app.put("/uploads/document-status/:upload_id", async (req, res) => {
 
     res.json({ success: true, message: "Document status updated" });
   } catch (err) {
-    console.error("❌ Failed to update document status:", err);
+    console.error("âŒ Failed to update document status:", err);
     res.status(500).json({ error: "Failed to update document status" });
   }
 });
 
 // Update person.document_status directly
 
-// ✅ Fetch all applicant uploads (admin use)
+// âœ… Fetch all applicant uploads (admin use)
 app.get("/uploads/all", async (req, res) => {
   try {
     const [results] = await db.query(`
@@ -2687,7 +2010,7 @@ app.put("/uploads/document-status/:id", async (req, res) => {
   }
 });
 
-// ✅ Get uploads by applicant_number (Admin use)
+// âœ… Get uploads by applicant_number (Admin use)
 app.get("/uploads/by-applicant/:applicant_number", async (req, res) => {
   const applicant_number = req.params.applicant_number;
 
@@ -2759,12 +2082,12 @@ app.get("/uploads/by-applicant/:applicant_number", async (req, res) => {
   }
 });
 
-// ✅ Update document status and track who edited
+// âœ… Update document status and track who edited
 app.put("/uploads/document-status/:uploadId", (req, res) => {
   const { document_status } = req.body;
   const { uploadId } = req.params;
 
-  // 👇 Example: take user_id from authenticated user
+  // ðŸ‘‡ Example: take user_id from authenticated user
   const registrarPersonId = req.user.person_id; // middleware should set this from JWT
 
   if (!document_status || !registrarPersonId) {
@@ -2784,7 +2107,7 @@ app.put("/uploads/document-status/:uploadId", (req, res) => {
     [document_status, registrarPersonId, uploadId],
     (err, result) => {
       if (err) {
-        console.error("❌ Failed to update document status:", err);
+        console.error("âŒ Failed to update document status:", err);
         return res
           .status(500)
           .json({ error: "Failed to update document status" });
@@ -2794,10 +2117,10 @@ app.put("/uploads/document-status/:uploadId", (req, res) => {
   );
 });
 
-// ✅ Get uploads with evaluator info
+// âœ… Get uploads with evaluator info
 
 // Add to server.js
-// 📌 GET persons and their applicant numbers for AdminRequirementsPanel.jsx
+// ðŸ“Œ GET persons and their applicant numbers for AdminRequirementsPanel.jsx
 app.get("/api/upload_documents", async (req, res) => {
   try {
     const [persons] = await db.query(`
@@ -2817,7 +2140,7 @@ app.get("/api/upload_documents", async (req, res) => {
 
     res.status(200).json(persons);
   } catch (error) {
-    console.error("❌ Error fetching upload documents:", error);
+    console.error("âŒ Error fetching upload documents:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -2867,7 +2190,7 @@ app.get("/api/medical-applicants", async (req, res) => {
         ruprio.upload_id AS upload_id,
         ruprio.submitted_medical,
 
-        /* ✅ allow NULL values to pass through */
+        /* âœ… allow NULL values to pass through */
         ruprio.submitted_documents,
         ruprio.registrar_status,
 
@@ -2878,7 +2201,7 @@ app.get("/api/medical-applicants", async (req, res) => {
         ruprio.created_at AS last_updated,
         ps.exam_status,
 
-        /* ✅ NEW: how many required docs are verified */
+        /* âœ… NEW: how many required docs are verified */
         COALESCE(vdocs.verified_count, 0) AS required_docs_verified
 
       FROM admission.person_table AS p
@@ -2902,7 +2225,7 @@ app.get("/api/medical-applicants", async (req, res) => {
         GROUP BY person_id
       ) AS ruagg ON ruagg.person_id = p.person_id
 
-      /* ✅ get the prioritized row per applicant */
+      /* âœ… get the prioritized row per applicant */
       LEFT JOIN admission.requirement_uploads AS ruprio
         ON ruprio.upload_id = (
           SELECT ru2.upload_id
@@ -2923,7 +2246,7 @@ app.get("/api/medical-applicants", async (req, res) => {
       LEFT JOIN admission.person_status_table AS ps
         ON p.person_id = ps.person_id
 
-      /* ✅ subquery: count verified docs for this applicant */
+      /* âœ… subquery: count verified docs for this applicant */
       LEFT JOIN (
         SELECT person_id, COUNT(DISTINCT requirements_id) AS verified_count
         FROM admission.requirement_uploads
@@ -2958,11 +2281,10 @@ app.get("/api/medical-applicants", async (req, res) => {
 
     res.json(merged);
   } catch (err) {
-    console.error("❌ Error fetching all applicants:", err);
+    console.error("âŒ Error fetching all applicants:", err);
     res.status(500).send("Server error");
   }
 });
-
 
 app.get("/api/all-applicants", async (req, res) => {
   try {
@@ -2996,7 +2318,7 @@ app.get("/api/all-applicants", async (req, res) => {
         ruprio.upload_id AS upload_id,
         ruprio.submitted_medical,
 
-        /* ✅ allow NULL values to pass through */
+        /* âœ… allow NULL values to pass through */
         ruprio.submitted_documents,
         ruprio.registrar_status,
 
@@ -3007,7 +2329,7 @@ app.get("/api/all-applicants", async (req, res) => {
         ruprio.created_at AS last_updated,
         ps.exam_status,
 
-        /* ✅ NEW: how many required docs are verified */
+        /* âœ… NEW: how many required docs are verified */
         COALESCE(vdocs.verified_count, 0) AS required_docs_verified
 
       FROM admission.person_table AS p
@@ -3030,7 +2352,7 @@ app.get("/api/all-applicants", async (req, res) => {
         GROUP BY person_id
       ) AS ruagg ON ruagg.person_id = p.person_id
 
-      /* ✅ get the prioritized row per applicant */
+      /* âœ… get the prioritized row per applicant */
       LEFT JOIN admission.requirement_uploads AS ruprio
         ON ruprio.upload_id = (
           SELECT ru2.upload_id
@@ -3051,7 +2373,7 @@ app.get("/api/all-applicants", async (req, res) => {
       LEFT JOIN admission.person_status_table AS ps
         ON p.person_id = ps.person_id
 
-      /* ✅ subquery: count verified docs for this applicant */
+      /* âœ… subquery: count verified docs for this applicant */
       LEFT JOIN (
         SELECT person_id, COUNT(DISTINCT requirements_id) AS verified_count
         FROM admission.requirement_uploads
@@ -3086,13 +2408,12 @@ app.get("/api/all-applicants", async (req, res) => {
 
     res.json(merged);
   } catch (err) {
-    console.error("❌ Error fetching all applicants:", err);
+    console.error("âŒ Error fetching all applicants:", err);
     res.status(500).send("Server error");
   }
 });
 
 // UPDATED --------------------------------------------------------- 11/16/2025
-
 
 // ================= VERIFIED & ECAT APPLICANTS =================
 // ================= VERIFIED & ECAT APPLICANTS =================
@@ -3135,13 +2456,13 @@ app.get("/api/verified-ecat-applicants", async (req, res) => {
         GROUP BY ru.person_id
         HAVING COUNT(DISTINCT ru.requirements_id) = 4
       )
-      AND (ea.email_sent IS NULL OR ea.email_sent = 0)   -- ⬅️ only show those not yet emailed
+      AND (ea.email_sent IS NULL OR ea.email_sent = 0)   -- â¬…ï¸ only show those not yet emailed
       ORDER BY p.last_name ASC, p.first_name ASC;
     `);
 
     res.json(rows);
   } catch (err) {
-    console.error("❌ Error fetching verified ECAT applicants:", err);
+    console.error("âŒ Error fetching verified ECAT applicants:", err);
     res.status(500).send("Server error");
   }
 });
@@ -3212,22 +2533,22 @@ app.get("/api/all-students", async (req, res) => {
     res.json(rows);
     console.log("student list:", rows);
   } catch (err) {
-    console.error("❌ Error fetching all students:", err);
+    console.error("âŒ Error fetching all students:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
-// 📌 Import Excel to person_status_table + update interview_applicants.status (optimized)
+// ðŸ“Œ Import Excel to person_status_table + update interview_applicants.status (optimized)
 
 app.post("/cancel-unscheduled-applicants", async (req, res) => {
   try {
-    // 1️⃣ Get the short_term from company_settings
+    // 1ï¸âƒ£ Get the short_term from company_settings
     const [[settings]] = await db.query(`
       SELECT short_term FROM company_settings WHERE id = 1
     `);
     const shortTerm = settings?.short_term || "EARIST"; // fallback
 
-    // 2️⃣ Get all applicants with NO exam schedule
+    // 2ï¸âƒ£ Get all applicants with NO exam schedule
     const [rows] = await db.query(`
       SELECT
         ea.applicant_id,
@@ -3255,7 +2576,7 @@ app.post("/cancel-unscheduled-applicants", async (req, res) => {
     let count = 0;
 
     for (const a of rows) {
-      // 3️⃣ Update admission_exam → status = Cancelled
+      // 3ï¸âƒ£ Update admission_exam â†’ status = Cancelled
       await db.query(
         `UPDATE admission_exam
          SET status = 'CANCELLED'
@@ -3263,11 +2584,11 @@ app.post("/cancel-unscheduled-applicants", async (req, res) => {
         [a.person_id],
       );
 
-      // 4️⃣ Email contents with short_term applied
+      // 4ï¸âƒ£ Email contents with short_term applied
       const mailOptions = {
         from: `"${shortTerm} - Admission Office" <${process.env.EMAIL_USER}>`,
         to: a.email,
-        subject: `${shortTerm} Admission — Application Cancelled`,
+        subject: `${shortTerm} Admission â€” Application Cancelled`,
         text: `
 Good day ${a.first_name} ${a.last_name},
 
@@ -3284,7 +2605,7 @@ ${shortTerm} - Admission Office
         `,
       };
 
-      // 5️⃣ Send email
+      // 5ï¸âƒ£ Send email
       try {
         await transporter.sendMail(mailOptions);
         console.log("EMAIL SENT TO:", a.email);
@@ -3300,7 +2621,7 @@ ${shortTerm} - Admission Office
       message: `${count} unscheduled applicants were cancelled and notified.`,
     });
   } catch (error) {
-    console.error("❌ Error cancelling applicants:", error);
+    console.error("âŒ Error cancelling applicants:", error);
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -3355,7 +2676,7 @@ app.get("/api-applicant-scoring", async (req, res) => {
 
     res.json(rows);
   } catch (err) {
-    console.error("❌ Error fetching applicants with number:", err);
+    console.error("âŒ Error fetching applicants with number:", err);
     res.status(500).send("Server error");
   }
 });
@@ -3494,7 +2815,7 @@ app.get("/api/applicants-with-number", async (req, res) => {
 
     res.json(rows);
   } catch (err) {
-    console.error("❌ Error fetching applicants with number:", err);
+    console.error("âŒ Error fetching applicants with number:", err);
     res.status(500).send("Server error");
   }
 });
@@ -3555,7 +2876,7 @@ app.get("/api/person_with_applicant/:id", async (req, res) => {
 
     res.json(person);
   } catch (err) {
-    console.error("❌ Error fetching person_with_applicant:", err);
+    console.error("âŒ Error fetching person_with_applicant:", err);
     res.status(500).json({ error: "Failed to fetch person" });
   }
 });
@@ -3598,7 +2919,7 @@ app.post("/api/notify-submission", async (req, res) => {
     const applicant_number = appInfo?.applicant_number || "Unknown";
     const fullName = `${appInfo?.last_name || ""}, ${appInfo?.first_name || ""} ${appInfo?.middle_name?.charAt(0) || ""}.`;
 
-    const message = `✅ Applicant #${applicant_number} - ${fullName} submitted their form.`;
+    const message = `âœ… Applicant #${applicant_number} - ${fullName} submitted their form.`;
 
     // Save to notifications table
     await db.query(
@@ -3622,7 +2943,7 @@ app.post("/api/notify-submission", async (req, res) => {
   }
 });
 
-// ✅ GET person details by person_id
+// âœ… GET person details by person_id
 app.get("/api/person/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -3643,12 +2964,12 @@ app.get("/api/person/:id", async (req, res) => {
 
     res.json(rows[0]);
   } catch (error) {
-    console.error("❌ Error fetching person:", error);
+    console.error("âŒ Error fetching person:", error);
     res.status(500).json({ error: "Database error" });
   }
 });
 
-// 🛡 ALLOWED FIELDS IN person_table — prevents invalid updates
+// ðŸ›¡ ALLOWED FIELDS IN person_table â€” prevents invalid updates
 const allowedFields = new Set([
   "profile_img",
   "campus",
@@ -3799,7 +3120,7 @@ const allowedFields = new Set([
   "current_step",
 ]);
 
-// ✅ PUT update person details by person_id (SAFE VERSION)
+// âœ… PUT update person details by person_id (SAFE VERSION)
 app.put("/api/person/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -3808,9 +3129,9 @@ app.put("/api/person/:id", async (req, res) => {
       return res.status(400).json({ error: "No fields provided for update" });
     }
 
-    // 🧼 Clean + FILTER only allowed columns
+    // ðŸ§¼ Clean + FILTER only allowed columns
     const cleanedEntries = Object.entries(req.body)
-      .filter(([key, value]) => allowedFields.has(key)) // ❗ ignores applicant_number
+      .filter(([key, value]) => allowedFields.has(key)) // â— ignores applicant_number
       .filter(([_, value]) => value !== undefined)
       .map(([key, value]) => [key, value === "" ? null : value]);
 
@@ -3831,9 +3152,9 @@ app.put("/api/person/:id", async (req, res) => {
         .json({ error: "Person not found or no changes made" });
     }
 
-    res.json({ message: "✅ Person updated successfully" });
+    res.json({ message: "âœ… Person updated successfully" });
   } catch (error) {
-    console.error("❌ Error updating person:", error);
+    console.error("âŒ Error updating person:", error);
     res.status(500).json({
       error: "Database error during update",
       details: error.message,
@@ -3841,9 +3162,7 @@ app.put("/api/person/:id", async (req, res) => {
   }
 });
 
-
-
-// ✅ Fetch full record
+// âœ… Fetch full record
 app.get("/api/person/enrollment_data/:person_id", async (req, res) => {
   const { person_id } = req.params;
   const [rows] = await db3.query(
@@ -3860,7 +3179,7 @@ app.get("/api/person/enrollment_data/:person_id", async (req, res) => {
   res.json(rows[0]);
 });
 
-// ✅ Update person in ENROLLMENT DB (db3)
+// âœ… Update person in ENROLLMENT DB (db3)
 app.put("/api/enrollment/person/:person_id", async (req, res) => {
   const { person_id } = req.params;
   const updatedData = req.body;
@@ -3881,13 +3200,13 @@ app.put("/api/enrollment/person/:person_id", async (req, res) => {
       message: "Person updated successfully in ENROLLMENT DB3",
     });
   } catch (err) {
-    console.error("❌ Error updating person in ENROLLMENT DB:", err);
+    console.error("âŒ Error updating person in ENROLLMENT DB:", err);
     res.status(500).json({ error: "Failed to update person in ENROLLMENT DB" });
   }
 });
 
 // ===========================================================
-// ✅ STUDENT — can update ONLY their own personal information
+// âœ… STUDENT â€” can update ONLY their own personal information
 //     (db3 ENROLLMENT person_table)
 // ===========================================================
 app.put("/api/student/update_person/:person_id", async (req, res) => {
@@ -3895,7 +3214,7 @@ app.put("/api/student/update_person/:person_id", async (req, res) => {
   const updatedData = req.body;
 
   try {
-    // ❗ OPTIONAL: Prevent updating fields students should NOT touch
+    // â— OPTIONAL: Prevent updating fields students should NOT touch
     const allowed = [
       "profile_img",
       "campus",
@@ -4070,7 +3389,7 @@ app.put("/api/student/update_person/:person_id", async (req, res) => {
       message: "Student information updated successfully (DB3)",
     });
   } catch (err) {
-    console.error("❌ Error updating student (DB3):", err);
+    console.error("âŒ Error updating student (DB3):", err);
     res.status(500).json({ error: "Failed to update student record" });
   }
 });
@@ -4170,7 +3489,7 @@ app.post(
     }
 
     try {
-      // ✅ Get applicant_number from person_id
+      // âœ… Get applicant_number from person_id
       const [rows] = await db.query(
         "SELECT applicant_number FROM applicant_numbering_table WHERE person_id = ?",
         [person_id],
@@ -4185,13 +3504,13 @@ app.post(
 
       const ext = path.extname(req.file.originalname).toLowerCase();
       const year = new Date().getFullYear();
-      const filename = `${applicant_number}_1by1_${year}${ext}`; // ✅ Use applicant number here
+      const filename = `${applicant_number}_1by1_${year}${ext}`; // âœ… Use applicant number here
       const finalPath = path.join(__dirname, "uploads", filename);
 
-      // ✅ Save file
+      // âœ… Save file
       await fs.promises.writeFile(finalPath, req.file.buffer);
 
-      // ✅ Save to DB (still use person_id here)
+      // âœ… Save to DB (still use person_id here)
       await db3.query(
         "UPDATE person_table SET profile_img = ? WHERE person_id = ?",
         [filename, person_id],
@@ -4205,7 +3524,7 @@ app.post(
   },
 );
 
-// ✅ 2. Get person details by person_id
+// âœ… 2. Get person details by person_id
 app.get("/api/person/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -4223,7 +3542,7 @@ app.get("/api/person/:id", async (req, res) => {
   }
 });
 
-// ✅ 4. Upload & update profile_img
+// âœ… 4. Upload & update profile_img
 app.post(
   "/api/person/:id/upload-profile",
   upload.single("profile_img"),
@@ -4258,7 +3577,7 @@ app.post(
   },
 );
 
-// ✅ 5. Get applied programs list (sample, adjust db name/table)
+// âœ… 5. Get applied programs list (sample, adjust db name/table)
 // server.js
 app.get("/api/applied_program", async (req, res) => {
   try {
@@ -4293,7 +3612,7 @@ app.get("/api/applied_program", async (req, res) => {
   }
 });
 
-// ✅ Get all saved school years with semester info
+// âœ… Get all saved school years with semester info
 app.get("/api/school_years", async (req, res) => {
   try {
     const [rows] = await db3.query(`
@@ -4313,7 +3632,7 @@ app.get("/api/school_years", async (req, res) => {
   }
 });
 
-// ✅ Get year list only
+// âœ… Get year list only
 app.get("/api/year_table", async (req, res) => {
   try {
     const [rows] = await db3.query(
@@ -4326,7 +3645,7 @@ app.get("/api/year_table", async (req, res) => {
   }
 });
 
-// ✅ Get semester list only
+// âœ… Get semester list only
 app.get("/api/semester_table", async (req, res) => {
   try {
     const [rows] = await db3.query(`SELECT * FROM semester_table`);
@@ -4371,7 +3690,7 @@ app.get("/api/search-person", async (req, res) => {
   }
 });
 
-// 🔹 Update document_status for a person
+// ðŸ”¹ Update document_status for a person
 // Update document_status for all uploads of a person
 app.put("/api/uploads/person/:id/document-status", async (req, res) => {
   const { id } = req.params;
@@ -4439,7 +3758,7 @@ app.post("/api/requirement-uploads", async (req, res) => {
   }
 });
 
-// ✅ Update missing_documents for all rows of this person
+// âœ… Update missing_documents for all rows of this person
 app.put("/api/missing-documents/:person_id", async (req, res) => {
   const { person_id } = req.params;
   let { missing_documents, user_id } = req.body;
@@ -4460,7 +3779,7 @@ app.put("/api/missing-documents/:person_id", async (req, res) => {
 
     res.json({ success: true, message: "Missing documents updated" });
   } catch (err) {
-    console.error("❌ Error updating missing_documents:", err);
+    console.error("âŒ Error updating missing_documents:", err);
     res
       .status(500)
       .json({ success: false, error: "Failed to update missing_documents" });
@@ -4491,7 +3810,6 @@ app.post("/api/update-requirement", async (req, res) => {
     res.status(500).json({ error: "Failed to update requirement" });
   }
 });
-
 
 // ----------------- VERIFY PASSWORD -----------------
 app.post("/api/verify-password", async (req, res) => {
@@ -4779,12 +4097,12 @@ app.post("/faculty-change-password", async (req, res) => {
 });
 
 io.on("connection", (socket) => {
-  console.log("✅ Socket.IO client connected");
+  console.log("âœ… Socket.IO client connected");
 
   // ---------------------- Forgot Password: Applicant ----------------------
   socket.on("forgot-password-applicant", async (email) => {
     try {
-      // ✅ 1️⃣ Check if applicant exists
+      // âœ… 1ï¸âƒ£ Check if applicant exists
       const [rows] = await db.query(
         `SELECT ua.email, p.campus
          FROM user_accounts ua
@@ -4800,13 +4118,13 @@ io.on("connection", (socket) => {
         });
       }
 
-      // ✅ 2️⃣ Fetch short_term from company_settings table
+      // âœ… 2ï¸âƒ£ Fetch short_term from company_settings table
       const [[company]] = await db.query(
         "SELECT short_term FROM company_settings WHERE id = 1",
       );
       const shortTerm = company?.short_term || "Institution";
 
-      // ✅ 3️⃣ Generate new password
+      // âœ… 3ï¸âƒ£ Generate new password
       const newPassword = Array.from({ length: 8 }, () =>
         String.fromCharCode(Math.floor(Math.random() * 26) + 65),
       ).join("");
@@ -4818,7 +4136,7 @@ io.on("connection", (socket) => {
         email,
       ]);
 
-      // ✅ 4️⃣ Configure email sender
+      // âœ… 4ï¸âƒ£ Configure email sender
       const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
@@ -4827,7 +4145,7 @@ io.on("connection", (socket) => {
         },
       });
 
-      // ✅ 5️⃣ Send email with institutional short term (same as student/faculty)
+      // âœ… 5ï¸âƒ£ Send email with institutional short term (same as student/faculty)
       await transporter.sendMail({
         from: `"${shortTerm} - Information System" <${process.env.EMAIL_USER}>`,
         to: email,
@@ -4835,7 +4153,7 @@ io.on("connection", (socket) => {
         text: `Your new temporary password is: ${newPassword}\n\nPlease change it after logging in.`,
       });
 
-      // ✅ 6️⃣ Notify frontend that email was sent successfully
+      // âœ… 6ï¸âƒ£ Notify frontend that email was sent successfully
       socket.emit("password-reset-result-applicant", {
         success: true,
         message:
@@ -4856,7 +4174,7 @@ io.on("connection", (socket) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ message: "Email is required" });
 
-    // Generate uppercase temporary password (A–Z + 0–9)
+    // Generate uppercase temporary password (Aâ€“Z + 0â€“9)
     const generateTempPassword = () => {
       const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
       return Array.from({ length: 8 }, () =>
@@ -4874,7 +4192,7 @@ io.on("connection", (socket) => {
       );
       const shortTerm = company?.[0]?.short_term || "Institution";
 
-      // 1️⃣ Update Student or Registrar password
+      // 1ï¸âƒ£ Update Student or Registrar password
       const [userResult] = await db3.query(
         "UPDATE user_accounts SET password = ? WHERE email = ? AND (role = 'student' OR role = 'registrar')",
         [hashedPassword, email],
@@ -4887,7 +4205,7 @@ io.on("connection", (socket) => {
         });
       }
 
-      // 2️⃣ Update Faculty password
+      // 2ï¸âƒ£ Update Faculty password
       const [profResult] = await db3.query(
         "UPDATE prof_table SET password = ? WHERE email = ? AND role = 'faculty'",
         [hashedPassword, email],
@@ -4900,7 +4218,7 @@ io.on("connection", (socket) => {
         });
       }
 
-      // 3️⃣ Not found
+      // 3ï¸âƒ£ Not found
       return res.status(404).json({
         message: `${shortTerm} account not found. Please check your email address.`,
       });
@@ -4934,7 +4252,7 @@ io.on("connection", (socket) => {
     }
   }
 
-  // 🔹 Get exam scores for a person
+  // ðŸ”¹ Get exam scores for a person
   app.get("/api/exam/:personId", async (req, res) => {
     try {
       const { personId } = req.params;
@@ -4958,7 +4276,7 @@ io.on("connection", (socket) => {
 
       res.json(rows);
     } catch (err) {
-      console.error("❌ GET exam error:", err);
+      console.error("âŒ GET exam error:", err);
       res.status(500).json({ error: "Database error" });
     }
   });
@@ -5007,7 +4325,7 @@ io.on("connection", (socket) => {
           s.proctor,
           s.room_quota,
           s.created_at,
-          ea.email_sent   -- ✅ include email_sent
+          ea.email_sent   -- âœ… include email_sent
        FROM entrance_exam_schedule s
        INNER JOIN exam_applicants ea
          ON ea.schedule_id = s.schedule_id
@@ -5059,7 +4377,7 @@ io.on("connection", (socket) => {
       );
       res.json(rows);
     } catch (err) {
-      console.error("❌ Error fetching proctor applicants:", err);
+      console.error("âŒ Error fetching proctor applicants:", err);
       res.status(500).json({ error: "Failed to fetch applicants for proctor" });
     }
   });
@@ -5110,12 +4428,12 @@ WHERE proctor LIKE ?
 
       res.json(results);
     } catch (err) {
-      console.error("❌ Error fetching proctor applicants:", err);
+      console.error("âŒ Error fetching proctor applicants:", err);
       res.status(500).json({ error: "Failed to fetch applicants for proctor" });
     }
   });
 
-  // 🔹 Get Notifications
+  // ðŸ”¹ Get Notifications
   app.get("/api/notifications", async (req, res) => {
     try {
       const [rows] = await db.query(
@@ -5123,7 +4441,7 @@ WHERE proctor LIKE ?
       );
       res.json(rows);
     } catch (err) {
-      console.error("❌ Fetch notifications error:", err);
+      console.error("âŒ Fetch notifications error:", err);
       res.status(500).json({ error: "Failed to fetch notifications" });
     }
   });
@@ -5164,15 +4482,13 @@ WHERE proctor LIKE ?
         total_ave: row.total_ave ?? 0,
       });
     } catch (err) {
-      console.error("❌ Error fetching interview:", err);
+      console.error("âŒ Error fetching interview:", err);
       res.status(500).json({ message: "Server error" });
     }
   });
 
-  
-
   // 2) PUT update (must exist)
-  // 📌 Update single Qualifying/Interview scores + log notifications
+  // ðŸ“Œ Update single Qualifying/Interview scores + log notifications
 
   // ---------------------------------------------------------
   // 2) SAVE or UPDATE (UPSERT) using person_status_table
@@ -5186,9 +4502,9 @@ WHERE proctor LIKE ?
         qualifying_exam_score,
         qualifying_interview_score,
       } = req.body;
-      console.log("📥 Payload:", req.body);
+      console.log("ðŸ“¥ Payload:", req.body);
 
-      // 1️⃣ Find person_id of applicant
+      // 1ï¸âƒ£ Find person_id of applicant
       const [rows] = await db.query(
         "SELECT person_id FROM applicant_numbering_table WHERE applicant_number = ?",
         [applicant_number],
@@ -5198,12 +4514,12 @@ WHERE proctor LIKE ?
       }
       const person_id = rows[0].person_id;
 
-      // 2️⃣ Compute new scores
+      // 2ï¸âƒ£ Compute new scores
       const qExam = Number(qualifying_exam_score) || 0;
       const qInterview = Number(qualifying_interview_score) || 0;
       const totalAve = (qExam + qInterview) / 2;
 
-      // 3️⃣ Insert or update (Upsert)
+      // 3ï¸âƒ£ Insert or update (Upsert)
       await db.query(
         `INSERT INTO person_status_table (person_id, qualifying_result, interview_result, exam_result)
        VALUES (?, ?, ?, ?)
@@ -5214,13 +4530,13 @@ WHERE proctor LIKE ?
         [person_id, qExam, qInterview, totalAve],
       );
 
-      // 4️⃣ Return success (no notification here)
+      // 4ï¸âƒ£ Return success (no notification here)
       res.json({
         success: true,
         message: "Interview and exam scores saved successfully!",
       });
     } catch (err) {
-      console.error("🔥 Error saving interview/exam scores:", err);
+      console.error("ðŸ”¥ Error saving interview/exam scores:", err);
       res.status(500).json({ error: "Failed to save interview/exam scores" });
     }
   });
@@ -5267,7 +4583,7 @@ WHERE proctor LIKE ?
 
   socket.on("assign-student-number", async (person_id) => {
     try {
-      // ✅ Fetch person info
+      // âœ… Fetch person info
       const [rows] = await db.query(
         `SELECT * FROM person_table AS pt WHERE person_id = ?`,
         [person_id],
@@ -5298,8 +4614,14 @@ WHERE proctor LIKE ?
             fs.mkdirSync(studentDir, { recursive: true });
           }
 
-          const applicantPath = path.join(applicantDir, person_data.profile_img);
-          const uploadRootPath = path.join(uploadRootDir, person_data.profile_img);
+          const applicantPath = path.join(
+            applicantDir,
+            person_data.profile_img,
+          );
+          const uploadRootPath = path.join(
+            uploadRootDir,
+            person_data.profile_img,
+          );
           const sourcePath = fs.existsSync(applicantPath)
             ? applicantPath
             : fs.existsSync(uploadRootPath)
@@ -5324,19 +4646,19 @@ WHERE proctor LIKE ?
         }
       }
 
-      // ✅ Get uploaded requirements
+      // âœ… Get uploaded requirements
       const [requirements] = await db.query(
         `SELECT * FROM requirement_uploads WHERE person_id = ?`,
         [person_id],
       );
 
       const [studentFuturePI] = await db3.query(
-        `SELECT MAX(person_id) AS latest_person_id FROM user_accounts;`
+        `SELECT MAX(person_id) AS latest_person_id FROM user_accounts;`,
       );
 
       const personIdForStudent = studentFuturePI[0].latest_person_id;
 
-      // ✅ Save to student_numbering_table
+      // âœ… Save to student_numbering_table
       await db3.query(
         `INSERT INTO student_numbering_table (student_number, person_id) VALUES (?, ?)`,
         [student_number, personIdForStudent + 1],
@@ -5348,7 +4670,7 @@ WHERE proctor LIKE ?
         [personIdForStudent + 1, 0, 0, 0, 0, 0, 0],
       );
 
-      // ✅ Copy requirements to db3
+      // âœ… Copy requirements to db3
       for (const req of requirements) {
         await db3.query(
           `INSERT INTO requirement_uploads
@@ -5369,7 +4691,6 @@ WHERE proctor LIKE ?
         );
       }
 
-
       await db3.query(
         `INSERT INTO student_status_table
          (student_number, active_curriculum, enrolled_status, year_level_id, active_school_year_id, control_status)
@@ -5377,7 +4698,7 @@ WHERE proctor LIKE ?
         [student_number, person_data.program, 0, 0, 0, 0],
       );
 
-      // ✅ Update registration status
+      // âœ… Update registration status
       await db3.query(
         `UPDATE person_status_table SET student_registration_status = 1 WHERE person_id = ?`,
         [personIdForStudent + 1],
@@ -5541,7 +4862,7 @@ WHERE proctor LIKE ?
         ],
       );
 
-      // ✅ Insert login credentials (or update if existing)
+      // âœ… Insert login credentials (or update if existing)
       const [existingUser] = await db3.query(
         `SELECT * FROM user_accounts WHERE person_id = ?`,
         [personIdForStudent + 1],
@@ -5561,21 +4882,25 @@ WHERE proctor LIKE ?
 
       const qrData = `${process.env.DB_HOST_LOCAL}:5173/student_qr_information/${student_number}`;
       const qrFilename = `${student_number}_qrcode.png`;
-      const qrPath = path.join(__dirname, "./uploads/QrCodeGenerated", qrFilename);
+      const qrPath = path.join(
+        __dirname,
+        "./uploads/QrCodeGenerated",
+        qrFilename,
+      );
 
       await QRCode.toFile(qrPath, qrData, {
         color: { dark: "#000", light: "#FFF" },
         width: 300,
       });
 
-      // ✅ Emit success result
+      // âœ… Emit success result
       socket.emit("assign-student-number-result", {
         success: true,
         student_number,
         message: "Student number assigned successfully.",
       });
 
-      // ✅ Fetch company name dynamically
+      // âœ… Fetch company name dynamically
       const [[company]] = await db.query(
         "SELECT company_name FROM company_settings WHERE id = 1",
       );
@@ -5583,7 +4908,7 @@ WHERE proctor LIKE ?
       const companyName = company?.company_name || "Enrollment Office";
       const companyShort = company?.short_term || "";
 
-      // ✅ Send welcome email
+      // âœ… Send welcome email
       const transporter = nodemailer.createTransport({
         service: "gmail",
         auth: {
@@ -5595,11 +4920,11 @@ WHERE proctor LIKE ?
       const mailOptions = {
         from: `"${companyShort} Enrollment Office" <${process.env.EMAIL_USER}>`,
         to: emailAddress,
-        subject: `🎓 Welcome to ${companyName} - Acceptance Confirmation`,
+        subject: `ðŸŽ“ Welcome to ${companyName} - Acceptance Confirmation`,
         text: `
 Hi, ${first_name} ${middle_name || ""} ${last_name},
 
-🎉 Congratulations! You are now officially accepted and part of the ${companyName} community.
+ðŸŽ‰ Congratulations! You are now officially accepted and part of the ${companyName} community.
 
 Please visit your respective college offices to tag your schedule to your account and obtain your class schedule.
 
@@ -5610,12 +4935,12 @@ Your temporary password is: ${tempPassword}
 
 You may change your password and keep it secure.
 
-👉 Click the link below to log in:
+ðŸ‘‰ Click the link below to log in:
 ${process.env.DB_HOST_LOCAL}:5173/login
 `.trim(),
       };
 
-      // ✅ Send email (non-blocking)
+      // âœ… Send email (non-blocking)
       transporter.sendMail(mailOptions).catch(console.error);
     } catch (error) {
       console.error("Error in assign-student-number:", error);
@@ -5627,13 +4952,12 @@ ${process.env.DB_HOST_LOCAL}:5173/login
   });
 });
 
+app.get("/api/exam-schedule/:applicant_number", async (req, res) => {
+  const { applicant_number } = req.params;
 
-  app.get("/api/exam-schedule/:applicant_number", async (req, res) => {
-    const { applicant_number } = req.params;
-
-    try {
-      const [rows] = await db.query(
-        `
+  try {
+    const [rows] = await db.query(
+      `
       SELECT
         s.day_description AS date_of_exam,
         s.start_time,
@@ -5648,19 +4972,19 @@ ${process.env.DB_HOST_LOCAL}:5173/login
       WHERE ea.applicant_id = ?
       LIMIT 1
     `,
-        [applicant_number],
-      );
+      [applicant_number],
+    );
 
-      if (rows.length === 0) {
-        return res.status(404).json({ message: "No exam schedule found" });
-      }
-
-      res.json(rows[0]);
-    } catch (err) {
-      console.error("Error fetching exam schedule:", err);
-      res.status(500).json({ error: "Database error" });
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "No exam schedule found" });
     }
-  });
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error("Error fetching exam schedule:", err);
+    res.status(500).json({ error: "Database error" });
+  }
+});
 
 // ============================
 // GET - Day List (from schedule table)
@@ -5680,32 +5004,9 @@ app.get("/day_list", async (req, res) => {
 // ============================
 // POST - Insert Entrance Exam Schedule
 // ============================
-// ✅ Get all interview schedules
-app.get("/interview_schedules", async (req, res) => {
-  try {
-    const [rows] = await db.query(`
-      SELECT
-        s.schedule_id,
-        s.day_description,
-        s.building_description,
-        s.room_description,
-        s.start_time,
-        s.end_time,
-        s.interviewer,
-        s.room_quota,
-        s.created_at
-      FROM admission.interview_exam_schedule s
-      ORDER BY s.day_description, s.start_time
-    `);
+// âœ… Get all interview schedules
 
-    res.json(rows);
-  } catch (err) {
-    console.error("❌ Error fetching interview schedules:", err);
-    res.status(500).json({ error: "Failed to fetch interview schedules" });
-  }
-});
-
-// ✅ Get interview schedules with applicant counts
+// âœ… Get interview schedules with applicant counts
 // 3. Get interview schedules with occupancy count
 // ================== INTERVIEW APPLICANTS API ==================
 
@@ -5734,7 +5035,7 @@ app.get("/api/interview/applicants-with-number", async (req, res) => {
     `);
     res.json(rows);
   } catch (err) {
-    console.error("❌ Error fetching interview applicants:", err);
+    console.error("âŒ Error fetching interview applicants:", err);
     res.status(500).json({ error: "Failed to fetch interview applicants" });
   }
 });
@@ -5765,13 +5066,13 @@ app.get("/api/interview/not-emailed-applicants", async (req, res) => {
         ies.end_time,
         ies.interviewer,
         ps.interview_status,
-        -- ✅ exam scores
+        -- âœ… exam scores
         ae.English,
         ae.Science,
         ae.Filipino,
         ae.Math,
         ae.Abstract,
-        ae.final_rating   -- ✅ bring in the computed rating
+        ae.final_rating   -- âœ… bring in the computed rating
       FROM interview_applicants ia
       LEFT JOIN applicant_numbering_table a
         ON ia.applicant_id = a.applicant_number
@@ -5781,7 +5082,7 @@ app.get("/api/interview/not-emailed-applicants", async (req, res) => {
         ON ia.schedule_id = ies.schedule_id
       LEFT JOIN person_status_table ps
         ON ps.person_id = p.person_id
-      LEFT JOIN admission_exam ae       -- ✅ join exam results
+      LEFT JOIN admission_exam ae       -- âœ… join exam results
         ON ae.person_id = p.person_id
       WHERE (ia.email_sent = 0 OR ia.email_sent IS NULL)
       ORDER BY p.last_name ASC, p.first_name ASC
@@ -5789,7 +5090,7 @@ app.get("/api/interview/not-emailed-applicants", async (req, res) => {
 
     res.json(rows);
   } catch (err) {
-    console.error("❌ Error fetching interview not-emailed applicants:", err);
+    console.error("âŒ Error fetching interview not-emailed applicants:", err);
     res.status(500).send("Server error");
   }
 });
@@ -5802,7 +5103,7 @@ app.put("/api/exam/remove_applicant", async (req, res) => {
       return res.status(400).json({ message: "Missing applicant_id" });
     }
 
-    // 1️⃣ Reset exam_applicants table
+    // 1ï¸âƒ£ Reset exam_applicants table
     await db.query(
       `UPDATE exam_applicants
        SET schedule_id = NULL, email_sent = 0
@@ -5810,7 +5111,7 @@ app.put("/api/exam/remove_applicant", async (req, res) => {
       [applicant_id],
     );
 
-    // 2️⃣ Reset person_status_table exam_status
+    // 2ï¸âƒ£ Reset person_status_table exam_status
     await db.query(
       `UPDATE person_status_table
        SET exam_status = NULL
@@ -5833,7 +5134,7 @@ app.put("/api/interview/remove_applicant", async (req, res) => {
       return res.status(400).json({ message: "Missing applicant_id" });
     }
 
-    // 1️⃣ Reset interview_applicants table
+    // 1ï¸âƒ£ Reset interview_applicants table
     await db.query(
       `UPDATE interview_applicants
        SET schedule_id = NULL, email_sent = 0
@@ -5841,7 +5142,7 @@ app.put("/api/interview/remove_applicant", async (req, res) => {
       [applicant_id],
     );
 
-    // 2️⃣ Reset person_status_table INTERVIEW STATUS
+    // 2ï¸âƒ£ Reset person_status_table INTERVIEW STATUS
     await db.query(
       `UPDATE person_status_table
        SET interview_status = NULL
@@ -5856,13 +5157,11 @@ app.put("/api/interview/remove_applicant", async (req, res) => {
   }
 });
 
-
-
 // ================== INTERVIEW SOCKET EVENTS ==================
 io.on("connection", (socket) => {
-  console.log("✅ New client connected for Interview Scheduling");
+  console.log("âœ… New client connected for Interview Scheduling");
 
-  // Assign applicants (single, 40, custom — all handled here)
+  // Assign applicants (single, 40, custom â€” all handled here)
   socket.on(
     "update_interview_schedule",
     async ({ schedule_id, applicant_numbers }) => {
@@ -5878,7 +5177,7 @@ io.on("connection", (socket) => {
           return;
         }
 
-        // 🔍 1. Get schedule info (quota)
+        // ðŸ” 1. Get schedule info (quota)
         const [[schedule]] = await db.query(
           `SELECT room_quota FROM interview_exam_schedule WHERE schedule_id = ?`,
           [schedule_id],
@@ -5892,7 +5191,7 @@ io.on("connection", (socket) => {
           return;
         }
 
-        // 🔍 2. Get current occupancy
+        // ðŸ” 2. Get current occupancy
         const [[{ current_count }]] = await db.query(
           `SELECT COUNT(*) AS current_count FROM interview_applicants WHERE schedule_id = ?`,
           [schedule_id],
@@ -5902,15 +5201,15 @@ io.on("connection", (socket) => {
         if (availableSlots <= 0) {
           socket.emit("update_schedule_result", {
             success: false,
-            error: `⚠️ Schedule is already full (${schedule.room_quota} applicants).`,
+            error: `âš ï¸ Schedule is already full (${schedule.room_quota} applicants).`,
           });
           return;
         }
 
-        // 🔍 3. Trim applicant_numbers if more than available slots
+        // ðŸ” 3. Trim applicant_numbers if more than available slots
         const toAssign = applicant_numbers.slice(0, availableSlots);
 
-        // ✅ 4. Update only those applicants
+        // âœ… 4. Update only those applicants
         const [results] = await db.query(
           `UPDATE interview_applicants
          SET schedule_id = ?
@@ -5925,10 +5224,10 @@ io.on("connection", (socket) => {
           skipped: applicant_numbers.length - toAssign.length,
         });
 
-        // 🔄 notify all clients
+        // ðŸ”„ notify all clients
         io.emit("schedule_updated", { schedule_id });
       } catch (err) {
-        console.error("❌ Error updating interview schedule:", err);
+        console.error("âŒ Error updating interview schedule:", err);
         socket.emit("update_schedule_result", {
           success: false,
           error: "Failed to update interview schedule.",
@@ -5952,7 +5251,7 @@ io.on("connection", (socket) => {
       });
       io.emit("schedule_updated", { schedule_id });
     } catch (err) {
-      console.error("❌ Error unassigning all interview applicants:", err);
+      console.error("âŒ Error unassigning all interview applicants:", err);
       socket.emit("unassign_all_result", {
         success: false,
         error: "Failed to unassign all applicants.",
@@ -5969,8 +5268,8 @@ io.on("connection", (socket) => {
     return `${h}:${minutes} ${ampm}`;
   }
 
-  // 📩 Handle sending interview schedule emails
-  // 📩 Handle sending interview schedule emails
+  // ðŸ“© Handle sending interview schedule emails
+  // ðŸ“© Handle sending interview schedule emails
   socket.on(
     "send_interview_emails",
     async ({
@@ -5982,7 +5281,7 @@ io.on("connection", (socket) => {
       user_person_id,
     }) => {
       try {
-        // 🔹 Fetch applicants linked to the interview schedule
+        // ðŸ”¹ Fetch applicants linked to the interview schedule
         const [rows] = await db.query(
           `SELECT
             ia.schedule_id,
@@ -6011,7 +5310,7 @@ io.on("connection", (socket) => {
             ON dct.dprtmnt_id = dt.dprtmnt_id
           WHERE ia.schedule_id = ?
           AND an.applicant_number IN (?)`,
-          [schedule_id, applicant_numbers]
+          [schedule_id, applicant_numbers],
         );
 
         if (rows.length === 0) {
@@ -6022,7 +5321,7 @@ io.on("connection", (socket) => {
         }
 
         const [[company]] = await db.query(
-          "SELECT short_term FROM company_settings WHERE id = 1"
+          "SELECT short_term FROM company_settings WHERE id = 1",
         );
 
         const shortTerm = company?.short_term || "EARIST";
@@ -6030,8 +5329,7 @@ io.on("connection", (socket) => {
         const finalSubjectComputed =
           finalSubject || rows[0]?.dprtmnt_name || "Interview Schedule";
 
-
-        // ✅ Use db3 (enrollment) → user_accounts instead of prof
+        // âœ… Use db3 (enrollment) â†’ user_accounts instead of prof
         const [actorRows] = await db3.query(
           `SELECT
             email AS actor_email,
@@ -6048,7 +5346,7 @@ io.on("connection", (socket) => {
 
         const actor = actorRows[0] || null;
 
-        // ✅ Format: ROLE (EMPLOYEE_ID) - LastName, FirstName MiddleName
+        // âœ… Format: ROLE (EMPLOYEE_ID) - LastName, FirstName MiddleName
         const actorEmail = actor?.actor_email || "earistmis@gmail.com";
         const actorName = actor
           ? `${actor.role.toUpperCase()} (${actor.employee_id || "N/A"}) - ${actor.last_name}, ${actor.first_name}${actor.middle_name ? " " + actor.middle_name : ""}`
@@ -6079,11 +5377,10 @@ io.on("connection", (socket) => {
           },
         };
 
-        const senderAccount =
-          senderAccountMap[user.sender_name] || {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS,
-          };
+        const senderAccount = senderAccountMap[user.sender_name] || {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        };
 
         if (!senderAccount.user || !senderAccount.pass) {
           throw new Error("Email sender account is not configured.");
@@ -6123,8 +5420,6 @@ io.on("connection", (socket) => {
           await transporter.sendMail(mailOptions);
 
           try {
-
-
             // Mark applicant email sent
             await db.query(
               "UPDATE interview_applicants SET email_sent = 1 WHERE applicant_id = ?",
@@ -6137,7 +5432,7 @@ io.on("connection", (socket) => {
            VALUES (?, ?, ?, ?, ?, NOW())`,
               [
                 "email",
-                `📧 Interview schedule email sent for Applicant #${row.applicant_number} (Schedule #${row.schedule_id})`,
+                `ðŸ“§ Interview schedule email sent for Applicant #${row.applicant_number} (Schedule #${row.schedule_id})`,
                 row.applicant_number,
                 actorEmail,
                 actorName,
@@ -6147,7 +5442,7 @@ io.on("connection", (socket) => {
             sent.push(row.applicant_number);
           } catch (err) {
             console.error(
-              `❌ Failed to send interview email to ${row.emailAddress}:`,
+              `âŒ Failed to send interview email to ${row.emailAddress}:`,
               err.message,
             );
             await db.query(
@@ -6206,10 +5501,8 @@ app.get("/exam_schedules", async (req, res) => {
   }
 });
 
-
-
 io.on("connection", (socket) => {
-  console.log("✅ Socket.IO client connected");
+  console.log("âœ… Socket.IO client connected");
 
   // ENTRANCE EXAM
   socket.on("update_schedule", async ({ schedule_id, applicant_numbers }) => {
@@ -6226,7 +5519,7 @@ io.on("connection", (socket) => {
         });
       }
 
-      // 🔎 Get room quota
+      // ðŸ”Ž Get room quota
       const [[scheduleInfo]] = await db.query(
         `SELECT room_quota FROM entrance_exam_schedule WHERE schedule_id = ?`,
         [schedule_id],
@@ -6239,7 +5532,7 @@ io.on("connection", (socket) => {
       }
       const roomQuota = scheduleInfo.room_quota;
 
-      // 🔎 Count how many are already assigned
+      // ðŸ”Ž Count how many are already assigned
       const [[{ currentCount }]] = await db.query(
         `SELECT COUNT(*) AS currentCount FROM exam_applicants WHERE schedule_id = ?`,
         [schedule_id],
@@ -6282,9 +5575,9 @@ io.on("connection", (socket) => {
         }
       }
 
-      console.log("✅ Assigned:", assigned);
-      console.log("✏️ Updated:", updated);
-      console.log("⚠️ Skipped:", skipped);
+      console.log("âœ… Assigned:", assigned);
+      console.log("âœï¸ Updated:", updated);
+      console.log("âš ï¸ Skipped:", skipped);
 
       socket.emit("update_schedule_result", {
         success: true,
@@ -6293,7 +5586,7 @@ io.on("connection", (socket) => {
         skipped,
       });
     } catch (error) {
-      console.error("❌ Error assigning schedule:", error);
+      console.error("âŒ Error assigning schedule:", error);
       socket.emit("update_schedule_result", {
         success: false,
         error: "Failed to assign schedule.",
@@ -6318,7 +5611,7 @@ io.on("connection", (socket) => {
           });
         }
 
-        // 🔎 Get room quota
+        // ðŸ”Ž Get room quota
         const [[scheduleInfo]] = await db.query(
           `SELECT room_quota FROM interview_exam_schedule WHERE schedule_id = ?`,
           [schedule_id],
@@ -6331,7 +5624,7 @@ io.on("connection", (socket) => {
         }
         const roomQuota = scheduleInfo.room_quota;
 
-        // 🔎 Count how many are already assigned
+        // ðŸ”Ž Count how many are already assigned
         const [[{ currentCount }]] = await db.query(
           `SELECT COUNT(*) AS currentCount FROM interview_applicants WHERE schedule_id = ?`,
           [schedule_id],
@@ -6374,9 +5667,9 @@ io.on("connection", (socket) => {
           }
         }
 
-        console.log("✅ Assigned:", assigned);
-        console.log("✏️ Updated:", updated);
-        console.log("⚠️ Skipped:", skipped);
+        console.log("âœ… Assigned:", assigned);
+        console.log("âœï¸ Updated:", updated);
+        console.log("âš ï¸ Skipped:", skipped);
 
         socket.emit("update_schedule_result", {
           success: true,
@@ -6385,7 +5678,7 @@ io.on("connection", (socket) => {
           skipped,
         });
       } catch (error) {
-        console.error("❌ Error assigning schedule:", error);
+        console.error("âŒ Error assigning schedule:", error);
         socket.emit("update_schedule_result", {
           success: false,
           error: "Failed to assign schedule.",
@@ -6408,7 +5701,7 @@ io.on("connection", (socket) => {
       const { schedule_id, user_person_id, subject, message } = data;
 
       /* ================================
-         1️⃣ Get Actor Info
+         1ï¸âƒ£ Get Actor Info
       ================================= */
       const [actorRows] = await db3.query(
         `SELECT email, role, employee_id, last_name, first_name, middle_name
@@ -6429,7 +5722,7 @@ io.on("connection", (socket) => {
       }
 
       /* ================================
-         2️⃣ Office Name
+         2ï¸âƒ£ Office Name
       ================================= */
       const [[office]] = await db.query(
         "SELECT short_term FROM company_settings WHERE id = 1",
@@ -6439,8 +5732,8 @@ io.on("connection", (socket) => {
       const officeName = `${shortTerm} - Admission Office`;
 
       /* ================================
-         3️⃣ Get Applicants
-         🔥 FIXED JOIN HERE
+         3ï¸âƒ£ Get Applicants
+         ðŸ”¥ FIXED JOIN HERE
       ================================= */
       const [rows] = await db.query(
         `
@@ -6465,7 +5758,7 @@ io.on("connection", (socket) => {
           ON ea.schedule_id = s.schedule_id
 
         JOIN applicant_numbering_table an
-          ON ea.applicant_id = an.applicant_number   -- ✅ CORRECT
+          ON ea.applicant_id = an.applicant_number   -- âœ… CORRECT
 
         JOIN person_table p
           ON an.person_id = p.person_id
@@ -6484,7 +5777,7 @@ io.on("connection", (socket) => {
       }
 
       /* ================================
-         4️⃣ Helpers
+         4ï¸âƒ£ Helpers
       ================================= */
       const sent = [];
       const failed = [];
@@ -6512,7 +5805,7 @@ io.on("connection", (socket) => {
       };
 
       /* ================================
-         5️⃣ Send Email
+         5ï¸âƒ£ Send Email
       ================================= */
       const sendEmail = async (row) => {
         if (!row.emailAddress) {
@@ -6547,7 +5840,7 @@ io.on("connection", (socket) => {
             [row.person_id],
           );
 
-          const logMsg = `📧 Schedule email sent to Applicant #${row.applicant_number}`;
+          const logMsg = `ðŸ“§ Schedule email sent to Applicant #${row.applicant_number}`;
 
           await db.query(
             `INSERT INTO notifications
@@ -6558,13 +5851,13 @@ io.on("connection", (socket) => {
 
           sent.push(row.applicant_number);
         } catch (err) {
-          console.error("❌ Email failed:", err.message);
+          console.error("âŒ Email failed:", err.message);
           failed.push(row.applicant_number);
         }
       };
 
       /* ================================
-         6️⃣ Batch Sending
+         6ï¸âƒ£ Batch Sending
       ================================= */
       const batchSize = 5;
       const delayMs = 1000;
@@ -6579,7 +5872,7 @@ io.on("connection", (socket) => {
       }
 
       /* ================================
-         7️⃣ Result
+         7ï¸âƒ£ Result
       ================================= */
       socket.emit("send_schedule_emails_result", {
         success: true,
@@ -6601,44 +5894,6 @@ io.on("connection", (socket) => {
   });
 });
 
-app.post("/unassign_interview", async (req, res) => {
-  const { applicant_number } = req.body;
-  try {
-    await db.query(
-      `UPDATE interview_applicants
-       SET schedule_id = NULL
-       WHERE applicant_id = ?`,
-      [applicant_number],
-    );
-    res.json({
-      success: true,
-      message: `Applicant ${applicant_number} unassigned.`,
-    });
-  } catch (err) {
-    console.error("❌ Error unassigning interview applicant:", err);
-    res.status(500).json({ error: "Failed to unassign applicant." });
-  }
-});
-
-app.post("/unassign_all_from_interview", async (req, res) => {
-  const { schedule_id } = req.body;
-  try {
-    await db.query(
-      `UPDATE interview_applicants
-       SET schedule_id = NULL
-       WHERE schedule_id = ?`,
-      [schedule_id],
-    );
-    res.json({
-      success: true,
-      message: `All applicants unassigned from schedule ${schedule_id}.`,
-    });
-  } catch (err) {
-    console.error("❌ Error unassigning all interview applicants:", err);
-    res.status(500).json({ error: "Failed to unassign all applicants." });
-  }
-});
-
 // Get current number of applicants assigned to a schedule
 app.get("/api/exam-schedule-count/:schedule_id", async (req, res) => {
   const { schedule_id } = req.params;
@@ -6656,7 +5911,6 @@ app.get("/api/exam-schedule-count/:schedule_id", async (req, res) => {
   }
 });
 
-
 //READ ENROLLED USERS (UPDATED!)
 app.get("/enrolled_users", async (req, res) => {
   try {
@@ -6670,91 +5924,6 @@ app.get("/enrolled_users", async (req, res) => {
 });
 
 // ------------------------- DEPARTMENT PANEL -------------------------------- //
-
-app.post("/department", async (req, res) => {
-  const { dep_name, dep_code } = req.body;
-  const query =
-    "INSERT INTO dprtmnt_table (dprtmnt_name, dprtmnt_code) VALUES (?, ?)";
-
-  try {
-    const normalized_code = dep_code.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
-
-    const [rows] = await db3.query(
-      "SELECT dprtmnt_id FROM dprtmnt_table WHERE dprtmnt_code = ?",
-      [normalized_code],
-    );
-
-    if (rows.length > 0) {
-      return res
-        .status(400)
-        .json({ message: "The department is already exists" });
-    }
-
-    const [result] = await db3.query(query, [dep_name, dep_code]);
-    res.status(200).send({ insertId: result.insertId });
-  } catch (err) {
-    console.error("Error creating department:", err);
-    res.status(500).send({ error: "Failed to create department" });
-  }
-});
-
-// DEPARTMENT LIST (UPDATED!)
-app.get("/get_department", async (req, res) => {
-  const getQuery = "SELECT * FROM dprtmnt_table";
-
-  try {
-    const [result] = await db3.query(getQuery);
-    res.status(200).send(result);
-  } catch (err) {
-    console.error("Error fetching departments:", err);
-    res.status(500).send({ message: "Internal Server Error" });
-  }
-});
-
-// UPDATE DEPARTMENT INFORMATION (SUPERADMIN) (UPDATED!)
-app.put("/update_department/:id", async (req, res) => {
-  const { id } = req.params; // Extract the department ID from the URL parameter
-  const { dep_name, dep_code } = req.body; // Get the department name and code from the request body
-
-  const updateQuery = `
-      UPDATE dprtmnt_table
-      SET dprtmnt_name = ?, dprtmnt_code = ?
-      WHERE id = ?`;
-
-  try {
-    const [result] = await db3.query(updateQuery, [dep_name, dep_code, id]);
-
-    if (result.affectedRows === 0) {
-      return res.status(404).send({ message: "Department not found" });
-    }
-
-    res.status(200).send({ message: "Department updated successfully" });
-  } catch (err) {
-    console.error("Error updating department:", err);
-    res.status(500).send({ message: "Internal Server Error" });
-  }
-});
-
-// DELETE DEPARTMENT (SUPERADMIN) (UPDATED!)
-app.delete("/delete_department/:id", async (req, res) => {
-  const { id } = req.params;
-
-  const deleteQuery = "DELETE FROM dprtmnt_table WHERE id = ?";
-
-  try {
-    const [result] = await db3.query(deleteQuery, [id]);
-
-    if (result.affectedRows === 0) {
-      return res.status(404).send({ message: "Department not found" });
-    }
-
-    res.status(200).send({ message: "Department deleted successfully" });
-  } catch (err) {
-    console.error("Error deleting department:", err);
-    res.status(500).send({ message: "Internal Server Error" });
-  }
-});
-
 
 // -------------------------------- CURRICULUM PANEL ------------------------------------ //
 
@@ -6815,7 +5984,7 @@ app.get("/get_curriculum", async (req, res) => {
   }
 });
 
-// ✅ UPDATE Curriculum lock_status (0 = inactive, 1 = active)
+// âœ… UPDATE Curriculum lock_status (0 = inactive, 1 = active)
 app.put("/update_curriculum/:id", async (req, res) => {
   const { id } = req.params;
   const { lock_status } = req.body;
@@ -6838,7 +6007,7 @@ app.put("/update_curriculum/:id", async (req, res) => {
 
     res.status(200).json({ message: "Curriculum status updated successfully" });
   } catch (error) {
-    console.error("❌ Error updating curriculum status:", error);
+    console.error("âŒ Error updating curriculum status:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -6850,7 +6019,7 @@ app.put("/update_curriculum_data/:id", async (req, res) => {
   try {
     const [result] = await db3.query(
       "UPDATE curriculum_table SET year_id = ?, program_id = ? WHERE curriculum_id = ?",
-      [year_id, program_id, id]
+      [year_id, program_id, id],
     );
 
     if (result.affectedRows === 0) {
@@ -6870,7 +6039,7 @@ app.delete("/delete_curriculum/:id", async (req, res) => {
   try {
     const [result] = await db3.query(
       "DELETE FROM curriculum_table WHERE curriculum_id = ?",
-      [id]
+      [id],
     );
 
     if (result.affectedRows === 0) {
@@ -6883,7 +6052,6 @@ app.delete("/delete_curriculum/:id", async (req, res) => {
     res.status(500).json({ message: "Delete failed" });
   }
 });
-
 
 app.put("/update_program_units/:id", async (req, res) => {
   const { id } = req.params;
@@ -7152,9 +6320,9 @@ app.put("/api/misc_fee", async (req, res) => {
       [amount, year_level_id, semester_id, program_id, dprtmnt_id],
     );
 
-    // 🔍 DEBUG GUARD
+    // ðŸ” DEBUG GUARD
     if (result.affectedRows === 0) {
-      console.warn("⚠️ No MISC row updated", {
+      console.warn("âš ï¸ No MISC row updated", {
         year_level_id,
         semester_id,
         program_id,
@@ -7200,9 +6368,7 @@ app.get("/api/extra_fees", async (req, res) => {
 
 // DELETE COURSE
 // READ COURSE LIST (UPDATED!)
-// ✅ FIXED: Works with your curriculum_table structure
-
-
+// âœ… FIXED: Works with your curriculum_table structure
 
 // GET COURSES BY CURRICULUM ID (UPDATED!)
 app.get("/get_courses_by_curriculum/:curriculum_id", async (req, res) => {
@@ -7224,24 +6390,6 @@ app.get("/get_courses_by_curriculum/:curriculum_id", async (req, res) => {
       error: "Failed to retrieve courses",
       details: err.message,
     });
-  }
-});
-
-app.get("/get_active_curriculum", async (req, res) => {
-  const readQuery = `
-    SELECT ct.*, p.*, y.*
-    FROM curriculum_table ct
-    INNER JOIN program_table p ON ct.program_id = p.program_id
-    INNER JOIN year_table y ON ct.year_id = y.year_id
-    WHERE ct.lock_status = 1
-  `;
-
-  try {
-    const [result] = await db3.query(readQuery);
-    res.status(200).json(result);
-  } catch (err) {
-    console.error("Database error:", err);
-    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
@@ -7267,7 +6415,6 @@ app.get("/get_course", async (req, res) => {
     });
   }
 });
-
 
 // YEAR TABLE (UPDATED!)
 app.post("/years", async (req, res) => {
@@ -7384,36 +6531,7 @@ app.post("/years_level", async (req, res) => {
 });
 
 // YEAR LEVEL TABLE (UPDATED!)
-app.get("/get_year_level", async (req, res) => {
-  const query = "SELECT * FROM year_level_table";
 
-  try {
-    const [result] = await db3.query(query);
-    res.status(200).json(result);
-  } catch (err) {
-    console.error("Query error:", err);
-    res.status(500).json({
-      error: "Failed to retrieve year level data",
-      details: err.message,
-    });
-  }
-});
-
-app.get("/get_active_semester", async (req, res) => {
-  try {
-    const semester = await db3.query(`
-      SELECT smt.semester_id, smt.semester_description
-      FROM active_school_year_table AS sy
-      LEFT JOIN semester_table AS smt ON sy.semester_id = smt.semester_id
-      WHERE sy.astatus = 1;
-    `);
-
-    res.json(semester[0]);
-  } catch (err) {
-    console.log("Internal Server Error");
-    res.status(500).json(err);
-  }
-});
 
 // SEMESTER PANEL (UPDATED!)
 app.post("/semesters", async (req, res) => {
@@ -7592,7 +6710,6 @@ app.delete("/school_years/:id", async (req, res) => {
   }
 });
 
-
 // ROOM LIST (UPDATED!)
 app.get("/get_room", async (req, res) => {
   const { department_id } = req.query;
@@ -7621,262 +6738,16 @@ app.get("/get_room", async (req, res) => {
 });
 
 // DEPARTMENT ROOM PANEL (UPDATED!)
-app.get("/api/assignments", async (req, res) => {
-  const query = `
-    SELECT
-      drt.dprtmnt_room_id,
-      drt.room_id,
-      dt.dprtmnt_id,
-      dt.dprtmnt_name,
-      dt.dprtmnt_code,
-      rt.room_description
-    FROM dprtmnt_room_table drt
-    INNER JOIN dprtmnt_table dt ON drt.dprtmnt_id = dt.dprtmnt_id
-    INNER JOIN room_table rt ON drt.room_id = rt.room_id
-  `;
-
-  try {
-    const [results] = await db3.query(query);
-    res.status(200).json(results);
-  } catch (err) {
-    console.error("Error fetching assignments:", err);
-    res
-      .status(500)
-      .json({ error: "Failed to fetch assignments", details: err.message });
-  }
-});
 
 // POST ROOM DEPARTMENT (UPDATED!)
-app.post("/api/assign", async (req, res) => {
-  const { dprtmnt_id, room_id } = req.body;
-
-  if (!dprtmnt_id || !room_id) {
-    return res
-      .status(400)
-      .json({ message: "Department and Room ID are required" });
-  }
-
-  try {
-    // Check if the room is already assigned to the department
-    const checkQuery = `
-      SELECT * FROM dprtmnt_room_table
-      WHERE dprtmnt_id = ? AND room_id = ?
-    `;
-    const [checkResults] = await db3.query(checkQuery, [dprtmnt_id, room_id]);
-
-    if (checkResults.length > 0) {
-      return res
-        .status(400)
-        .json({ message: "Room already assigned to this department" });
-    }
-
-    // Assign the room to the department
-    const insertQuery = `
-      INSERT INTO dprtmnt_room_table (dprtmnt_id, room_id)
-      VALUES (?, ?)
-    `;
-    const [insertResult] = await db3.query(insertQuery, [dprtmnt_id, room_id]);
-
-    return res.json({
-      message: "Room successfully assigned to department",
-      insertId: insertResult.insertId,
-    });
-  } catch (err) {
-    console.error("Error assigning room:", err);
-    return res
-      .status(500)
-      .json({ error: "Internal server error", details: err.message });
-  }
-});
-
-app.delete("/api/unassign/:dprtmnt_room_id", async (req, res) => {
-  const { dprtmnt_room_id } = req.params;
-
-  if (!dprtmnt_room_id) {
-    return res.status(400).json({ message: "Assignment ID is required" });
-  }
-
-  try {
-    const deleteQuery = `
-      DELETE FROM dprtmnt_room_table WHERE dprtmnt_room_id = ?
-    `;
-    const [result] = await db3.query(deleteQuery, [dprtmnt_room_id]);
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Room assignment not found" });
-    }
-
-    return res.json({ message: "Room successfully unassigned" });
-  } catch (err) {
-    console.error("Error unassigning room:", err);
-    return res
-      .status(500)
-      .json({ error: "Internal server error", details: err.message });
-  }
-});
 
 // SECTIONS (UPDATED!)
-// INSERT WITH DUPLICATE CHECK
-app.post("/section_table", async (req, res) => {
-  const { description } = req.body;
-  if (!description) {
-    return res.status(400).json({ error: "Description is required" });
-  }
-
-  try {
-    // Check Duplicate
-    const checkQuery = "SELECT * FROM section_table WHERE description = ?";
-    const [exists] = await db3.query(checkQuery, [description]);
-
-    if (exists.length > 0) {
-      return res.status(409).json({ error: "Section already exists" });
-    }
-
-    const insertQuery = "INSERT INTO section_table (description) VALUES (?)";
-    const [result] = await db3.query(insertQuery, [description]);
-
-    res.status(201).json({
-      message: "Section created successfully",
-      sectionId: result.insertId,
-    });
-  } catch (err) {
-    console.error("Error inserting section:", err);
-    return res
-      .status(500)
-      .json({ error: "Internal Server Error", details: err.message });
-  }
-});
-
-// UPDATE SECTION
-app.put("/section_table/:id", async (req, res) => {
-  const { id } = req.params;
-  const { description } = req.body;
-
-  if (!description) {
-    return res.status(400).json({ error: "Description is required" });
-  }
-
-  try {
-    // Check duplicate
-    const checkQuery =
-      "SELECT * FROM section_table WHERE description = ? AND id != ?";
-    const [exists] = await db3.query(checkQuery, [description, id]);
-
-    if (exists.length > 0) {
-      return res.status(409).json({ error: "Section already exists" });
-    }
-
-    const updateQuery = "UPDATE section_table SET description = ? WHERE id = ?";
-    await db3.query(updateQuery, [description, id]);
-
-    res.status(200).json({ message: "Section updated successfully" });
-  } catch (err) {
-    console.error("Error updating section:", err);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-// DELETE SECTION
-app.delete("/section_table/:id", async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const deleteQuery = "DELETE FROM section_table WHERE id = ?";
-    await db3.query(deleteQuery, [id]);
-
-    res.status(200).json({ message: "Section deleted successfully" });
-  } catch (err) {
-    console.error("Error deleting section:", err);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-// SECTIONS LIST (UPDATED!)
-app.get("/section_table", async (req, res) => {
-  try {
-    const query = "SELECT * FROM section_table";
-    const [result] = await db3.query(query);
-    res.status(200).json(result);
-  } catch (err) {
-    console.error("Error fetching sections:", err);
-    return res
-      .status(500)
-      .json({ error: "Internal Server Error", details: err.message });
-  }
-});
 
 // UPDATE SECTIONS (SUPERADMIN)
 
 // DELETE SECTIONS (SUPERADMIN)
 
 // ------------------------------ DEPARTMENT SECTION PANEL ------------------------------------ //
-
-app.post("/department_section", async (req, res) => {
-  const { curriculum_id, section_id } = req.body;
-
-  if (!curriculum_id || !section_id) {
-    return res
-      .status(400)
-      .json({ error: "Curriculum ID and Section ID are required" });
-  }
-
-  try {
-    const [existing] = await db3.query(
-      `
-      SELECT * FROM dprtmnt_section_table
-      WHERE curriculum_id = ? AND section_id = ?
-      `,
-      [curriculum_id, section_id],
-    );
-
-    if (existing.length > 0) {
-      return res.status(400).json({
-        message: "This department-section combination already exists.",
-      });
-    }
-
-    const query = `
-      INSERT INTO dprtmnt_section_table (curriculum_id, section_id, dsstat)
-      VALUES (?, ?, 0)
-    `;
-
-    const [result] = await db3.query(query, [curriculum_id, section_id]);
-
-    res.status(201).json({
-      message: "Department section created successfully",
-      sectionId: result.insertId,
-    });
-  } catch (err) {
-    console.error("Error inserting department section:", err);
-    res
-      .status(500)
-      .json({ error: "Internal Server Error", details: err.message });
-  }
-});
-
-app.get("/department_section", async (req, res) => {
-  try {
-    const query = `
-      SELECT
-        pt.program_code,
-        pt.program_description,
-        pt.major,
-        yt.year_description,
-        st.description AS section_description
-      FROM dprtmnt_section_table dst
-      INNER JOIN curriculum_table ct ON dst.curriculum_id = ct.curriculum_id
-      INNER JOIN program_table pt ON ct.program_id = pt.program_id
-      INNER JOIN year_table yt ON ct.year_id = yt.year_id
-      INNER JOIN section_table st ON dst.section_id = st.id
-    `;
-
-    const [rows] = await db3.query(query);
-    res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Internal server error" });
-  }
-});
 
 // Fetch all professors
 app.get("/api/professors", async (req, res) => {
@@ -8662,7 +7533,7 @@ app.post("/api/check-conflict", async (req, res) => {
   }
 });
 
-// ✅ Check conflict API
+// âœ… Check conflict API
 app.post("/api/check-time", async (req, res) => {
   const { start_time, end_time } = req.body;
 
@@ -8688,7 +7559,7 @@ app.post("/api/check-time", async (req, res) => {
       });
     }
 
-    // ✅ Check validity
+    // âœ… Check validity
     if (startMinutes < earliest || endMinutes > latest) {
       return res.status(409).json({
         conflict: true,
@@ -8708,7 +7579,7 @@ app.post("/api/check-time", async (req, res) => {
   }
 });
 
-// ✅ Insert schedule API
+// âœ… Insert schedule API
 app.post("/api/insert-schedule", async (req, res) => {
   const {
     day,
@@ -8892,7 +7763,7 @@ app.get("/api/persons", async (req, res) => {
 
     res.json(merged);
   } catch (err) {
-    console.error("❌ Error merging person + applicant ID:", err);
+    console.error("âŒ Error merging person + applicant ID:", err);
     res.status(500).send("Server error");
   }
 });
@@ -8915,720 +7786,31 @@ app.get("/api/accepted-students-count", async (req, res) => {
 });
 
 // Corrected route with parameter (UPDATED!)
-app.get("/courses/:currId", async (req, res) => {
-  const { currId } = req.params;
-  console.log("cURRICULUM ID: ", currId);
-
-  const sql = `
-    SELECT
-      ctt.program_tagging_id,
-      ctt.curriculum_id,
-      ctt.course_id,
-      ctt.year_level_id,
-      ctt.semester_id,
-      c.course_code,
-      c.course_description,
-      c.course_unit,
-      c.lec_unit,
-      c.lab_unit,
-      c.prereq,
-      c.corequisite
-    FROM program_tagging_table ctt
-    INNER JOIN course_table c
-      ON c.course_id = ctt.course_id
-    WHERE ctt.curriculum_id = ?
-    ORDER BY c.course_code
-  `;
-
-  try {
-    const [result] = await db3.query(sql, [currId]);
-    res.json(result);
-  } catch (err) {
-    console.error("Error in /courses:", err);
-    return res.status(500).json({ error: err.message });
-  }
-});
 
 // UPDATE THE CODE "/enrolled_courses/:userId/:currId", AND "/student-data/:studentNumber" WITH THIS CODE FOR COR
 
-app.post("/add-all-to-enrolled-courses", async (req, res) => {
-  const { subject_id, user_id, curriculumID, departmentSectionID, year_level } =
-    req.body;
-  console.log("Received request:", {
-    subject_id,
-    user_id,
-    curriculumID,
-    departmentSectionID,
-  });
-
-  try {
-    const activeYearSql = `SELECT id, semester_id FROM active_school_year_table WHERE astatus = 1 LIMIT 1`;
-    const [yearResult] = await db3.query(activeYearSql);
-
-    if (yearResult.length === 0) {
-      return res.status(404).json({ error: "No active school year found" });
-    }
-
-    const activeSchoolYearId = yearResult[0].id;
-    const activeSemesterId = yearResult[0].semester_id;
-    console.log("Active semester ID:", activeSemesterId);
-
-    const checkSql = `
-      SELECT year_level_id, semester_id, curriculum_id
-      FROM program_tagging_table
-      WHERE course_id = ? AND curriculum_id = ?
-      LIMIT 1
-    `;
-
-    const [checkResult] = await db3.query(checkSql, [subject_id, curriculumID]);
-
-    if (!checkResult.length) {
-      console.warn(`Subject ${subject_id} not found in tagging table`);
-      return res.status(404).json({ message: "Subject not found" });
-    }
-
-    const { year_level_id, semester_id, curriculum_id } = checkResult[0];
-    console.log("Year level found:", year_level_id);
-    console.log("Subject semester:", semester_id);
-    console.log("Active semester:", activeSemesterId);
-    console.log("Curriculum found:", curriculum_id);
-
-    if (
-      year_level_id !== year_level ||
-      semester_id !== activeSemesterId ||
-      curriculum_id !== curriculumID
-    ) {
-      console.log(
-        `Skipping subject ${subject_id} (not Year 1, not active semester ${activeSemesterId}, or wrong curriculum)`,
-      );
-      return res.status(200).json({
-        message:
-          "Skipped - Not Year 1 / Not Active Semester / Wrong Curriculum",
-      });
-    }
-
-    const checkDuplicateSql = `
-      SELECT * FROM enrolled_subject
-      WHERE course_id = ? AND student_number = ? AND active_school_year_id = ?
-    `;
-
-    const [dupResult] = await db3.query(checkDuplicateSql, [
-      subject_id,
-      user_id,
-      activeSchoolYearId,
-    ]);
-
-    if (dupResult.length > 0) {
-      console.log(
-        `Skipping subject ${subject_id}, already enrolled for student ${user_id}`,
-      );
-      return res.status(200).json({ message: "Skipped - Already Enrolled" });
-    }
-
-    const insertSql = `
-      INSERT INTO enrolled_subject (course_id, student_number, active_school_year_id, curriculum_id, department_section_id, status)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `;
-
-    await db3.query(insertSql, [
-      subject_id,
-      user_id,
-      activeSchoolYearId,
-      curriculumID,
-      departmentSectionID,
-      1,
-    ]);
-    console.log(
-      `Student ${user_id} successfully enrolled in subject ${subject_id}`,
-    );
-
-    const updateStatusSql = `
-      UPDATE student_status_table
-      SET enrolled_status = 1, active_curriculum = ?, year_level_id = ?, active_school_year_id = ?
-      WHERE student_number = ?
-    `;
-
-    await db3.query(updateStatusSql, [
-      curriculumID,
-      year_level,
-      activeSchoolYearId,
-      user_id,
-    ]);
-
-    const [getStudentNUmber] = await db3.query(
-      `
-      SELECT id, person_id FROM student_numbering_table WHERE student_number = ?
-    `,
-      [user_id],
-    );
-
-    if (getStudentNUmber.length === 0) {
-      console.log("Student number not found");
-    }
-
-    const student_numbering_id = getStudentNUmber[0].id;
-    const person_id = getStudentNUmber[0].person_id;
-
-    const [getDepartmentID] = await db3.query(
-      `
-      SELECT dprtmnt_id FROM dprtmnt_curriculum_table WHERE curriculum_id = ?
-    `,
-      [curriculumID],
-    );
-
-    if (getDepartmentID.length === 0) {
-      console.log("Department ID not found");
-    }
-
-    const department_id = getDepartmentID[0].dprtmnt_id;
-
-    const [checkExistingCurriculum] = await db3.query(
-      `
-      SELECT * FROM student_curriculum_table
-      WHERE student_numbering_id = ? AND curriculum_id = ?
-      `,
-      [student_numbering_id, curriculum_id],
-    );
-
-    await db3.query(
-      `
-        UPDATE user_accounts SET dprtmnt_id = ? WHERE person_id = ?
-      `,
-      [department_id, person_id],
-    );
-
-    if (checkExistingCurriculum.length === 0) {
-      await db3.query(
-        `
-        INSERT INTO student_curriculum_table (student_numbering_id, curriculum_id)
-        VALUES (?, ?)
-        `,
-        [student_numbering_id, curriculum_id],
-      );
-    } else {
-      console.log(
-        `⚠️ Curriculum ${curriculum_id} already exists for student ${user_id}`,
-      );
-    }
-
-    res.status(200).json({ message: "Course enrolled successfully" });
-  } catch (err) {
-    console.error("Error:", err);
-    return res.status(500).json({ error: err.message });
-  }
-});
 
 //(UPDATED!)
-app.post("/add-to-enrolled-courses/:userId/:currId/", async (req, res) => {
-  const { subject_id, department_section_id } = req.body;
-  const { userId, currId } = req.params;
-
-  try {
-    const activeYearSql = `SELECT id FROM active_school_year_table WHERE astatus = 1 LIMIT 1`;
-    const [yearResult] = await db3.query(activeYearSql);
-
-    if (yearResult.length === 0) {
-      return res.status(404).json({ error: "No active school year found" });
-    }
-
-    const activeSchoolYearId = yearResult[0].id;
-
-    const sql =
-      "INSERT INTO enrolled_subject (course_id, student_number, active_school_year_id, curriculum_id, department_section_id) VALUES (?, ?, ?, ?, ?)";
-    await db3.query(sql, [
-      subject_id,
-      userId,
-      activeSchoolYearId,
-      currId,
-      department_section_id,
-    ]);
-
-    const [getStudentNUmber] = await db3.query(
-      `
-      SELECT id FROM student_numbering_table WHERE student_number = ?
-    `,
-      [userId],
-    );
-
-    if (getStudentNUmber.length === 0) {
-      throw new Error("Student number not found");
-    }
-
-    const student_numbering_id = getStudentNUmber[0].id;
-
-    const [checkExistingCurriculum] = await db3.query(
-      `
-      SELECT * FROM student_curriculum_table
-      WHERE student_numbering_id = ? AND curriculum_id = ?
-      `,
-      [student_numbering_id, currId],
-    );
-
-    if (checkExistingCurriculum.length === 0) {
-      await db3.query(
-        `
-        INSERT INTO student_curriculum_table (student_numbering_id, curriculum_id)
-        VALUES (?, ?)
-        `,
-        [student_numbering_id, currId],
-      );
-    } else {
-      console.log(
-        `⚠️ Curriculum ${currId} already exists for student ${userId}`,
-      );
-    }
-
-    res.json({ message: "Course enrolled successfully" });
-  } catch (err) {
-    return res.status(500).json(err);
-  }
-});
 
 // Delete a single selected subject + its evaluations
-app.delete("/courses/delete/:id", async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    // 3. Delete the enrolled subject itself
-    const sql = "DELETE FROM enrolled_subject WHERE id = ?";
-    await db3.query(sql, [id]);
-
-    res.json({
-      message: "Course and related evaluations removed successfully",
-    });
-  } catch (err) {
-    console.error("Error deleting subject:", err);
-    return res.status(500).json({ error: "Database error" });
-  }
-});
 
 // Delete all courses for user (UPDATED!)
-app.delete("/courses/user/:userId", async (req, res) => {
-  const { userId } = req.params;
-
-  try {
-    const activeYearSql = `SELECT id FROM active_school_year_table WHERE astatus = 1 LIMIT 1`;
-    const [yearResult] = await db3.query(activeYearSql);
-
-    if (yearResult.length === 0) {
-      return res.status(404).json({ error: "No active school year found" });
-    }
-
-    const activeSchoolYearId = yearResult[0].id;
-
-    const sql =
-      "DELETE FROM enrolled_subject WHERE student_number = ? AND active_school_year_id = ?";
-    await db3.query(sql, [userId, activeSchoolYearId]);
-
-    res.json({ message: "All courses unenrolled successfully" });
-  } catch (err) {
-    return res.status(500).json(err);
-  }
-});
 
 // Login User (UPDATED!)
 
 // --------------------- FOR SEARCHBAR IN CORFORCOLLEGE AND COURSE TAGGING
 
-app.post("/student-tagging", async (req, res) => {
-  const { studentNumber } = req.body;
-  console.log("Student NUmber", studentNumber);
-  if (!studentNumber) {
-    return res.status(400).json({ message: "All fields are required" });
-  }
 
-  try {
-    const sql = `
-      SELECT DISTINCT
-        IFNULL(ss.id, "") AS student_status_id ,
-        sn.student_number,
-        ptbl.person_id,
-        ptbl.first_name,
-        ptbl.last_name,
-        ptbl.middle_name,
-        ptbl.age,
-        ptbl.gender,
-        ptbl.emailAddress,
-        ptbl.program,
-        ptbl.profile_img,
-        ptbl.extension,
-        ss.active_curriculum,
-        pt.program_id,
-        pt.major,
-        pt.program_description,
-        pt.program_code,
-        yt.year_id,
-        yt.year_description,
-        es.status AS enrolled_status,
-        es.department_section_id,
-        st.description AS section_description,
-        dt.dprtmnt_name,
-        ylt.year_level_id,
-        ylt.year_level_description,
-        ss.active_school_year_id,
-        sy.semester_id
-    FROM student_numbering_table AS sn
-    LEFT JOIN student_status_table AS ss ON sn.student_number = ss.student_number
-    LEFT JOIN person_table AS ptbl ON sn.person_id = ptbl.person_id
-    LEFT JOIN curriculum_table AS c ON ss.active_curriculum = c.curriculum_id
-    LEFT JOIN program_table AS pt ON c.program_id = pt.program_id
-    LEFT JOIN year_table AS yt ON c.year_id = yt.year_id
-    LEFT JOIN enrolled_subject AS es ON ss.student_number = es.student_number
-    LEFT JOIN dprtmnt_section_table AS dst ON es.department_section_id = dst.id
-    LEFT JOIN section_table AS st ON dst.section_id = st.id
-    LEFT JOIN dprtmnt_curriculum_table AS dct ON c.curriculum_id = dct.curriculum_id
-    LEFT JOIN dprtmnt_table AS dt ON dct.dprtmnt_id = dt.dprtmnt_id
-    LEFT JOIN year_level_table AS ylt ON ss.year_level_id = ylt.year_level_id
-    LEFT JOIN active_school_year_table AS sy ON ss.active_school_year_id = sy.id
-    WHERE sn.student_number = ? AND (
-        ss.active_school_year_id = 0
-        OR sy.astatus = 1
-      );
-    `;
-
-    const [results] = await db3.query(sql, [studentNumber]);
-
-    if (results.length === 0) {
-      return res.status(400).json({ message: "Invalid Student Number" });
-    }
-
-    const student = results[0];
-
-    const feeSql = `
-      SELECT
-        COALESCE(SUM(lec_fee), 0) AS total_lec_fee,
-        COALESCE(SUM(lab_fee), 0) AS total_lab_fee,
-        COALESCE(SUM(total_nstp), 0) AS total_nstp,
-        COALESCE(SUM(total_computer_lab), 0) AS total_computer_lab,
-        COALESCE(SUM(total_laboratory), 0) AS total_laboratory
-      FROM (
-        SELECT
-          course_id,
-          MAX(lec_fee) AS lec_fee,
-          MAX(lab_fee) AS lab_fee,
-          MAX(is_nstp = 1) AS total_nstp,
-          MAX(iscomputer_lab = 1) AS total_computer_lab,
-          MAX(islaboratory_fee = 1) AS total_laboratory
-        FROM program_tagging_table
-        WHERE curriculum_id = ?
-          AND year_level_id = ?
-          AND semester_id = ?
-        GROUP BY course_id
-      ) fees;
-
-    `;
-
-    const [feeResult] = await db3.query(feeSql, [
-      student.active_curriculum,
-      student.year_level_id,
-      student.semester_id,
-    ]);
-
-    const totalLecFee = Number(feeResult[0]?.total_lec_fee || 0);
-    const totalLabFee = Number(feeResult[0]?.total_lab_fee || 0);
-    const totalFees = totalLecFee + totalLabFee;
-    const totalNstpCount = Number(feeResult[0]?.total_nstp || 0);
-    const totalComputerLab = Number(feeResult[0]?.total_computer_lab || 0);
-    const totalLaboratory = Number(feeResult[0]?.total_laboratory || 0);
-    const isEnrolled = student.enrolled_status === 1;
-
-    const effectiveProgram =
-      student.active_curriculum && student.active_curriculum !== 0
-        ? student.active_curriculum
-        : student.program;
-
-    const token2 = webtoken.sign(
-      {
-        id: student.student_status_id,
-        person_id2: student.person_id,
-        studentNumber: student.student_number,
-        section: student.section_description,
-        activeCurriculum: effectiveProgram,
-        major: student.major,
-        yearLevel: student.year_level_id,
-        yearLevelDescription: student.year_level_description,
-        courseCode: student.program_code,
-        courseDescription: student.program_description,
-        departmentName: student.dprtmnt_name,
-        yearDesc: student.year_description,
-        firstName: student.first_name,
-        middleName: student.middle_name,
-        lastName: student.last_name,
-        age: student.age,
-        gender: student.gender,
-        email: student.emailAddress,
-        program: student.program,
-        profile_img: student.profile_img,
-        extension: student.extension,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "24h" },
-    );
-
-    console.log("Search response:", {
-      token2,
-      totalNstpCount,
-      studentNumber: student.student_number,
-      person_id2: student.person_id,
-      activeCurriculum: student.active_curriculum,
-      section: student.section_description,
-      major: student.major,
-      yearLevel: student.year_level_id,
-      yearLevelDescription: student.year_level_description,
-      courseCode: student.program_code,
-      courseDescription: student.program_description,
-      departmentName: student.dprtmnt_name,
-      yearDesc: student.year_description,
-      firstName: student.first_name,
-      middleName: student.middle_name,
-      lastName: student.last_name,
-      age: student.age,
-      gender: student.gender,
-      email: student.emailAddress,
-      program: student.program,
-      profile_img: student.profile_img,
-      extension: student.extension,
-    });
-
-    res.json({
-      message: "Search successful",
-      token2,
-      isEnrolled,
-      totalLecFee,
-      totalLabFee,
-      totalFees,
-      totalComputerLab,
-      totalLaboratory,
-      totalNstpCount,
-      studentNumber: student.student_number,
-      person_id2: student.person_id,
-      section: student.section_description,
-      activeCurriculum: effectiveProgram,
-      major: student.major,
-      yearLevel: student.year_level_id,
-      yearLevelDescription: student.year_level_description,
-      courseCode: student.program_code,
-      courseDescription: student.program_description,
-      departmentName: student.dprtmnt_name,
-      yearDesc: student.year_description,
-      firstName: student.first_name,
-      middleName: student.middle_name,
-      lastName: student.last_name,
-      age: student.age,
-      gender: student.gender,
-      email: student.emailAddress,
-      program: student.program,
-      profile_img: student.profile_img,
-      extension: student.extension,
-    });
-  } catch (err) {
-    console.error("SQL error:", err);
-    return res.status(500).json({ message: "Database error" });
-  }
-});
-
-app.post("/student-tagging/dprtmnt", async (req, res) => {
-  const { studentNumber, dprtmntId } = req.body;
-
-  if (!studentNumber || !dprtmntId) {
-    return res.status(400).json({ message: "All fields are required" });
-  }
-
-  try {
-    const sql = `
-      SELECT DISTINCT
-        IFNULL(ss.id, "") AS student_status_id ,
-        sn.student_number,
-        ptbl.person_id,
-        ptbl.first_name,
-        ptbl.last_name,
-        ptbl.middle_name,
-        ptbl.age,
-        ptbl.gender,
-        ptbl.emailAddress,
-        ptbl.program,
-        ptbl.profile_img,
-        ptbl.extension,
-        ss.active_curriculum,
-        pt.program_id,
-        pt.major,
-        pt.program_description,
-        pt.program_code,
-        yt.year_id,
-        yt.year_description,
-        es.status AS enrolled_status,
-        es.department_section_id,
-        st.description AS section_description,
-        dt.dprtmnt_name,
-        ylt.year_level_id,
-        ylt.year_level_description,
-        ss.active_school_year_id,
-        sy.semester_id
-    FROM student_numbering_table AS sn
-    LEFT JOIN student_status_table AS ss ON sn.student_number = ss.student_number
-    LEFT JOIN person_table AS ptbl ON sn.person_id = ptbl.person_id
-    LEFT JOIN curriculum_table AS c ON ss.active_curriculum = c.curriculum_id
-    LEFT JOIN program_table AS pt ON c.program_id = pt.program_id
-    LEFT JOIN year_table AS yt ON c.year_id = yt.year_id
-    LEFT JOIN enrolled_subject AS es ON ss.student_number = es.student_number
-    LEFT JOIN dprtmnt_section_table AS dst ON es.department_section_id = dst.id
-    LEFT JOIN section_table AS st ON dst.section_id = st.id
-    LEFT JOIN dprtmnt_curriculum_table AS dct ON c.curriculum_id = dct.curriculum_id
-    LEFT JOIN dprtmnt_table AS dt ON dct.dprtmnt_id = dt.dprtmnt_id
-    LEFT JOIN year_level_table AS ylt ON ss.year_level_id = ylt.year_level_id
-    LEFT JOIN active_school_year_table AS sy ON ss.active_school_year_id = sy.id
-    WHERE sn.student_number = ? AND dt.dprtmnt_id = ? AND (
-        ss.active_school_year_id = 0
-        OR sy.astatus = 1
-      );
-    `;
-
-    const [results] = await db3.query(sql, [studentNumber, dprtmntId]);
-
-    if (results.length === 0) {
-      return res.status(400).json({ message: "Invalid Student Number" });
-    }
-
-    const student = results[0];
-
-    const feeSql = `
-      SELECT
-        COALESCE(SUM(lec_fee), 0) AS total_lec_fee,
-        COALESCE(SUM(lab_fee), 0) AS total_lab_fee,
-        COALESCE(SUM(total_nstp), 0) AS total_nstp,
-        COALESCE(SUM(total_computer_lab), 0) AS total_computer_lab,
-        COALESCE(SUM(total_laboratory), 0) AS total_laboratory
-      FROM (
-        SELECT
-          course_id,
-          MAX(lec_fee) AS lec_fee,
-          MAX(lab_fee) AS lab_fee,
-          MAX(is_nstp = 1) AS total_nstp,
-          MAX(iscomputer_lab = 1) AS total_computer_lab,
-          MAX(islaboratory_fee = 1) AS total_laboratory
-        FROM program_tagging_table
-        WHERE curriculum_id = ?
-          AND year_level_id = ?
-          AND semester_id = ?
-        GROUP BY course_id
-      ) fees;
-
-    `;
-
-    const [feeResult] = await db3.query(feeSql, [
-      student.active_curriculum,
-      student.year_level_id,
-      student.semester_id,
-    ]);
-
-    const totalLecFee = Number(feeResult[0]?.total_lec_fee || 0);
-    const totalLabFee = Number(feeResult[0]?.total_lab_fee || 0);
-    const totalFees = totalLecFee + totalLabFee;
-    const totalNstpCount = Number(feeResult[0]?.total_nstp || 0);
-    const totalComputerLab = Number(feeResult[0]?.total_computer_lab || 0);
-    const totalLaboratory = Number(feeResult[0]?.total_laboratory || 0);
-    const isEnrolled = student.enrolled_status === 1;
-
-    const effectiveProgram =
-      student.active_curriculum && student.active_curriculum !== 0
-        ? student.active_curriculum
-        : student.program;
-
-    const token2 = webtoken.sign(
-      {
-        id: student.student_status_id,
-        person_id2: student.person_id,
-        studentNumber: student.student_number,
-        section: student.section_description,
-        activeCurriculum: effectiveProgram,
-        major: student.major,
-        yearLevel: student.year_level_id,
-        yearLevelDescription: student.year_level_description,
-        courseCode: student.program_code,
-        courseDescription: student.program_description,
-        departmentName: student.dprtmnt_name,
-        yearDesc: student.year_description,
-        firstName: student.first_name,
-        middleName: student.middle_name,
-        lastName: student.last_name,
-        age: student.age,
-        gender: student.gender,
-        email: student.emailAddress,
-        program: student.program,
-        profile_img: student.profile_img,
-        extension: student.extension,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "24h" },
-    );
-
-    console.log("Search response:", {
-      token2,
-      totalNstpCount,
-      studentNumber: student.student_number,
-      person_id2: student.person_id,
-      activeCurriculum: student.active_curriculum,
-      section: student.section_description,
-      major: student.major,
-      yearLevel: student.year_level_id,
-      yearLevelDescription: student.year_level_description,
-      courseCode: student.program_code,
-      courseDescription: student.program_description,
-      departmentName: student.dprtmnt_name,
-      yearDesc: student.year_description,
-      firstName: student.first_name,
-      middleName: student.middle_name,
-      lastName: student.last_name,
-      age: student.age,
-      gender: student.gender,
-      email: student.emailAddress,
-      program: student.program,
-      profile_img: student.profile_img,
-      extension: student.extension,
-    });
-
-    res.json({
-      message: "Search successful",
-      token2,
-      isEnrolled,
-      totalLecFee,
-      totalLabFee,
-      totalFees,
-      totalComputerLab,
-      totalLaboratory,
-      totalNstpCount,
-      studentNumber: student.student_number,
-      person_id2: student.person_id,
-      section: student.section_description,
-      activeCurriculum: effectiveProgram,
-      major: student.major,
-      yearLevel: student.year_level_id,
-      yearLevelDescription: student.year_level_description,
-      courseCode: student.program_code,
-      courseDescription: student.program_description,
-      departmentName: student.dprtmnt_name,
-      yearDesc: student.year_description,
-      firstName: student.first_name,
-      middleName: student.middle_name,
-      lastName: student.last_name,
-      age: student.age,
-      gender: student.gender,
-      email: student.emailAddress,
-      program: student.program,
-      profile_img: student.profile_img,
-      extension: student.extension,
-    });
-  } catch (err) {
-    console.error("SQL error:", err);
-    return res.status(500).json({ message: "Database error" });
-  }
-});
 
 app.post("/student-tagging-batch", async (req, res) => {
   const { studentNumbers } = req.body;
   console.log("Student Numbers", studentNumbers);
 
-  if (!studentNumbers || !Array.isArray(studentNumbers) || studentNumbers.length === 0) {
+  if (
+    !studentNumbers ||
+    !Array.isArray(studentNumbers) ||
+    studentNumbers.length === 0
+  ) {
     return res.status(400).json({ message: "Student numbers are required" });
   }
 
@@ -9684,9 +7866,10 @@ app.post("/student-tagging-batch", async (req, res) => {
     const [results] = await db3.query(sql, studentNumbers);
 
     if (!results.length) {
-      return res.status(400).json({ message: "No valid student numbers found" });
+      return res
+        .status(400)
+        .json({ message: "No valid student numbers found" });
     }
-
 
     const studentsWithFees = await Promise.all(
       results.map(async (student) => {
@@ -9734,7 +7917,7 @@ app.post("/student-tagging-batch", async (req, res) => {
             lastName: student.last_name,
           },
           process.env.JWT_SECRET,
-          { expiresIn: "24h" }
+          { expiresIn: "24h" },
         );
 
         return {
@@ -9746,7 +7929,7 @@ app.post("/student-tagging-batch", async (req, res) => {
           totalLaboratory,
           token2,
         };
-      })
+      }),
     );
 
     res.json({
@@ -9759,84 +7942,6 @@ app.post("/student-tagging-batch", async (req, res) => {
   }
 });
 
-
-app.get("/enrolled_courses/:userId/:currId", async (req, res) => {
-  const { userId, currId } = req.params;
-
-  try {
-    // Step 1: Get the active_school_year_id
-    const activeYearSql = `SELECT id FROM active_school_year_table WHERE astatus = 1 LIMIT 1`;
-    const [yearResult] = await db3.query(activeYearSql);
-
-    if (yearResult.length === 0) {
-      return res.status(404).json({ error: "No active school year found" });
-    }
-
-    const activeSchoolYearId = yearResult[0].id;
-
-    const sql = `
-      SELECT
-        es.id,
-        es.course_id,
-        c.course_code,
-        c.course_description,
-        st.description,
-        c.course_unit,
-        c.lab_unit,
-        c.lec_unit,
-        ds.id AS department_section_id,
-        IFNULL(pt.program_code, 'NOT') AS program_code,
-        IFNULL(pt.program_description, 'CURRENTLY') AS program_description,
-        IFNULL(st.description, 'ENROLLED') AS section,
-        IFNULL(rd.description, 'TBA') AS day_description,
-        IFNULL(tt.school_time_start, 'TBA') AS school_time_start,
-        IFNULL(tt.school_time_end, 'TBA') AS school_time_end,
-        IFNULL(rtbl.room_description, 'TBA') AS room_description,
-        IFNULL(prof_table.lname, 'TBA') AS lname,
-        (
-          SELECT COUNT(*)
-          FROM enrolled_subject es2
-          WHERE es2.active_school_year_id = es.active_school_year_id
-            AND es2.department_section_id = es.department_section_id
-            AND es2.course_id = es.course_id
-        ) AS number_of_enrolled
-
-      FROM enrolled_subject AS es
-      LEFT JOIN course_table AS c
-        ON c.course_id = es.course_id
-      LEFT JOIN dprtmnt_section_table AS ds
-        ON ds.id = es.department_section_id
-      LEFT JOIN section_table AS st
-        ON st.id = ds.section_id
-      LEFT JOIN curriculum_table AS cr
-        ON cr.curriculum_id = ds.curriculum_id
-      LEFT JOIN program_table AS pt
-        ON pt.program_id = cr.program_id
-      LEFT JOIN time_table AS tt
-        ON tt.school_year_id = es.active_school_year_id
-        AND tt.department_section_id = es.department_section_id
-        AND tt.course_id = es.course_id
-      LEFT JOIN room_day_table AS rd
-        ON rd.id = tt.room_day
-      LEFT JOIN dprtmnt_room_table as dr
-        ON dr.dprtmnt_room_id = tt.department_room_id
-      LEFT JOIN room_table as rtbl
-        ON rtbl.room_id = dr.room_id
-      LEFT JOIN prof_table
-        ON prof_table.prof_id = tt.professor_id
-      WHERE es.student_number = ?
-        AND es.active_school_year_id = ?
-        AND es.curriculum_id = ?
-      ORDER BY c.course_id ASC;
-    `;
-
-    const [result] = await db3.query(sql, [userId, activeSchoolYearId, currId]);
-    res.json(result);
-  } catch (err) {
-    console.error("Error in /enrolled_courses:", err);
-    return res.status(500).json({ error: err.message });
-  }
-});
 
 let lastSeenId = 0;
 
@@ -9879,7 +7984,7 @@ app.get("/api/proctor-applicants", async (req, res) => {
   }
 });
 
-// ✅ Updates year_level_id for a student
+// âœ… Updates year_level_id for a student
 app.put("/api/update-student-year", async (req, res) => {
   const { student_number, year_level_id } = req.body;
 
@@ -9927,54 +8032,10 @@ app.get("/check-new", async (req, res) => {
 });
 
 // (UPDATED!)
-app.get("/api/department-sections", async (req, res) => {
-  const { departmentId } = req.query;
-
-  const query = `
-    SELECT
-      dt.dprtmnt_id,
-      dt.dprtmnt_name,
-      dt.dprtmnt_code,
-      c.year_id,
-      c.program_id,
-      c.curriculum_id,
-      ds.id as department_and_program_section_id,
-      ds.section_id,
-      pt.program_description,
-      pt.program_code,
-      pt.major,
-      st.description
-      FROM dprtmnt_table as dt
-        INNER JOIN dprtmnt_curriculum_table as dc ON dc.dprtmnt_id  = dt.dprtmnt_id
-        INNER JOIN curriculum_table as c ON c.curriculum_id = dc.curriculum_id
-        INNER JOIN dprtmnt_section_table as ds ON ds.curriculum_id = c.curriculum_id
-        INNER JOIN program_table as pt ON c.program_id = pt.program_id
-        INNER JOIN section_table as st ON st.id = ds.section_id
-      WHERE dt.dprtmnt_id = ?
-    ORDER BY ds.id
-  `;
-
-  try {
-    const [results] = await db3.query(query, [departmentId]);
-    res.status(200).json(results);
-    console.log(results);
-  } catch (err) {
-    console.error("Error fetching department sections:", err);
-    return res
-      .status(500)
-      .json({ error: "Database error", details: err.message });
-  }
-});
 
 app.get("/api/slot-monitoring-sections", async (req, res) => {
-  const {
-    departmentId,
-    courseId,
-    programId,
-    yearId,
-    semesterId,
-    campus,
-  } = req.query;
+  const { departmentId, courseId, programId, yearId, semesterId, campus } =
+    req.query;
 
   if (
     !departmentId ||
@@ -10113,7 +8174,9 @@ app.put(
         return res.status(404).json({ error: "Department section not found" });
       }
 
-      return res.status(200).json({ message: "Max slots updated successfully" });
+      return res
+        .status(200)
+        .json({ message: "Max slots updated successfully" });
     } catch (err) {
       console.error("Error updating slot monitoring max slots:", err);
       return res.status(500).json({
@@ -10124,117 +8187,11 @@ app.put(
   },
 );
 
-app.put("/api/update-active-curriculum", async (req, res) => {
-  const { studentId, departmentSectionId } = req.body;
 
-  if (!studentId || !departmentSectionId) {
-    return res
-      .status(400)
-      .json({ error: "studentId and departmentSectionId are required" });
-  }
-
-  const fetchCurriculumQuery = `
-    SELECT curriculum_id
-    FROM dprtmnt_section_table
-    WHERE id = ?
-  `;
-
-  try {
-    const [curriculumResult] = await db3.query(fetchCurriculumQuery, [
-      departmentSectionId,
-    ]);
-
-    if (curriculumResult.length === 0) {
-      return res.status(404).json({ error: "Section not found" });
-    }
-
-    const curriculumId = curriculumResult[0].curriculum_id;
-
-    const updateQuery = `
-      UPDATE student_status_table
-      SET active_curriculum = ?
-      WHERE student_number = ?
-    `;
-    const result = await db3.query(updateQuery, [curriculumId, studentId]);
-    const data = result[0];
-    console.log(data);
-    res.status(200).json({
-      message: "Active curriculum updated successfully",
-    });
-  } catch (err) {
-    console.error("Error updating active curriculum:", err);
-    res.status(500).json({ error: "Database error", details: err.message });
-  }
-});
-
-app.get("/api/search-student/:sectionId", async (req, res) => {
-  const { sectionId } = req.params;
-  console.log("Section Id : ", sectionId);
-
-  try {
-    // 1️⃣ Get curriculum + program
-    const [programResult] = await db3.query(
-      `
-      SELECT
-        dst.curriculum_id,
-        pt.program_description,
-        pt.program_code
-      FROM dprtmnt_section_table dst
-      INNER JOIN curriculum_table ct ON dst.curriculum_id = ct.curriculum_id
-      INNER JOIN program_table pt ON ct.program_id = pt.program_id
-      WHERE dst.id = ?
-      `,
-      [sectionId],
-    );
-
-    if (!programResult.length) {
-      return res.status(404).json({ message: "Section not found" });
-    }
-
-    const { curriculum_id } = programResult[0];
-
-    // 2️⃣ Get ALL COURSES under curriculum (WITH MULTIPLE PREREQ)
-    const [courses] = await db3.query(
-      `
-  SELECT
-    c.course_id,
-    c.course_code,
-    c.course_description,
-    c.course_unit,
-    c.lab_unit,
-    c.prereq,
-    c.corequisite
-  FROM curriculum_table ct
-  INNER JOIN program_tagging_table ptt ON ct.curriculum_id = ptt.curriculum_id
-  INNER JOIN program_table pt ON ct.program_id = pt.program_id
-  INNER JOIN course_table c ON ptt.course_id = c.course_id
-  WHERE ct.curriculum_id = ?
-  ORDER BY c.course_code
-  `,
-      [curriculum_id],
-    );
-
-    // 3️⃣ Normalize prereq (STRING ➜ ARRAY)
-    const formattedCourses = courses.map((c) => ({
-      ...c,
-      prereq_list: c.prereq ? c.prereq.split(",").map((p) => p.trim()) : [],
-    }));
-
-    // 4️⃣ FINAL RESPONSE
-    res.status(200).json({
-      ...programResult[0],
-      courses: formattedCourses,
-    });
-  } catch (err) {
-    console.error("Error fetching course tagging data:", err);
-    res.status(500).json({
-      error: "Database error",
-      details: err.message,
-    });
-  }
-});
 
 // Express route (UPDATED!)
+
+///////---------------------------- DUPLICATE ----------------------------//////////
 app.get("/departments", async (req, res) => {
   const sql = "SELECT dprtmnt_id, dprtmnt_code FROM dprtmnt_table";
 
@@ -10248,36 +8205,6 @@ app.get("/departments", async (req, res) => {
 });
 
 // Count how many students enrolled per subject for a selected section (UPDATED!)
-app.get("/subject-enrollment-count", async (req, res) => {
-  const { sectionId } = req.query; // department_section_id
-
-  try {
-    const activeYearSql = `SELECT id FROM active_school_year_table WHERE astatus = 1 LIMIT 1`;
-    const [yearResult] = await db3.query(activeYearSql);
-
-    if (yearResult.length === 0) {
-      return res.status(404).json({ error: "No active school year found" });
-    }
-
-    const activeSchoolYearId = yearResult[0].id;
-
-    const sql = `
-      SELECT
-        es.course_id,
-        COUNT(*) AS enrolled_count
-      FROM enrolled_subject AS es
-      WHERE es.active_school_year_id = ?
-        AND es.department_section_id = ?
-      GROUP BY es.course_id
-    `;
-
-    const [result] = await db3.query(sql, [activeSchoolYearId, sectionId]);
-    res.json(result); // [{ course_id: 1, enrolled_count: 25 }, { course_id: 2, enrolled_count: 30 }]
-  } catch (err) {
-    console.error("Error fetching enrolled counts:", err);
-    return res.status(500).json({ error: err.message });
-  }
-});
 
 // Get user by person_id (UPDATED!)
 app.get("/api/user/:person_id", async (req, res) => {
@@ -10425,7 +8352,6 @@ app.get(
     }
   },
 );
-
 
 app.get("/get_school_year", async (req, res) => {
   try {
@@ -10654,11 +8580,11 @@ app.put("/add_grades", async (req, res) => {
 
       return result.affectedRows > 0
         ? res
-          .status(200)
-          .json({ message: "Grades marked as INC successfully!" })
+            .status(200)
+            .json({ message: "Grades marked as INC successfully!" })
         : res
-          .status(404)
-          .json({ message: "No matching record found to update." });
+            .status(404)
+            .json({ message: "No matching record found to update." });
     }
 
     const [result] = await db3.execute(
@@ -10679,8 +8605,8 @@ app.put("/add_grades", async (req, res) => {
     return result.affectedRows > 0
       ? res.status(200).json({ message: "Grades updated successfully!" })
       : res
-        .status(404)
-        .json({ message: "No matching record found to update." });
+          .status(404)
+          .json({ message: "No matching record found to update." });
   } catch (err) {
     console.error("Failed to update grades:", err);
     return res.status(500).json({ message: "Server error" });
@@ -11174,7 +9100,7 @@ app.get("/api/person/:id", async (req, res) => {
       return res.status(404).json({ message: "Person not found" });
     }
 
-    res.json(rows[0]); // ✅ Send single merged result
+    res.json(rows[0]); // âœ… Send single merged result
   } catch (err) {
     console.error("Error fetching person details:", err);
     res.status(500).json({ error: "Internal Server Error" });
@@ -11469,7 +9395,7 @@ app.post("/forgot-password-student", async (req, res) => {
 
     const like = `%${search}%`;
 
-    // 🔍 Allow reset via: student_number, name, person email, or user_accounts email
+    // ðŸ” Allow reset via: student_number, name, person email, or user_accounts email
     const [rows] = await db3.query(
       `SELECT ua.email
        FROM user_accounts ua
@@ -11502,26 +9428,26 @@ app.post("/forgot-password-student", async (req, res) => {
       });
     }
 
-    // 🔹 Fetch short term from company settings
+    // ðŸ”¹ Fetch short term from company settings
     const [settings] = await db.query(
       "SELECT short_term FROM company_settings WHERE id = 1",
     );
     const shortTerm = settings[0]?.short_term || "Institution";
 
-    // 🔹 Generate new 8-letter password
+    // ðŸ”¹ Generate new 8-letter password
     const newPassword = Array.from({ length: 8 }, () =>
       String.fromCharCode(Math.floor(Math.random() * 26) + 65),
     ).join("");
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // 🔹 Update student password
+    // ðŸ”¹ Update student password
     await db3.query("UPDATE user_accounts SET password = ? WHERE email = ?", [
       hashedPassword,
       email,
     ]);
 
-    // 🔹 Send email
+    // ðŸ”¹ Send email
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -11693,7 +9619,6 @@ app.get("/api/student_details/:id", async (req, res) => {
       [id],
     );
 
-
     if (rows.length === 0) {
       return res.status(404).json({ error: "Person not found" });
     }
@@ -11704,7 +9629,6 @@ app.get("/api/student_details/:id", async (req, res) => {
     res.status(500).json({ error: "Database error" });
   }
 });
-
 
 /* Student Schedule */
 //GET Student Current Assigned Schedule
@@ -11767,7 +9691,7 @@ app.get("/api/student_grade/:id", async (req, res) => {
   const { id } = req.params;
 
   try {
-    // 🔎 Check if there are professors not evaluated yet
+    // ðŸ”Ž Check if there are professors not evaluated yet
     const [pending] = await db3.execute(
       `
       SELECT DISTINCT COUNT(*) AS total_professors
@@ -11778,7 +9702,7 @@ app.get("/api/student_grade/:id", async (req, res) => {
       [id],
     );
 
-    // 🔎 Fetch all enrolled courses with details
+    // ðŸ”Ž Fetch all enrolled courses with details
     const [rows] = await db3.execute(
       `
       SELECT DISTINCT
@@ -12207,27 +10131,6 @@ function timeToMinutes(timeStr) {
 }
 
 //Get Section List From Selected Department
-app.get("/section_table/:dprtmnt_id", async (req, res) => {
-  const { dprtmnt_id } = req.params;
-
-  try {
-    const query = `
-      SELECT dst.id as dep_section_id, st.*, pt.*
-      FROM dprtmnt_curriculum_table AS dct
-      INNER JOIN dprtmnt_section_table AS dst ON dct.curriculum_id = dst.curriculum_id
-      INNER JOIN section_table AS st ON dst.section_id = st.id
-      INNER JOIN curriculum_table AS ct ON dct.curriculum_id = ct.curriculum_id
-      INNER JOIN program_table AS pt ON ct.program_id = pt.program_id
-      WHERE dct.dprtmnt_id = ?;
-    `;
-
-    const [results] = await db3.query(query, [dprtmnt_id]);
-    res.status(200).send(results);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send(error);
-  }
-});
 
 //Get Program List From Selected Department
 app.get("/program_list/:dprtmnt_id", async (req, res) => {
@@ -12323,119 +10226,7 @@ app.get("/api/person_status_by_applicant/:applicant_number", (req, res) => {
 });
 
 // GET all templates
-// GET all templates with department name
-app.get("/api/email-templates", async (req, res) => {
-  try {
-    const [rows] = await db.query(`
-      SELECT et.*, dpr.dprtmnt_name AS department_name
-      FROM email_templates et
-      LEFT JOIN enrollment.dprtmnt_table dpr
-      ON et.department_id = dpr.dprtmnt_id
-      ORDER BY et.updated_at DESC
-    `);
-    res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch templates" });
-  }
-});
 
-// CREATE template
-app.post("/api/email-templates", async (req, res) => {
-  try {
-    const { sender_name, department_id, is_active = 1 } = req.body;
-    if (!sender_name || !department_id)
-      return res
-        .status(400)
-        .json({ error: "Sender name and department are required" });
-
-    const [result] = await db.query(
-      "INSERT INTO email_templates (sender_name, department_id, is_active) VALUES (?, ?, ?)",
-      [sender_name, department_id, is_active ? 1 : 0],
-    );
-    res.status(201).json({ template_id: result.insertId });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to create template" });
-  }
-});
-
-// UPDATE template
-app.put("/api/email-templates/:id", async (req, res) => {
-  try {
-    const { sender_name, department_id, is_active } = req.body;
-
-    const [result] = await db.query(
-      `UPDATE email_templates
-       SET sender_name = COALESCE(?, sender_name),
-           department_id = COALESCE(?, department_id),
-           is_active = COALESCE(?, is_active)
-       WHERE template_id = ?`,
-      [sender_name, department_id, is_active, req.params.id],
-    );
-
-    if (result.affectedRows === 0)
-      return res.status(404).json({ error: "Not found" });
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to update template" });
-  }
-});
-
-// DELETE template
-app.delete("/api/email-templates/:id", async (req, res) => {
-  try {
-    const [result] = await db.query(
-      "DELETE FROM email_templates WHERE template_id = ?",
-      [req.params.id],
-    );
-    if (result.affectedRows === 0)
-      return res.status(404).json({ error: "Not found" });
-    res.json({ success: true });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to delete template" });
-  }
-});
-
-app.get("/api/email-templates/active-senders", async (req, res) => {
-  const { department_id } = req.query;
-  console.log("Department ID: ", department_id);
-
-  try {
-    const [rows] = await db.query(
-      "SELECT template_id, sender_name FROM email_templates WHERE is_active = 1 AND department_id = ?",
-      [department_id],
-    );
-
-    res.json(rows);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch active senders" });
-  }
-});
-
-app.get("/api/admin_data/:email", async (req, res) => {
-  const { email } = req.params; // 👈 now matches your frontend call
-  console.log("Email: ", email);
-
-  try {
-    const [rows] = await db3.query(
-      "SELECT ua.dprtmnt_id FROM user_accounts AS ua WHERE email = ?",
-      [email],
-    );
-
-    if (rows.length > 0) {
-      res.json(rows[0]); // return { dprtmnt_id: "..." }
-    } else {
-      res.status(404).json({ error: "User not found" });
-    }
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch department" });
-  }
-});
 
 app.get("/api/applied_program/:dprtmnt_id", async (req, res) => {
   const { dprtmnt_id } = req.params;
@@ -12482,7 +10273,7 @@ app.get("/api/person_data/:person_id/:role", async (req, res) => {
     let userData;
 
     if (role === "registrar") {
-      // ✅ Fetch registrar info directly from user_accounts (db3)
+      // âœ… Fetch registrar info directly from user_accounts (db3)
       const [rows] = await db3.query(
         `SELECT
            ua.person_id,
@@ -12569,13 +10360,13 @@ app.get("/api/person_data/:person_id/:role", async (req, res) => {
 
     res.json(userData);
   } catch (err) {
-    console.error("❌ Error fetching person data:", err);
+    console.error("âŒ Error fetching person data:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-// ✅ Fetch interview schedule for an applicant
-// ✅ Fetch interview schedule + scores for an applicant
+// âœ… Fetch interview schedule for an applicant
+// âœ… Fetch interview schedule + scores for an applicant
 app.get(
   "/api/applicant-interview-schedule/:applicantNumber",
   async (req, res) => {
@@ -12614,7 +10405,7 @@ app.get(
           .json({ message: "No interview schedule found for this applicant" });
       }
     } catch (err) {
-      console.error("❌ Error fetching interview schedule:", err);
+      console.error("âŒ Error fetching interview schedule:", err);
       res
         .status(500)
         .json({ message: "Server error fetching interview schedule" });
@@ -12634,7 +10425,7 @@ app.get("/api/interview_applicants/:applicantId", async (req, res) => {
     }
     res.json(rows[0]);
   } catch (err) {
-    console.error("❌ Error fetching interview applicant status:", err);
+    console.error("âŒ Error fetching interview applicant status:", err);
     res.status(500).send("Server error");
   }
 });
@@ -12797,8 +10588,6 @@ app.get(
   },
 );
 
-
-
 app.get(
   "/api/section_assigned_to/:userID/:courseID/:yearID/:semesterID",
   async (req, res) => {
@@ -12834,7 +10623,7 @@ app.get(
   },
 );
 
-// ✅ Mark applicant as emailed (action = 1)
+// âœ… Mark applicant as emailed (action = 1)
 app.put("/api/interview_applicants/:applicant_id/action", async (req, res) => {
   const { applicant_id } = req.params;
 
@@ -12850,7 +10639,7 @@ app.put("/api/interview_applicants/:applicant_id/action", async (req, res) => {
 
     res.json({ success: true, message: "Applicant marked as emailed" });
   } catch (err) {
-    console.error("❌ Error updating action:", err);
+    console.error("âŒ Error updating action:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
@@ -12873,17 +10662,17 @@ app.post("/api/send-email", async (req, res) => {
       FROM user_accounts
       WHERE person_id = ?
       LIMIT 1`,
-      [user_person_id]
+      [user_person_id],
     );
 
     const actor = actorRows[0];
-    console.log("actor", actor)
+    console.log("actor", actor);
     if (!actor) {
       return res.status(404).json({ message: "User account not found" });
     }
 
     const [[company]] = await db.query(
-      "SELECT short_term FROM company_settings WHERE id = 1"
+      "SELECT short_term FROM company_settings WHERE id = 1",
     );
 
     const shortTerm = company?.short_term || "EARIST";
@@ -12892,7 +10681,7 @@ app.post("/api/send-email", async (req, res) => {
       `SELECT sender_name, department_id 
        FROM email_templates 
        WHERE employee_id = ?`,
-      [actor.employee_id]
+      [actor.employee_id],
     );
 
     const templateRow = userEmailRows[0];
@@ -12907,7 +10696,7 @@ app.post("/api/send-email", async (req, res) => {
       `SELECT dprtmnt_name 
        FROM dprtmnt_table 
        WHERE dprtmnt_id = ?`,
-      [templateRow.dprtmnt_id]
+      [templateRow.dprtmnt_id],
     );
 
     const depName = depRows.length > 0 ? depRows[0].dprtmnt_name : "Department";
@@ -12923,11 +10712,10 @@ app.post("/api/send-email", async (req, res) => {
       },
     };
 
-    const senderAccount =
-      senderAccountMap[senderAccountKey] || {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      };
+    const senderAccount = senderAccountMap[senderAccountKey] || {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    };
 
     if (!senderAccount.user || !senderAccount.pass) {
       throw new Error("Email sender account is not configured.");
@@ -12939,15 +10727,16 @@ app.post("/api/send-email", async (req, res) => {
     });
 
     const [applicantPersonRows] = await db.query(
-      `SELECT person_id FROM person_table WHERE emailAddress = ?`, [to]
+      `SELECT person_id FROM person_table WHERE emailAddress = ?`,
+      [to],
     );
 
-    const personIds = applicantPersonRows.map(row => row.person_id);
+    const personIds = applicantPersonRows.map((row) => row.person_id);
 
     await db.query(
       `UPDATE person_status_table SET interview_status = 1 WHERE person_id = ?`,
-      [personIds]
-    )
+      [personIds],
+    );
 
     await transporter.sendMail({
       from: `${shortTerm} - ${depName} <${senderAccount.user}>`,
@@ -12957,9 +10746,8 @@ app.post("/api/send-email", async (req, res) => {
     });
 
     res.json({ success: true, message: "Email sent successfully" });
-
   } catch (err) {
-    console.error("❌ Error sending email:", err);
+    console.error("âŒ Error sending email:", err);
     res.status(500).json({ success: false, message: "Failed to send email" });
   }
 });
@@ -12974,7 +10762,7 @@ app.put("/api/interview_applicants/accept-top", async (req, res) => {
     return res.status(400).json({ message: "Missing department ID" });
 
   try {
-    // 1️⃣ Select top applicants from Waiting List
+    // 1ï¸âƒ£ Select top applicants from Waiting List
     const [rows] = await db3.query(
       `SELECT ps.applicant_id
        FROM admission.person_status_table ps
@@ -12995,7 +10783,7 @@ app.put("/api/interview_applicants/accept-top", async (req, res) => {
 
     const ids = rows.map((r) => r.applicant_id);
 
-    // 2️⃣ Update their status to Accepted
+    // 2ï¸âƒ£ Update their status to Accepted
     const [updateResult] = await db3.query(
       `UPDATE admission.interview_applicants
        SET status = 'Accepted'
@@ -13056,12 +10844,12 @@ app.get("/api/college/persons", async (req, res) => {
 
     res.json(merged);
   } catch (err) {
-    console.error("❌ Error merging person + applicant ID:", err);
+    console.error("âŒ Error merging person + applicant ID:", err);
     res.status(500).send("Server error");
   }
 });
 
-// 📊 Applicants per Month (this year + last 5 months)
+// ðŸ“Š Applicants per Month (this year + last 5 months)
 app.get("/api/applicants-per-month", async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -13086,7 +10874,7 @@ app.get("/api/applicants-per-month", async (req, res) => {
 
     res.json(rows);
   } catch (err) {
-    console.error("❌ Error fetching applicants per month:", err);
+    console.error("âŒ Error fetching applicants per month:", err);
     res.status(500).json({ error: "Failed to fetch applicants per month" });
   }
 });
@@ -13114,11 +10902,11 @@ app.put(
       }
 
       res.json({
-        message: "✅ Profile image updated successfully",
+        message: "âœ… Profile image updated successfully",
         filename,
       });
     } catch (err) {
-      console.error("❌ DB Error:", err);
+      console.error("âŒ DB Error:", err);
       res.status(500).json({ error: "Database update failed" });
     }
   },
@@ -13126,7 +10914,7 @@ app.put(
 
 // --------------------------------- FOR MIGRATION DATA PANEL
 
-// 📌 Get interviewer schedules + applicants
+// ðŸ“Œ Get interviewer schedules + applicants
 app.get("/api/interviewers", async (req, res) => {
   const { query } = req.query;
 
@@ -13179,7 +10967,7 @@ app.get("/api/interviewers", async (req, res) => {
 
     res.json(results);
   } catch (err) {
-    console.error("❌ Error in /api/interviewers:", err);
+    console.error("âŒ Error in /api/interviewers:", err);
     res.status(500).send("Server error");
   }
 });
@@ -13203,14 +10991,14 @@ app.get("/api/person_id/:student_number", async (req, res) => {
       return res.status(404).json({ message: "Person not found" });
     }
 
-    res.json(rows[0]); // ✅ full person data + student_number
+    res.json(rows[0]); // âœ… full person data + student_number
   } catch (err) {
     console.error("Error fetching person by student_number:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// ✅ NEW: Get persons (Enrollment DB) with student_number
+// âœ… NEW: Get persons (Enrollment DB) with student_number
 app.get("/api/enrollment_upload_documents", async (req, res) => {
   try {
     const [persons] = await db3.query(`
@@ -13230,12 +11018,12 @@ app.get("/api/enrollment_upload_documents", async (req, res) => {
 
     res.status(200).json(persons);
   } catch (error) {
-    console.error("❌ Error fetching enrollment upload documents:", error);
+    console.error("âŒ Error fetching enrollment upload documents:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
-// ✅ Get person by person_id (Enrollment DB)
+// âœ… Get person by person_id (Enrollment DB)
 app.get("/api/enrollment_person/:person_id", async (req, res) => {
   try {
     const [rows] = await db3.query(
@@ -13254,7 +11042,7 @@ app.get("/api/enrollment_person/:person_id", async (req, res) => {
   }
 });
 
-// ✅ Update person (Enrollment DB) safely
+// âœ… Update person (Enrollment DB) safely
 app.put("/api/enrollment_person/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -13280,17 +11068,16 @@ app.put("/api/enrollment_person/:id", async (req, res) => {
 
     res.json({ message: "Enrollment person updated successfully" });
   } catch (err) {
-    console.error("❌ Error updating enrollment person:", err);
+    console.error("âŒ Error updating enrollment person:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
 
 app.get("/api/student-person-data/:id", async (req, res) => {
   const { id } = req.params;
-  console.log("id: ",)
+  console.log("id: ");
 
   try {
-
     const [rows] = await db3.query(
       `SELECT snt.student_number, pt.* FROM student_numbering_table AS snt
       LEFT JOIN person_table AS pt ON snt.person_id = pt.person_id
@@ -13303,7 +11090,7 @@ app.get("/api/student-person-data/:id", async (req, res) => {
     }
 
     res.json(rows[0]);
-    console.log("Person Data: ", rows[0])
+    console.log("Person Data: ", rows[0]);
   } catch (err) {
     console.error("Error fetching person data:", err);
     res.status(500).json({ error: "Database error" });
@@ -13358,7 +11145,7 @@ app.get("/api/document_status/:applicant_number", async (req, res) => {
       [applicant_number],
     );
 
-    // 🟥 If no uploads found
+    // ðŸŸ¥ If no uploads found
     if (!rows || rows.length === 0) {
       return res.json({
         document_status: "On Process",
@@ -13369,7 +11156,7 @@ app.get("/api/document_status/:applicant_number", async (req, res) => {
     const statuses = rows.map((r) => r.upload_document_status);
     const latest = rows[0];
 
-    // 🟡 Determine final document status
+    // ðŸŸ¡ Determine final document status
     let finalStatus = "On Process";
     if (statuses.every((s) => s === "Disapproved / Program Closed")) {
       finalStatus = "Disapproved / Program Closed";
@@ -13377,8 +11164,8 @@ app.get("/api/document_status/:applicant_number", async (req, res) => {
       finalStatus = "Documents Verified & ECAT";
     }
 
-    // 🟢 Build evaluator display name with employee ID
-    // 🟢 Build evaluator display name with employee ID (no HTML tags)
+    // ðŸŸ¢ Build evaluator display name with employee ID
+    // ðŸŸ¢ Build evaluator display name with employee ID (no HTML tags)
     let actorEmail = null;
     let actorName = "Unknown - System";
 
@@ -13398,17 +11185,17 @@ app.get("/api/document_status/:applicant_number", async (req, res) => {
       latest.evaluator_display = `BY: Unknown - System`;
     }
 
-    // 📝 Create notification message
-    const message = `✏️ Document status for Applicant #${applicant_number} set to "${finalStatus}"`;
+    // ðŸ“ Create notification message
+    const message = `âœï¸ Document status for Applicant #${applicant_number} set to "${finalStatus}"`;
 
-    // // 💾 Insert notification (only if there's evaluator info)
+    // // ðŸ’¾ Insert notification (only if there's evaluator info)
     // await db.query(
     //   `INSERT INTO notifications (type, message, applicant_number, actor_email, actor_name)
     //    VALUES (?, ?, ?, ?, ?)`,
     //   ['update', message, applicant_number, actorEmail, actorName]
     // );
 
-    // // 📢 Emit notification via socket.io
+    // // ðŸ“¢ Emit notification via socket.io
     // io.emit('notification', {
     //   type: 'update',
     //   message,
@@ -13423,7 +11210,7 @@ app.get("/api/document_status/:applicant_number", async (req, res) => {
       evaluator: latest,
     });
   } catch (err) {
-    console.error("❌ Error fetching document status:", err);
+    console.error("âŒ Error fetching document status:", err);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -13433,7 +11220,7 @@ app.put("/api/document_status/:applicant_number", async (req, res) => {
   const { document_status, user_id } = req.body;
 
   try {
-    // ✅ 1. Get requirement IDs that should reflect in overall document_status
+    // âœ… 1. Get requirement IDs that should reflect in overall document_status
     const [verifiableReqs] = await db.query(
       `SELECT id FROM requirements_table WHERE is_verifiable = 1`,
     );
@@ -13445,7 +11232,7 @@ app.put("/api/document_status/:applicant_number", async (req, res) => {
         .json({ message: "No verifiable requirements found." });
     }
 
-    // ✅ 2. Update only those requirements for the applicant
+    // âœ… 2. Update only those requirements for the applicant
     await db.query(
       `UPDATE requirement_uploads
        SET document_status = ?,
@@ -13457,7 +11244,7 @@ app.put("/api/document_status/:applicant_number", async (req, res) => {
 
     res.json({
       message:
-        "📌 Document status updated dynamically for verifiable requirements.",
+        "ðŸ“Œ Document status updated dynamically for verifiable requirements.",
     });
   } catch (err) {
     console.error("Error updating document status:", err);
@@ -13465,12 +11252,12 @@ app.put("/api/document_status/:applicant_number", async (req, res) => {
   }
 });
 
-// ✅ Dynamic: Check if applicant's required verifiable documents are verified
+// âœ… Dynamic: Check if applicant's required verifiable documents are verified
 app.get("/api/document_status/check/:applicant_number", async (req, res) => {
   const { applicant_number } = req.params;
 
   try {
-    // 1️⃣ Get person_id
+    // 1ï¸âƒ£ Get person_id
     const [personResult] = await db.query(
       "SELECT person_id FROM applicant_numbering_table WHERE applicant_number = ?",
       [applicant_number],
@@ -13482,7 +11269,7 @@ app.get("/api/document_status/check/:applicant_number", async (req, res) => {
 
     const person_id = personResult[0].person_id;
 
-    // 2️⃣ Dynamically fetch all verifiable “Regular” requirements
+    // 2ï¸âƒ£ Dynamically fetch all verifiable â€œRegularâ€ requirements
     const [reqRows] = await db.query(`
       SELECT id
       FROM requirements_table
@@ -13500,7 +11287,7 @@ app.get("/api/document_status/check/:applicant_number", async (req, res) => {
     const requirementIds = reqRows.map((r) => r.id);
     const placeholders = requirementIds.map(() => "?").join(",");
 
-    // 3️⃣ Get applicant’s uploaded documents for those requirements
+    // 3ï¸âƒ£ Get applicantâ€™s uploaded documents for those requirements
     const [docs] = await db.query(
       `
         SELECT requirements_id, document_status
@@ -13517,7 +11304,7 @@ app.get("/api/document_status/check/:applicant_number", async (req, res) => {
       });
     }
 
-    // 4️⃣ Check if all are “Documents Verified & ECAT”
+    // 4ï¸âƒ£ Check if all are â€œDocuments Verified & ECATâ€
     const allVerified = docs.every(
       (d) => d.document_status === "Documents Verified & ECAT",
     );
@@ -13536,7 +11323,7 @@ app.get("/api/document_status/check/:applicant_number", async (req, res) => {
   }
 });
 
-// ✅ GET registrar name (or any prof by role)
+// âœ… GET registrar name (or any prof by role)
 app.get("/api/scheduled-by/:role", async (req, res) => {
   const { role } = req.params;
 
@@ -13561,18 +11348,18 @@ app.get("/api/scheduled-by/:role", async (req, res) => {
 
     res.json({ fullName });
   } catch (err) {
-    console.error("❌ Error fetching user by role:", err);
+    console.error("âŒ Error fetching user by role:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// ✅ Toggle submitted_medical (1 = checked, 0 = unchecked)
+// âœ… Toggle submitted_medical (1 = checked, 0 = unchecked)
 app.put("/api/submitted-medical/:upload_id", async (req, res) => {
   const { upload_id } = req.params;
   const { submitted_medical, user_person_id } = req.body;
 
   try {
-    // 1️⃣ Find person_id
+    // 1ï¸âƒ£ Find person_id
     const [[row]] = await db.query(
       "SELECT person_id FROM requirement_uploads WHERE upload_id = ?",
       [upload_id],
@@ -13581,7 +11368,7 @@ app.put("/api/submitted-medical/:upload_id", async (req, res) => {
 
     const person_id = row.person_id;
 
-    // 2️⃣ Applicant info
+    // 2ï¸âƒ£ Applicant info
     const [[appInfo]] = await db.query(
       `
       SELECT ant.applicant_number, pt.last_name, pt.first_name, pt.middle_name
@@ -13595,20 +11382,20 @@ app.put("/api/submitted-medical/:upload_id", async (req, res) => {
     const applicant_number = appInfo?.applicant_number || "Unknown";
     const fullName = `${appInfo?.last_name || ""}, ${appInfo?.first_name || ""} ${appInfo?.middle_name?.charAt(0) || ""}.`;
 
-    // 3️⃣ Update submitted_medical
+    // 3ï¸âƒ£ Update submitted_medical
     await db.query(
       "UPDATE requirement_uploads SET submitted_medical = ? WHERE person_id = ?",
       [submitted_medical ? 1 : 0, person_id],
     );
 
-    // 4️⃣ Create message
+    // 4ï¸âƒ£ Create message
     const type = submitted_medical ? "submit_medical" : "unsubmit_medical";
     const action = submitted_medical
-      ? "✅ Medical submitted"
-      : "❌ Medical unsubmitted";
+      ? "âœ… Medical submitted"
+      : "âŒ Medical unsubmitted";
     const message = `${action} (Applicant #${applicant_number} - ${fullName})`;
 
-    // ✅ Full actor info (same as exam/save)
+    // âœ… Full actor info (same as exam/save)
     let actorEmail = "earistmis@gmail.com";
     let actorName = "SYSTEM";
 
@@ -13635,7 +11422,7 @@ app.put("/api/submitted-medical/:upload_id", async (req, res) => {
       }
     }
 
-    // ✅ No duplicates per day (same logic as exam/save)
+    // âœ… No duplicates per day (same logic as exam/save)
     await db.query(
       `INSERT INTO notifications (type, message, applicant_number, actor_email, actor_name, timestamp)
        SELECT ?, ?, ?, ?, ?, NOW()
@@ -13657,7 +11444,7 @@ app.put("/api/submitted-medical/:upload_id", async (req, res) => {
       ],
     );
 
-    // ✅ Socket emit
+    // âœ… Socket emit
     io.emit("notification", {
       type,
       message,
@@ -13669,7 +11456,7 @@ app.put("/api/submitted-medical/:upload_id", async (req, res) => {
 
     res.json({ success: true, message });
   } catch (err) {
-    console.error("❌ Error toggling submitted medical:", err);
+    console.error("âŒ Error toggling submitted medical:", err);
     res.status(500).json({ error: "Failed to toggle submitted medical" });
   }
 });
@@ -13679,14 +11466,13 @@ app.get("/api/requirements", async (req, res) => {
     const [rows] = await db.query(
       `SELECT id, description, short_label, is_optional 
        FROM requirements_table 
-       ORDER BY id ASC`
+       ORDER BY id ASC`,
     );
     res.json(rows);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch requirements" });
   }
 });
-
 
 app.get("/api/program_evaluation/:student_number", async (req, res) => {
   const { student_number } = req.params;
@@ -13715,7 +11501,7 @@ app.get("/api/program_evaluation/:student_number", async (req, res) => {
     }
 
     const studentInfo = {
-      ...rows[0], // keep the first row’s data
+      ...rows[0], // keep the first rowâ€™s data
       requirements: [
         ...new Set(rows.map((r) => r.requirements).filter(Boolean)),
       ],
@@ -13747,7 +11533,7 @@ app.get("/registrar-users", async (req, res) => {
         .map((r) => r.page_id)
         .sort((a, b) => a - b);
 
-      // 2️⃣ Strictly compare with registrar page access
+      // 2ï¸âƒ£ Strictly compare with registrar page access
       const registrarPages = [...ROLE_PAGE_ACCESS.registrar].sort(
         (a, b) => a - b,
       );
@@ -13844,7 +11630,7 @@ app.get("/api/program_evaluation/details/:student_number", async (req, res) => {
   }
 });
 
-// ✅ Upload and update registrar profile picture
+// âœ… Upload and update registrar profile picture
 app.put(
   "/api/update_profile_image/:person_id",
   upload.single("profileImage"),
@@ -13857,7 +11643,7 @@ app.put(
     }
 
     try {
-      // ✅ Save filename in db3.user_accounts
+      // âœ… Save filename in db3.user_accounts
       const [result] = await db3.query(
         `UPDATE user_accounts
        SET profile_picture = ?
@@ -13875,13 +11661,11 @@ app.put(
         filename: file.filename,
       });
     } catch (err) {
-      console.error("❌ Error updating profile picture:", err);
+      console.error("âŒ Error updating profile picture:", err);
       res.status(500).json({ error: "Failed to update profile picture" });
     }
   },
 );
-
-
 
 //11/29/2025 UPDATE
 app.post("/insert_question", async (req, res) => {
@@ -14125,7 +11909,7 @@ app.get("/api/applicant-scores/:applicant_number", async (req, res) => {
 
     const person_id = personRow[0].person_id;
 
-    // 1️⃣ Get Admission Exam Score
+    // 1ï¸âƒ£ Get Admission Exam Score
     const [examRow] = await db.query(
       "SELECT final_rating FROM admission_exam WHERE person_id = ? LIMIT 1",
       [person_id],
@@ -14133,7 +11917,7 @@ app.get("/api/applicant-scores/:applicant_number", async (req, res) => {
 
     const entrance_exam_score = examRow.length ? examRow[0].final_rating : null;
 
-    // 2️⃣ Get Qualifying & Interview Results
+    // 2ï¸âƒ£ Get Qualifying & Interview Results
     const [statusRow] = await db.query(
       `SELECT qualifying_result, interview_result
        FROM person_status_table
@@ -14179,14 +11963,14 @@ app.get("/api/applicant-has-score/:applicant_number", async (req, res) => {
   }
 });
 
-// ✅ CHECK IF APPLICANT IS QUALIFIED FOR INTERVIEW / QUALIFYING EXAM (NO PASSING SCORE)
+// âœ… CHECK IF APPLICANT IS QUALIFIED FOR INTERVIEW / QUALIFYING EXAM (NO PASSING SCORE)
 app.get(
   "/api/applicant-qualified-interview/:applicant_number",
   async (req, res) => {
     const { applicant_number } = req.params;
 
     try {
-      // 1️⃣ Get person_id from applicant_numbering_table
+      // 1ï¸âƒ£ Get person_id from applicant_numbering_table
       const [personRows] = await db.query(
         "SELECT person_id FROM applicant_numbering_table WHERE applicant_number = ? LIMIT 1",
         [applicant_number],
@@ -14200,7 +11984,7 @@ app.get(
 
       const person_id = personRows[0].person_id;
 
-      // 2️⃣ Check if applicant has exam record in admission_exam table
+      // 2ï¸âƒ£ Check if applicant has exam record in admission_exam table
       const [examRows] = await db.query(
         "SELECT final_rating FROM admission_exam WHERE person_id = ? LIMIT 1",
         [person_id],
@@ -14210,11 +11994,11 @@ app.get(
         return res.json({
           qualified: false,
           message:
-            "❌ Applicant has no entrance exam score yet — not qualified for interview.",
+            "âŒ Applicant has no entrance exam score yet â€” not qualified for interview.",
         });
       }
 
-      // 3️⃣ If applicant has any exam record, they are qualified
+      // 3ï¸âƒ£ If applicant has any exam record, they are qualified
       const finalRating = examRows[0].final_rating;
 
       res.json({
@@ -14222,7 +12006,7 @@ app.get(
         person_id,
         final_rating: finalRating,
         message:
-          "✅ Applicant is qualified to take the Qualifying / Interview Exam.",
+          "âœ… Applicant is qualified to take the Qualifying / Interview Exam.",
       });
     } catch (err) {
       console.error("Error checking interview qualification:", err);
@@ -14234,7 +12018,7 @@ app.get(
   },
 );
 
-// ✅ Fetch Qualifying, Interview, and Exam Results by Person ID
+// âœ… Fetch Qualifying, Interview, and Exam Results by Person ID
 app.get("/api/person_status/:person_id", async (req, res) => {
   const { person_id } = req.params;
 
@@ -14257,7 +12041,7 @@ app.get("/api/person_status/:person_id", async (req, res) => {
 
     res.json(rows[0]);
   } catch (err) {
-    console.error("❌ Error fetching person_status:", err);
+    console.error("âŒ Error fetching person_status:", err);
     res.status(500).json({ message: "Database error" });
   }
 });
@@ -14319,7 +12103,7 @@ app.get("/api/faculty_evaluation", async (req, res) => {
 
     res.json(rows);
   } catch (err) {
-    console.error("❌ Error fetching evaluation:", err);
+    console.error("âŒ Error fetching evaluation:", err);
     res.status(500).json({ message: "Database error" });
   }
 });
@@ -14360,7 +12144,7 @@ app.get("/api/verification-status/:applicant_number", async (req, res) => {
   const { applicant_number } = req.params;
 
   try {
-    // ✅ Step 1: Get person_id from applicant_number
+    // âœ… Step 1: Get person_id from applicant_number
     const [personRows] = await db.query(
       "SELECT person_id FROM applicant_numbering_table WHERE applicant_number = ?",
       [applicant_number],
@@ -14371,13 +12155,13 @@ app.get("/api/verification-status/:applicant_number", async (req, res) => {
 
     const personId = personRows[0].person_id;
 
-    // ✅ Step 2: Count how many verifiable requirements exist
+    // âœ… Step 2: Count how many verifiable requirements exist
     const [requirements] = await db.query(
       "SELECT COUNT(*) AS total_required FROM requirements_table WHERE is_verifiable = 1",
     );
     const totalRequired = requirements[0]?.total_required || 0;
 
-    // ✅ Step 3: Count how many of those requirements were submitted & verified
+    // âœ… Step 3: Count how many of those requirements were submitted & verified
     const [verifiedUploads] = await db.query(
       `
       SELECT COUNT(DISTINCT requirements_id) AS total_verified
@@ -14389,7 +12173,7 @@ app.get("/api/verification-status/:applicant_number", async (req, res) => {
     );
     const totalVerified = verifiedUploads[0]?.total_verified || 0;
 
-    // ✅ Step 4: Check if applicant has an exam schedule
+    // âœ… Step 4: Check if applicant has an exam schedule
     const [schedule] = await db.query(
       `
       SELECT ees.*
@@ -14401,7 +12185,7 @@ app.get("/api/verification-status/:applicant_number", async (req, res) => {
     );
     const hasSchedule = schedule.length > 0;
 
-    // ✅ Step 5: Determine if verified
+    // âœ… Step 5: Determine if verified
     const fullyVerified = totalVerified >= totalRequired && hasSchedule;
 
     res.json({
@@ -14426,7 +12210,7 @@ app.get("/api/student_data_as_applicant/:id", async (req, res) => {
       FROM enrollment.person_table
       WHERE person_id = ?
       `,
-      [id]
+      [id],
     );
 
     if (!person) {
@@ -14440,7 +12224,7 @@ app.get("/api/student_data_as_applicant/:id", async (req, res) => {
       FROM applicant_numbering_table
       WHERE person_id = ?
       `,
-      [person.person_id]
+      [person.person_id],
     );
 
     // Merge applicant_number into person object
@@ -14470,7 +12254,7 @@ app.get("/api/student_data_as_applicant/:id", async (req, res) => {
       ORDER BY ru.created_at DESC
       LIMIT 1
       `,
-      [person.person_id]
+      [person.person_id],
     );
 
     if (rows.length > 0) {
@@ -14482,14 +12266,13 @@ app.get("/api/student_data_as_applicant/:id", async (req, res) => {
     }
 
     res.json(person);
-
   } catch (err) {
-    console.error("❌ Error fetching person_with_applicant:", err);
+    console.error("âŒ Error fetching person_with_applicant:", err);
     res.status(500).json({ error: "Failed to fetch person" });
   }
 });
 
-// ✅ UPDATE person_table in ENROLLMENT DB3
+// âœ… UPDATE person_table in ENROLLMENT DB3
 app.put("/api/enrollment_person/:person_id", async (req, res) => {
   try {
     const { person_id } = req.params;
@@ -14535,7 +12318,7 @@ app.put("/api/enrollment_person/:person_id", async (req, res) => {
       updated: updateData,
     });
   } catch (error) {
-    console.error("❌ Error updating enrollment person:", error);
+    console.error("âŒ Error updating enrollment person:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 });
@@ -14625,7 +12408,7 @@ app.get("/api/document_status/:student_number", async (req, res) => {
       [student_number],
     );
 
-    // 🟥 If no uploads found
+    // ðŸŸ¥ If no uploads found
     if (!rows || rows.length === 0) {
       return res.json({
         document_status: "On Process",
@@ -14636,7 +12419,7 @@ app.get("/api/document_status/:student_number", async (req, res) => {
     const statuses = rows.map((r) => r.upload_document_status);
     const latest = rows[0];
 
-    // 🟡 Determine final document status
+    // ðŸŸ¡ Determine final document status
     let finalStatus = "On Process";
     if (statuses.every((s) => s === "Disapproved / Program Closed")) {
       finalStatus = "Disapproved / Program Closed";
@@ -14644,8 +12427,8 @@ app.get("/api/document_status/:student_number", async (req, res) => {
       finalStatus = "Documents Verified & ECAT";
     }
 
-    // 🟢 Build evaluator display name with employee ID
-    // 🟢 Build evaluator display name with employee ID (no HTML tags)
+    // ðŸŸ¢ Build evaluator display name with employee ID
+    // ðŸŸ¢ Build evaluator display name with employee ID (no HTML tags)
     let actorEmail = null;
     let actorName = "Unknown - System";
 
@@ -14665,17 +12448,17 @@ app.get("/api/document_status/:student_number", async (req, res) => {
       latest.evaluator_display = `BY: Unknown - System`;
     }
 
-    // 📝 Create notification message
-    const message = `✏️ Document status for Student #${student_number} set to "${finalStatus}"`;
+    // ðŸ“ Create notification message
+    const message = `âœï¸ Document status for Student #${student_number} set to "${finalStatus}"`;
 
-    // 💾 Insert notification (only if there's evaluator info)
+    // ðŸ’¾ Insert notification (only if there's evaluator info)
     await db.query(
       `INSERT INTO notifications (type, message, applicant_number, actor_email, actor_name)
        VALUES (?, ?, ?, ?, ?)`,
       ["update", message, student_number, actorEmail, actorName],
     );
 
-    // 📢 Emit notification via socket.io
+    // ðŸ“¢ Emit notification via socket.io
     io.emit("notification", {
       type: "update",
       message,
@@ -14690,7 +12473,7 @@ app.get("/api/document_status/:student_number", async (req, res) => {
       evaluator: latest,
     });
   } catch (err) {
-    console.error("❌ Error fetching document status:", err);
+    console.error("âŒ Error fetching document status:", err);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -14714,7 +12497,7 @@ app.get("/api/student_upload_documents_data", async (req, res) => {
 
     res.status(200).json(persons);
   } catch (error) {
-    console.error("❌ Error fetching upload documents:", error);
+    console.error("âŒ Error fetching upload documents:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -14746,7 +12529,7 @@ app.post("/api/student/upload", upload.single("file"), async (req, res) => {
   }
 
   try {
-    // 🔹 Applicant info
+    // ðŸ”¹ Applicant info
     const [[appInfo]] = await db3.query(
       `
       SELECT snt.student_number, pt.last_name, pt.first_name, pt.middle_name
@@ -14760,7 +12543,7 @@ app.post("/api/student/upload", upload.single("file"), async (req, res) => {
     const student_number = appInfo?.student_number || "Unknown";
     const fullName = `${appInfo?.last_name || ""}, ${appInfo?.first_name || ""} ${appInfo?.middle_name?.charAt(0) || ""}.`;
 
-    // 🔹 Requirement description + short label
+    // ðŸ”¹ Requirement description + short label
     const [descRows] = await db3.query(
       "SELECT description, short_label FROM requirements_table WHERE id = ?",
       [requirements_id],
@@ -14771,20 +12554,20 @@ app.post("/api/student/upload", upload.single("file"), async (req, res) => {
 
     const { description, short_label } = descRows[0];
 
-    // ✅ Use the short_label directly from DB
+    // âœ… Use the short_label directly from DB
     const shortLabel = short_label || "Unknown";
 
     const year = new Date().getFullYear();
     const ext = path.extname(req.file.originalname).toLowerCase();
 
-    // ✅ Construct filename
+    // âœ… Construct filename
     const filename = `${applicant_number}_${shortLabel}_${year}${ext}`;
     const uploadDir = path.join(__dirname, "uploads");
     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
     const finalPath = path.join(uploadDir, filename);
 
-    // 🔹 Delete any existing file for the same applicant + requirement
+    // ðŸ”¹ Delete any existing file for the same applicant + requirement
     const [existingFiles] = await db3.query(
       `SELECT upload_id, file_path FROM requirement_uploads
        WHERE person_id = ? AND requirements_id = ?`,
@@ -14806,7 +12589,7 @@ app.post("/api/student/upload", upload.single("file"), async (req, res) => {
       ]);
     }
 
-    // 🔹 Save new file
+    // ðŸ”¹ Save new file
     await fs.promises.writeFile(finalPath, req.file.buffer);
 
     await db3.query(
@@ -14822,7 +12605,7 @@ app.post("/api/student/upload", upload.single("file"), async (req, res) => {
       ],
     );
 
-    res.status(201).json({ message: "✅ Upload successful" });
+    res.status(201).json({ message: "âœ… Upload successful" });
   } catch (err) {
     console.error("Upload error:", err);
     res
@@ -14835,7 +12618,7 @@ app.delete("/admin/uploads/:uploadId", async (req, res) => {
   const { uploadId } = req.params;
 
   try {
-    // 1️⃣ Get upload row (file + person_id)
+    // 1ï¸âƒ£ Get upload row (file + person_id)
     const [uploadRows] = await db3.query(
       "SELECT person_id, file_path FROM requirement_uploads WHERE upload_id = ?",
       [uploadId],
@@ -14846,7 +12629,7 @@ app.delete("/admin/uploads/:uploadId", async (req, res) => {
 
     const { person_id: personId, file_path: filePath } = uploadRows[0];
 
-    // 2️⃣ Student info
+    // 2ï¸âƒ£ Student info
     const [[appInfo]] = await db3.query(
       `
       SELECT snt.student_number, pt.last_name, pt.first_name, pt.middle_name
@@ -14860,33 +12643,33 @@ app.delete("/admin/uploads/:uploadId", async (req, res) => {
     const student_number = appInfo?.student_number || "Unknown";
     const fullName = `${appInfo?.last_name || ""}, ${appInfo?.first_name || ""} ${appInfo?.middle_name?.charAt(0) || ""}.`;
 
-    // 3️⃣ Actor (admin performing the action)
+    // 3ï¸âƒ£ Actor (admin performing the action)
     const user_person_id = req.headers["x-person-id"];
     const { actorEmail, actorName } = await getActorInfo(user_person_id);
 
-    // 4️⃣ Delete physical file
+    // 4ï¸âƒ£ Delete physical file
     if (filePath) {
       const fullPath = path.join(applicantDocsDir, filePath);
 
       try {
         await fs.promises.unlink(fullPath);
-        console.log("🗑️ File deleted:", fullPath);
+        console.log("ðŸ—‘ï¸ File deleted:", fullPath);
       } catch (err) {
         if (err.code === "ENOENT") {
-          console.warn("⚠️ File already missing:", fullPath);
+          console.warn("âš ï¸ File already missing:", fullPath);
         } else {
           console.error("File delete error:", err);
         }
       }
     }
 
-    // 5️⃣ Delete DB record
+    // 5ï¸âƒ£ Delete DB record
     await db.query("DELETE FROM requirement_uploads WHERE upload_id = ?", [
       uploadId,
     ]);
 
-    // 6️⃣ Log notification
-    const message = `🗑️ Deleted document (Applicant #${student_number} - ${fullName})`;
+    // 6ï¸âƒ£ Log notification
+    const message = `ðŸ—‘ï¸ Deleted document (Applicant #${student_number} - ${fullName})`;
     await db.query(
       "INSERT INTO notifications (type, message, applicant_number, actor_email, actor_name, timestamp) VALUES (?, ?, ?, ?, ?, NOW())",
       ["delete", message, student_number, actorEmail, actorName],
@@ -14901,7 +12684,7 @@ app.delete("/admin/uploads/:uploadId", async (req, res) => {
       timestamp: new Date().toISOString(),
     });
 
-    res.status(200).json({ message: "✅ Upload deleted successfully." });
+    res.status(200).json({ message: "âœ… Upload deleted successfully." });
   } catch (error) {
     console.error("Delete error:", error);
     res.status(500).json({ error: "Failed to delete the upload." });
@@ -14918,7 +12701,7 @@ app.delete("/admin/uploads/:uploadId", async (req, res) => {
 //     if (rows.length === 0) return res.status(404).json({ message: "User not found" });
 //     res.json({ user_account_id: rows[0].user_id });
 //   } catch (err) {
-//     console.error("❌ Error fetching user_account_id:", err);
+//     console.error("âŒ Error fetching user_account_id:", err);
 //     res.status(500).json({ error: "Internal Server Error" });
 //   }
 // });
@@ -14970,7 +12753,7 @@ app.post(
         const ext = path.extname(file.originalname).toLowerCase();
         finalFilename = `${a_id}_1by1_${year}${ext}`;
 
-        // ✅ New folder: uploads/Applicant1by1
+        // âœ… New folder: uploads/Applicant1by1
         const uploadDir = path.join(__dirname, "uploads", "Applicant1by1");
         if (!fs.existsSync(uploadDir))
           fs.mkdirSync(uploadDir, { recursive: true });
@@ -15001,7 +12784,7 @@ app.post(
         updated,
       });
     } catch (error) {
-      console.error("❌ Error updating applicant:", error);
+      console.error("âŒ Error updating applicant:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
@@ -15031,7 +12814,7 @@ app.get("/api/get_prof_account_id/:person_id", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     res.json({ user_account_id: rows[0].prof_id });
   } catch (err) {
-    console.error("❌ Error fetching uproft_id:", err);
+    console.error("âŒ Error fetching uproft_id:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
@@ -15056,35 +12839,35 @@ app.post(
       let finalFilename = current.profile_image; // fallback to existing if no new file
 
       if (file) {
-        // ✅ Get employee_id for filename
+        // âœ… Get employee_id for filename
         const employee_id = current.prof_id || "unknown";
 
-        // ✅ Get current Philippine year
+        // âœ… Get current Philippine year
         const philTime = new Date().toLocaleString("en-US", {
           timeZone: "Asia/Manila",
         });
         const year = new Date(philTime).getFullYear();
 
-        // ✅ Build final filename
+        // âœ… Build final filename
         const ext = path.extname(file.originalname).toLowerCase();
         finalFilename = `2${current.person_id}${employee_id}_profile_image_${year}${ext}`;
 
-        // ✅ Paths
+        // âœ… Paths
         const uploadDir = path.join(__dirname, "uploads");
         const tempPath = path.join(uploadDir, file.filename);
         const newPath = path.join(uploadDir, finalFilename);
 
-        // ✅ Delete old image if exists
+        // âœ… Delete old image if exists
         if (current.profile_image) {
           const oldPath = path.join(uploadDir, current.profile_image);
           if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
         }
 
-        // ✅ Rename temp file to proper name
+        // âœ… Rename temp file to proper name
         fs.renameSync(tempPath, newPath);
       }
 
-      // ✅ Update registrar data in DB
+      // âœ… Update registrar data in DB
       const updated = {
         profile_picture: finalFilename,
       };
@@ -15103,7 +12886,7 @@ app.post(
         updated,
       });
     } catch (error) {
-      console.error("❌ Error updating faculty:", error);
+      console.error("âŒ Error updating faculty:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
@@ -15132,11 +12915,11 @@ app.put(
       }
 
       res.json({
-        message: "✅ Profile image updated successfully",
+        message: "âœ… Profile image updated successfully",
         filename,
       });
     } catch (err) {
-      console.error("❌ DB Error:", err);
+      console.error("âŒ DB Error:", err);
       res.status(500).json({ error: "Database update failed" });
     }
   },
@@ -15214,30 +12997,34 @@ app.post(
         updated,
       });
     } catch (error) {
-      console.error("❌ Error updating student:", error);
+      console.error("âŒ Error updating student:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   },
 );
 
-// ✅ Check if applicant already has a student number
+// âœ… Check if applicant already has a student number
 app.get("/api/student_status/:person_id", async (req, res) => {
   const { person_id } = req.params;
   try {
     const [applicantEmail] = await db.query(
-      `SELECT emailAddress FROM person_table WHERE person_id = ?`, [person_id]
-    )
+      `SELECT emailAddress FROM person_table WHERE person_id = ?`,
+      [person_id],
+    );
 
-    if(applicantEmail.length === 0) {
-      return res.status(500).json({message: "Email Address not found"})
+    if (applicantEmail.length === 0) {
+      return res.status(500).json({ message: "Email Address not found" });
     }
 
     const [studentPersonID] = await db3.query(
-      `SELECT person_id FROM person_table WHERE emailAddress = ?`, [applicantEmail[0].emailAddress]
+      `SELECT person_id FROM person_table WHERE emailAddress = ?`,
+      [applicantEmail[0].emailAddress],
     );
 
-    if(studentPersonID.length === 0) {
-      return res.status(500).json({message: "Person Id of this email is not found"})
+    if (studentPersonID.length === 0) {
+      return res
+        .status(500)
+        .json({ message: "Person Id of this email is not found" });
     }
 
     const [rows] = await db3.query(
@@ -15254,12 +13041,12 @@ app.get("/api/student_status/:person_id", async (req, res) => {
       res.json({ hasStudentNumber: false });
     }
   } catch (error) {
-    console.error("❌ Error checking student number:", error);
+    console.error("âŒ Error checking student number:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
-// ✅ Count how many registrar roles exist
+// âœ… Count how many registrar roles exist
 app.get("/api/registrar_count", async (req, res) => {
   try {
     const [rows] = await db3.query(
@@ -15292,10 +13079,11 @@ app.get("/api/person/student/:storedID", async (req, res) => {
 
   try {
     const [personRows] = await db3.query(
-      `SELECT emailAddress FROM person_table WHERE person_id = ? `, [id]
+      `SELECT emailAddress FROM person_table WHERE person_id = ? `,
+      [id],
     );
 
-    const personEmail = personRows[0].emailAddress
+    const personEmail = personRows[0].emailAddress;
 
     const sql = `
       SELECT p.*, a.applicant_number
@@ -15305,13 +13093,20 @@ app.get("/api/person/student/:storedID", async (req, res) => {
       WHERE p.emailAddress = ?
     `;
 
-    const [rows] = await db.query(sql, [personEmail])
-    console.log("Person Data: ", rows)
+    const [rows] = await db.query(sql, [personEmail]);
+    console.log("Person Data: ", rows);
 
-    res.status(200).json({ message: "Successfully  etch student record from admission", rows })
+    res
+      .status(200)
+      .json({
+        message: "Successfully  etch student record from admission",
+        rows,
+      });
   } catch (err) {
     console.error("Error fetching registrar count:", error);
-    res.status(500).json({ message: "Server error while fetching registrar count" });
+    res
+      .status(500)
+      .json({ message: "Server error while fetching registrar count" });
   }
 });
 
@@ -15616,7 +13411,13 @@ app.get("/api/applicants/program/stats", async (req, res) => {
       [program_id],
     );
 
-    res.json(rows[0] || { total_applicants: 0, applicants_week: 0, applicants_month: 0 });
+    res.json(
+      rows[0] || {
+        total_applicants: 0,
+        applicants_week: 0,
+        applicants_month: 0,
+      },
+    );
   } catch (err) {
     console.error("Program stats error:", err);
     res.status(500).json({ error: "Server error" });
@@ -15695,147 +13496,6 @@ app.get("/exam/completed-count", async (req, res) => {
 // ---------------------- ALL FILTERING FOR ADMISSION DASHBOARD ---------------------- //
 
 // ---------- DEPARTMENT <-> CURRICULUM MAPPING (dprtmnt_curriculum_table) ----------
-// GET mappings for a department
-app.get("/dprtmnt_curriculum/:dprtmnt_id", async (req, res) => {
-  const { dprtmnt_id } = req.params;
-  try {
-    const query = `
-      SELECT
-        dc.dprtmnt_curriculum_id,
-        dc.dprtmnt_id,
-        dc.curriculum_id,
-        dt.dprtmnt_name,
-        dt.dprtmnt_code,
-        ct.curriculum_id AS ct_curriculum_id,
-        ct.year_id,
-        y.year_description,
-        ct.program_id,
-        ct.lock_status,
-        p.program_description AS p_description,
-        p.program_code AS p_code,
-          p.major AS p_major
-      FROM dprtmnt_curriculum_table AS dc
-      INNER JOIN dprtmnt_table AS dt
-        ON dc.dprtmnt_id = dt.dprtmnt_id
-      INNER JOIN curriculum_table AS ct
-        ON dc.curriculum_id = ct.curriculum_id
-      INNER JOIN program_table AS p
-        ON ct.program_id = p.program_id
-      INNER JOIN year_table AS y
-        ON ct.year_id = y.year_id
-      WHERE dc.dprtmnt_id = ?
-      ORDER BY
-        COALESCE(p_code, ''),
-        dc.curriculum_id;
-    `;
-
-    const [rows] = await db3.execute(query, [dprtmnt_id]);
-    res.status(200).json(rows);
-  } catch (err) {
-    console.error("Error fetching dprtmnt_curriculum:", err);
-    res
-      .status(500)
-      .json({ error: "Internal Server Error", details: err.message });
-  }
-});
-
-// POST add mapping (dprtmnt_id + curriculum_id)
-app.post("/dprtmnt_curriculum", async (req, res) => {
-  const { dprtmnt_id, curriculum_id } = req.body;
-  if (!dprtmnt_id || !curriculum_id) {
-    return res
-      .status(400)
-      .json({ error: "dprtmnt_id and curriculum_id are required" });
-  }
-
-  try {
-    // prevent duplicate mapping
-    const [exists] = await db3.execute(
-      "SELECT * FROM dprtmnt_curriculum_table WHERE dprtmnt_id = ? AND curriculum_id = ?",
-      [dprtmnt_id, curriculum_id],
-    );
-    if (exists.length > 0) {
-      return res.status(409).json({ message: "Mapping already exists" });
-    }
-
-    const [result] = await db3.execute(
-      "INSERT INTO dprtmnt_curriculum_table (dprtmnt_id, curriculum_id) VALUES (?, ?)",
-      [dprtmnt_id, curriculum_id],
-    );
-
-    // return inserted id
-    res.status(201).json({
-      message: "Mapping created",
-      dprtmnt_curriculum_id: result.insertId,
-    });
-  } catch (err) {
-    console.error("Error creating mapping:", err);
-    res
-      .status(500)
-      .json({ error: "Internal Server Error", details: err.message });
-  }
-});
-
-// DELETE mapping by mapping id
-app.delete("/dprtmnt_curriculum/:id", async (req, res) => {
-  const { id } = req.params;
-  try {
-    const [result] = await db3.execute(
-      "DELETE FROM dprtmnt_curriculum_table WHERE dprtmnt_curriculum_id = ?",
-      [id],
-    );
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "Mapping not found" });
-    }
-    res.status(200).json({ message: "Mapping deleted" });
-  } catch (err) {
-    console.error("Error deleting mapping:", err);
-    res
-      .status(500)
-      .json({ error: "Internal Server Error", details: err.message });
-  }
-});
-
-app.put("/dprtmnt_curriculum/:id", async (req, res) => {
-  const { id } = req.params;
-  const { curriculum_id, dprtmnt_id } = req.body;
-
-  if (!curriculum_id || !dprtmnt_id) {
-    return res
-      .status(400)
-      .json({ message: "curriculum_id and dprtmnt_id required" });
-  }
-
-  try {
-    // Check duplicate mapping
-    const [exists] = await db3.execute(
-      `SELECT * FROM dprtmnt_curriculum_table
-       WHERE dprtmnt_id = ? AND curriculum_id = ? AND dprtmnt_curriculum_id != ?`,
-      [dprtmnt_id, curriculum_id, id],
-    );
-
-    if (exists.length > 0) {
-      return res.status(409).json({ message: "Mapping already exists" });
-    }
-
-    const [result] = await db3.execute(
-      `UPDATE dprtmnt_curriculum_table
-       SET curriculum_id = ?
-       WHERE dprtmnt_curriculum_id = ?`,
-      [curriculum_id, id],
-    );
-
-    if (result.affectedRows === 0)
-      return res.status(404).json({ message: "Mapping ID not found" });
-
-    res.json({ message: "Mapping updated" });
-  } catch (err) {
-    console.error("Update error:", err);
-    res
-      .status(500)
-      .json({ error: "Internal Server Error", details: err.message });
-  }
-});
 
 app.get("/api/ecat-summary", async (req, res) => {
   try {
@@ -15860,191 +13520,7 @@ app.get("/api/ecat-summary", async (req, res) => {
 });
 
 // ---------------------------- prereq
-// ✅ CHECK PREREQUISITE BEFORE ENROLLMENT
-app.post("/api/check-prerequisite", async (req, res) => {
-  try {
-    const { student_number, course_id, semester_id, curriculum_id } = req.body;
-
-    if (!student_number || !course_id) {
-      return res.status(400).json({
-        allowed: false,
-        status: "INVALID_REQUEST",
-        message: "student_number and course_id are required.",
-      });
-    }
-
-    // 1. Get prerequisite code(s) for this course
-    const [courseRows] = await db3.query(
-      "SELECT prereq, course_code FROM course_table WHERE course_id = ? LIMIT 1",
-      [course_id],
-    );
-
-    if (!courseRows.length) {
-      return res.status(404).json({
-        allowed: false,
-        status: "COURSE_NOT_FOUND",
-        message: "Course not found in course_table.",
-      });
-    }
-
-    const { prereq, course_code } = courseRows[0];
-    console.log("Code and Prequiesite", prereq)
-    console.log("Code and Prequiesite", course_code)
-
-    // If no prerequisite defined → allow enrollment
-    if (!prereq || String(prereq).trim() === "") {
-      return res.json({
-        allowed: true,
-        status: "NO_PREREQ",
-        message: `Course ${course_code} has no prerequisite.`,
-      });
-    }
-
-    // 2. Support comma-separated list of prerequisite course codes
-    const prereqCodes = String(prereq)
-      .split(",")
-      .map((c) => c.trim())
-      .filter((c) => c.length > 0);
-
-    if (prereqCodes.length === 0) {
-      return res.json({
-        allowed: true,
-        status: "NO_PREREQ",
-        message: `Course ${course_code} has no prerequisite (empty prereq field).`,
-      });
-    }
-
-    // 3. Get course_id for each prerequisite course_code
-    const placeholders = prereqCodes.map(() => "?").join(", ");
-
-    const [prereqCourses] = await db3.query(
-      `
-      SELECT course_id, course_code
-      FROM course_table
-      WHERE course_code IN (${placeholders})
-      `,
-      prereqCodes,
-    );
-
-    if (!prereqCourses.length) {
-      // Safety: if prereq codes don't map to any course, don't block enrollment
-      return res.json({
-        allowed: true,
-        status: "PREREQ_NOT_FOUND",
-        message:
-          "Prerequisite course codes do not exist in course_table. Enrollment is allowed but please verify your curriculum data.",
-      });
-    }
-
-    let applicablePrereqCourses = prereqCourses;
-
-    if (semester_id && curriculum_id) {
-      const prereqCourseIds = prereqCourses.map((p) => p.course_id);
-      const placeholders2 = prereqCourseIds.map(() => "?").join(", ");
-
-      const [tagRows] = await db3.query(
-        `
-        SELECT course_id, semester_id
-        FROM program_tagging_table
-        WHERE curriculum_id = ? AND course_id IN (${placeholders2})
-        `,
-        [curriculum_id, ...prereqCourseIds],
-      );
-
-      const prereqSemesterMap = new Map(
-        tagRows.map((row) => [row.course_id, row.semester_id]),
-      );
-
-      applicablePrereqCourses = prereqCourses.filter((p) => {
-        const prereqSemesterId = prereqSemesterMap.get(p.course_id);
-        if (!prereqSemesterId) return true; // keep if not tagged
-        return Number(prereqSemesterId) < Number(semester_id);
-      });
-
-      if (applicablePrereqCourses.length === 0) {
-        return res.json({
-          allowed: true,
-          status: "NO_APPLICABLE_PREREQ",
-          message:
-            "Prerequisites are not applicable for the selected semester.",
-        });
-      }
-    }
-
-    const failedPrereq = [];
-    const missingPrereq = [];
-
-    // 4. For each prerequisite, check student's grade history in enrolled_subject
-    for (const prereqCourse of applicablePrereqCourses) {
-      const prereqCourseId = prereqCourse.course_id;
-      const prereqCourseCode = prereqCourse.course_code;
-
-      const [gradeRows] = await db3.query(
-        `
-        SELECT
-          MAX(CASE WHEN en_remarks = 1 THEN 1 ELSE 0 END) AS has_pass,
-          MAX(CASE WHEN en_remarks = 2 THEN 1 ELSE 0 END) AS has_fail
-        FROM enrolled_subject
-        WHERE student_number = ? AND course_id = ?
-        `,
-        [student_number, prereqCourseId],
-      );
-
-      const { has_pass, has_fail } = gradeRows[0];
-
-      // ❌ Has a failing record and never passed
-      if (!has_pass && has_fail) {
-        failedPrereq.push(prereqCourseCode);
-      }
-      // ❌ No pass and no fail → never enrolled or no final passing grade yet
-      else if (!has_pass && !has_fail) {
-        missingPrereq.push(prereqCourseCode);
-      }
-      // ✅ has_pass = 1 → OK
-    }
-
-    // 5. Decide overall result
-    if (failedPrereq.length > 0) {
-      return res.json({
-        allowed: false,
-        status: "FAILED_PREREQ",
-        failedPrereq,
-        missingPrereq, // might also exist if multiple prerequisites
-        message: `Student has FAILED prerequisite(s): ${failedPrereq.join(
-          ", ",
-        )}. They must PASS these before enrolling in ${course_code}.`,
-      });
-    }
-
-    if (missingPrereq.length > 0) {
-      return res.json({
-        allowed: false,
-        status: "MISSING_PREREQ",
-        failedPrereq,
-        missingPrereq,
-        message: `Student must FIRST ENROLL and PASS prerequisite(s): ${missingPrereq.join(
-          ", ",
-        )} before taking ${course_code}.`,
-      });
-    }
-
-    // ✅ All prereqs satisfied
-    return res.json({
-      allowed: true,
-      status: "OK",
-      failedPrereq: [],
-      missingPrereq: [],
-      message: `All prerequisites satisfied for ${course_code}.`,
-    });
-  } catch (err) {
-    console.error("Error in /api/check-prerequisite:", err);
-    return res.status(500).json({
-      allowed: false,
-      status: "SERVER_ERROR",
-      message: err.message,
-    });
-  }
-});
+// âœ… CHECK PREREQUISITE BEFORE ENROLLMENT
 
 app.get("/api/applicant_uploaded_requirements/:person_id", async (req, res) => {
   try {
@@ -16090,7 +13566,7 @@ app.get("/api/applicant_uploaded_requirements/:person_id", async (req, res) => {
 
     res.json(rows);
   } catch (error) {
-    console.error("❌ Error fetching applicant uploaded requirements:", error);
+    console.error("âŒ Error fetching applicant uploaded requirements:", error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
@@ -16113,7 +13589,7 @@ app.get("/api/applicant-documents/:person_id", async (req, res) => {
 
     res.json(rows);
   } catch (error) {
-    console.error("❌ Error loading applicant documents:", error);
+    console.error("âŒ Error loading applicant documents:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -16183,15 +13659,19 @@ app.get("/get_enrollment_statistic", async (req, res) => {
   }
 });
 
-app.get("/get_enrollment_statistic/college/:yearDescription/:userDep", async (req, res) => {
-  try {
-    const { yearDescription, userDep } = req.params;
+app.get(
+  "/get_enrollment_statistic/college/:yearDescription/:userDep",
+  async (req, res) => {
+    try {
+      const { yearDescription, userDep } = req.params;
 
-    if (!yearDescription || !userDep) {
-      return res.status(400).json({ error: "Missing required parameters: year, dprtmnt_id" });
-    }
+      if (!yearDescription || !userDep) {
+        return res
+          .status(400)
+          .json({ error: "Missing required parameters: year, dprtmnt_id" });
+      }
 
-    const query = `
+      const query = `
       SELECT
         SUM(CASE WHEN academicProgram = 2 THEN 1 ELSE 0 END) AS Techvoc,
         SUM(CASE WHEN academicProgram = 1 THEN 1 ELSE 0 END) AS Graduate,
@@ -16206,15 +13686,16 @@ app.get("/get_enrollment_statistic/college/:yearDescription/:userDep", async (re
       WHERE dprtmnt_curriculum_table.dprtmnt_id = ? AND YEAR(person_table.created_at) = ?
     `;
 
-    const [rows] = await db3.query(query, [userDep, yearDescription]);
+      const [rows] = await db3.query(query, [userDep, yearDescription]);
 
-    res.json(rows[0]);
-    console.log("DATA: ", rows[0])
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Server error" });
-  }
-});
+      res.json(rows[0]);
+      console.log("DATA: ", rows[0]);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Server error" });
+    }
+  },
+);
 
 app.get("/get_college_professor_schedule/:dprtmnt_id", async (req, res) => {
   const { dprtmnt_id } = req.params;
@@ -16335,7 +13816,7 @@ app.delete("/person_prof/:person_id", async (req, res) => {
   }
 });
 
-// 🔽 Dropdown: list of professors
+// ðŸ”½ Dropdown: list of professors
 app.get("/prof_dropdown", async (req, res) => {
   try {
     const [rows] = await db3.query(`
@@ -16357,7 +13838,7 @@ app.get("/prof_dropdown", async (req, res) => {
 
 //  NEWLY ADDED API 1/13/2025
 
-// ✅ GET all year levels
+// âœ… GET all year levels
 app.get("/api/year-levels", async (req, res) => {
   try {
     const [rows] = await db3.query(
@@ -16425,7 +13906,7 @@ app.post(
         [full_name, signaturePath],
       );
 
-      // 🔥 IBALIK AGAD SA FRONTEND
+      // ðŸ”¥ IBALIK AGAD SA FRONTEND
       res.json({
         success: true,
         data: {
@@ -16539,7 +14020,7 @@ const convertGradeToNumeric = (grade) => {
   const gradeMap = {
     1.0: 100,
     1.25: 96,
-    0.180: 93,
+    0.18: 93,
     1.75: 90,
     2.0: 87,
     2.25: 84,
@@ -16592,67 +14073,43 @@ app.put("/update_subject", async (req, res) => {
   }
 });
 
-
-app.get("/verify_schedules", async (req, res) => {
-  try {
-    const [rows] = await db.query(`
-      SELECT
-        s.schedule_id,
-        s.schedule_date,
-        s.building_description,
-        s.room_description,
-        s.start_time,
-        s.end_time,
-        s.evaluator,
-        s.room_quota,
-        COUNT(va.applicant_id) AS assigned_count
-      FROM verify_document_schedule s
-      LEFT JOIN verify_applicants va
-        ON s.schedule_id = va.schedule_id
-      GROUP BY s.schedule_id
-      ORDER BY s.schedule_id DESC
-    `);
-
-    res.json(rows);
-  } catch (err) {
-    console.error("❌ Error fetching verify schedules:", err);
-    res.status(500).json({ error: "Database error" });
-  }
-});
-
 io.on("connection", (socket) => {
-  console.log("✅ Socket connected (VERIFY)");
+  console.log("âœ… Socket connected (VERIFY)");
 
-  socket.on("send_verify_schedule_emails", async ({
-    schedule_id,
-    applicant_numbers,
-    subject,
-    message,
-    user_person_id,
-  }) => {
+  socket.on(
+    "send_verify_schedule_emails",
+    async ({
+      schedule_id,
+      applicant_numbers,
+      subject,
+      message,
+      user_person_id,
+    }) => {
+      console.log(applicant_numbers);
 
-    console.log(applicant_numbers);
+      try {
+        if (
+          !schedule_id ||
+          !Array.isArray(applicant_numbers) ||
+          applicant_numbers.length === 0
+        ) {
+          return socket.emit("send_verify_schedule_emails_result", {
+            success: false,
+            error: "No applicants provided.",
+          });
+        }
 
-    try {
+        // OFFICE NAME
+        const [[office]] = await db.query(
+          "SELECT short_term FROM company_settings WHERE id = 1",
+        );
 
-      if (!schedule_id || !Array.isArray(applicant_numbers) || applicant_numbers.length === 0) {
-        return socket.emit("send_verify_schedule_emails_result", {
-          success: false,
-          error: "No applicants provided.",
-        });
-      }
+        const shortTerm = office?.short_term || "EARIST";
+        const officeName = `${shortTerm} - Admission Office`;
 
-
-      // OFFICE NAME
-      const [[office]] = await db.query(
-        "SELECT short_term FROM company_settings WHERE id = 1"
-      );
-
-      const shortTerm = office?.short_term || "EARIST";
-      const officeName = `${shortTerm} - Admission Office`;
-
-      // 🔹 Fetch applicants with email
-      const [rows] = await db.query(`
+        // ðŸ”¹ Fetch applicants with email
+        const [rows] = await db.query(
+          `
       SELECT
         va.applicant_id,
         p.first_name,
@@ -16667,172 +14124,166 @@ io.on("connection", (socket) => {
       WHERE va.schedule_id = ?
       AND va.applicant_id IN (?)
       AND va.email_sent = 0
-    `, [schedule_id, applicant_numbers]);
-
-      if (rows.length === 0) {
-        return socket.emit("send_verify_schedule_emails_result", {
-          success: false,
-          error: "No pending applicants found.",
-        });
-      }
-
-
-
-      const sent = [];
-      const failed = [];
-
-      for (const row of rows) {
-
-        if (!row.emailAddress) {
-          failed.push(row.applicant_id);
-          continue;
-        }
-
-        const personalizedMsg = message
-          .replace("{first_name}", row.first_name || "")
-          .replace("{middle_name}", row.middle_name || "")
-          .replace("{last_name}", row.last_name || "")
-          .replace("{applicant_number}", row.applicant_id);
-
-        try {
-
-          await transporter.sendMail({
-            from: `"${officeName}" <${process.env.EMAIL_USER}>`,
-            to: row.emailAddress,
-            subject,
-            text: personalizedMsg,
-          });
-
-          // ✅ Mark sent
-          await db.query(
-            "UPDATE verify_applicants SET email_sent = 1 WHERE applicant_id = ?",
-            [row.applicant_id]
-          );
-
-          sent.push(row.applicant_id);
-
-        } catch (err) {
-          console.error("Email failed:", err.message);
-
-          await db.query(
-            "UPDATE verify_applicants SET email_sent = -1 WHERE applicant_id = ?",
-            [row.applicant_id]
-          );
-
-          failed.push(row.applicant_id);
-        }
-      }
-
-      // ✅ Return result
-      socket.emit("send_verify_schedule_emails_result", {
-        success: true,
-        sent,
-        failed,
-        message: `Verify emails: Sent=${sent.length}, Failed=${failed.length}`,
-      });
-
-      io.emit("schedule_updated", { schedule_id });
-
-    } catch (err) {
-      console.error("Verify email error:", err);
-
-      socket.emit("send_verify_schedule_emails_result", {
-        success: false,
-        error: "Server error sending verify emails.",
-      });
-    }
-  });
-
-
-  socket.on("update_verify_schedule", async ({ schedule_id, applicant_numbers }) => {
-    try {
-      if (!schedule_id || !applicant_numbers?.length) {
-        return socket.emit("update_verify_schedule_result", {
-          success: false,
-          error: "Schedule ID and applicants required.",
-        });
-      }
-
-      // 🔎 Get quota
-      const [[scheduleInfo]] = await db.query(
-        `SELECT room_quota FROM verify_document_schedule WHERE schedule_id = ?`,
-        [schedule_id]
-      );
-
-      if (!scheduleInfo) {
-        return socket.emit("update_verify_schedule_result", {
-          success: false,
-          error: "Schedule not found.",
-        });
-      }
-
-      const roomQuota = scheduleInfo.room_quota;
-
-      // 🔎 Current count
-      const [[{ currentCount }]] = await db.query(
-        `SELECT COUNT(*) AS currentCount FROM verify_applicants WHERE schedule_id = ?`,
-        [schedule_id]
-      );
-
-      let runningCount = currentCount;
-
-      const assigned = [];
-      const updated = [];
-      const skipped = [];
-
-      for (const applicant_number of applicant_numbers) {
-
-        // 🚫 STOP when full
-        if (runningCount >= roomQuota) {
-          break;
-        }
-
-        const [check] = await db.query(
-          `SELECT schedule_id FROM verify_applicants WHERE applicant_id = ?`,
-          [applicant_number]
+    `,
+          [schedule_id, applicant_numbers],
         );
 
-        if (check.length > 0) {
+        if (rows.length === 0) {
+          return socket.emit("send_verify_schedule_emails_result", {
+            success: false,
+            error: "No pending applicants found.",
+          });
+        }
 
-          if (check[0].schedule_id === schedule_id) {
-            skipped.push(applicant_number);
-          } else {
-            await db.query(
-              `UPDATE verify_applicants SET schedule_id = ? WHERE applicant_id = ?`,
-              [schedule_id, applicant_number]
-            );
-            updated.push(applicant_number);
-            runningCount++; // increase count
+        const sent = [];
+        const failed = [];
+
+        for (const row of rows) {
+          if (!row.emailAddress) {
+            failed.push(row.applicant_id);
+            continue;
           }
 
-        } else {
+          const personalizedMsg = message
+            .replace("{first_name}", row.first_name || "")
+            .replace("{middle_name}", row.middle_name || "")
+            .replace("{last_name}", row.last_name || "")
+            .replace("{applicant_number}", row.applicant_id);
 
-          await db.query(
-            `INSERT INTO verify_applicants (applicant_id, schedule_id, email_sent)
-            VALUES (?, ?, 0)`,
-            [applicant_number, schedule_id]
+          try {
+            await transporter.sendMail({
+              from: `"${officeName}" <${process.env.EMAIL_USER}>`,
+              to: row.emailAddress,
+              subject,
+              text: personalizedMsg,
+            });
+
+            // âœ… Mark sent
+            await db.query(
+              "UPDATE verify_applicants SET email_sent = 1 WHERE applicant_id = ?",
+              [row.applicant_id],
+            );
+
+            sent.push(row.applicant_id);
+          } catch (err) {
+            console.error("Email failed:", err.message);
+
+            await db.query(
+              "UPDATE verify_applicants SET email_sent = -1 WHERE applicant_id = ?",
+              [row.applicant_id],
+            );
+
+            failed.push(row.applicant_id);
+          }
+        }
+
+        // âœ… Return result
+        socket.emit("send_verify_schedule_emails_result", {
+          success: true,
+          sent,
+          failed,
+          message: `Verify emails: Sent=${sent.length}, Failed=${failed.length}`,
+        });
+
+        io.emit("schedule_updated", { schedule_id });
+      } catch (err) {
+        console.error("Verify email error:", err);
+
+        socket.emit("send_verify_schedule_emails_result", {
+          success: false,
+          error: "Server error sending verify emails.",
+        });
+      }
+    },
+  );
+
+  socket.on(
+    "update_verify_schedule",
+    async ({ schedule_id, applicant_numbers }) => {
+      try {
+        if (!schedule_id || !applicant_numbers?.length) {
+          return socket.emit("update_verify_schedule_result", {
+            success: false,
+            error: "Schedule ID and applicants required.",
+          });
+        }
+
+        // ðŸ”Ž Get quota
+        const [[scheduleInfo]] = await db.query(
+          `SELECT room_quota FROM verify_document_schedule WHERE schedule_id = ?`,
+          [schedule_id],
+        );
+
+        if (!scheduleInfo) {
+          return socket.emit("update_verify_schedule_result", {
+            success: false,
+            error: "Schedule not found.",
+          });
+        }
+
+        const roomQuota = scheduleInfo.room_quota;
+
+        // ðŸ”Ž Current count
+        const [[{ currentCount }]] = await db.query(
+          `SELECT COUNT(*) AS currentCount FROM verify_applicants WHERE schedule_id = ?`,
+          [schedule_id],
+        );
+
+        let runningCount = currentCount;
+
+        const assigned = [];
+        const updated = [];
+        const skipped = [];
+
+        for (const applicant_number of applicant_numbers) {
+          // ðŸš« STOP when full
+          if (runningCount >= roomQuota) {
+            break;
+          }
+
+          const [check] = await db.query(
+            `SELECT schedule_id FROM verify_applicants WHERE applicant_id = ?`,
+            [applicant_number],
           );
 
-          assigned.push(applicant_number);
-          runningCount++; // increase count
+          if (check.length > 0) {
+            if (check[0].schedule_id === schedule_id) {
+              skipped.push(applicant_number);
+            } else {
+              await db.query(
+                `UPDATE verify_applicants SET schedule_id = ? WHERE applicant_id = ?`,
+                [schedule_id, applicant_number],
+              );
+              updated.push(applicant_number);
+              runningCount++; // increase count
+            }
+          } else {
+            await db.query(
+              `INSERT INTO verify_applicants (applicant_id, schedule_id, email_sent)
+            VALUES (?, ?, 0)`,
+              [applicant_number, schedule_id],
+            );
+
+            assigned.push(applicant_number);
+            runningCount++; // increase count
+          }
         }
+
+        socket.emit("update_verify_schedule_result", {
+          success: true,
+          assigned,
+          updated,
+          skipped,
+        });
+      } catch (err) {
+        console.error("âŒ Verify assign error:", err);
+        socket.emit("update_verify_schedule_result", {
+          success: false,
+          error: "Failed to assign applicants.",
+        });
       }
-
-      socket.emit("update_verify_schedule_result", {
-        success: true,
-        assigned,
-        updated,
-        skipped,
-      });
-
-    } catch (err) {
-      console.error("❌ Verify assign error:", err);
-      socket.emit("update_verify_schedule_result", {
-        success: false,
-        error: "Failed to assign applicants.",
-      });
-    }
-  });
+    },
+  );
 });
 
 app.post("/api/generate-cor-pdf", async (req, res) => {
@@ -16869,7 +14320,7 @@ app.post("/api/generate-cor-pdf", async (req, res) => {
       console.log(
         "REQUEST FAILED:",
         request.url(),
-        request.failure()?.errorText
+        request.failure()?.errorText,
       );
     });
 
@@ -16898,7 +14349,7 @@ app.post("/api/generate-cor-pdf", async (req, res) => {
             img.onload = resolve;
             img.onerror = resolve;
           });
-        })
+        }),
       );
     });
 
@@ -16906,11 +14357,10 @@ app.post("/api/generate-cor-pdf", async (req, res) => {
       format: "A4",
       printBackground: true,
       preferCSSPageSize: true,
-      scale: 0.90,
+      scale: 0.9,
       margin: {
-     
         right: "10mm",
-    
+
         left: "10mm",
       },
     });
@@ -16924,7 +14374,7 @@ app.post("/api/generate-cor-pdf", async (req, res) => {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      "attachment; filename=certificate.pdf"
+      "attachment; filename=certificate.pdf",
     );
     res.setHeader("Content-Length", pdfBuffer.length);
 
@@ -16944,10 +14394,8 @@ app.post("/api/generate-cor-pdf", async (req, res) => {
   }
 });
 
-
 app.get("/get_students_grouped", async (req, res) => {
   try {
-
     const [rows] = await db3.query(`
  SELECT DISTINCT
 snt.student_number,
@@ -16974,7 +14422,6 @@ ORDER BY dt.dprtmnt_code, pgt.program_code, pt.last_name;
     `);
 
     res.json(rows);
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed fetching students" });
@@ -16985,7 +14432,7 @@ const PORT = process.env.WEB_PORT || 5000;
 const HOST = getDbHost();
 http.listen(PORT, "0.0.0.0", () => {
   const localIP = getDbHost();
-  console.log(`✅ Server running on:`);
+  console.log(`âœ… Server running on:`);
   console.log(`   Local:   http://localhost:${PORT}`);
   console.log(`   Network: http://${localIP}:${PORT}`);
 });
