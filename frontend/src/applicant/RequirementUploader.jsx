@@ -108,7 +108,7 @@ const RequirementUploader = () => {
       const reqRes = await axios.get(`${API_BASE_URL}/requirements`);
 
       const verifiableRequirements = reqRes.data.filter(
-        (r) => r.is_verifiable === 1 && r.category === "Regular"
+        (r) => r.is_verifiable === 1 && r.category === "Main"
       );
 
       // ✅ Compare uploaded vs required
@@ -137,7 +137,7 @@ const RequirementUploader = () => {
   const checkAllRequiredUploads = () => {
 
     const requiredDocs = requirements.filter(
-      (r) => r.category === "Regular"
+      (r) => r.category === "Main"
     );
 
     const uploadedIds = uploads.map((u) => Number(u.requirements_id));
@@ -239,6 +239,11 @@ const RequirementUploader = () => {
       <TableRow key={doc.id}>
         <TableCell sx={{ fontWeight: 'bold', width: '25%', border: `2px solid ${borderColor}` }}>
           {doc.label}
+          {doc.is_optional === 1 && (
+            <span style={{ marginLeft: 2 }}>
+              (Optional)
+            </span>
+          )}
 
           {doc.is_required === 1 && (
             <span style={{ color: "red", marginLeft: 5 }}>*</span>
@@ -521,124 +526,125 @@ const RequirementUploader = () => {
             cooperation.
           </Typography>
         </Box>
-        </Box>
+      </Box>
 
 
-        <Box sx={{ px: 2, marginLeft: "-10px" }}>
-          {Object.entries(
-            requirements.reduce((acc, r) => {
-              const cat = r.category || "Regular";
-              if (!acc[cat]) acc[cat] = [];
-              acc[cat].push(r);
-              return acc;
-            }, {})
-          ).map(([category, docs]) => (
-            <Box key={category} sx={{ mt: 4 }}>
-              <Container>
-                <h1
+      <Box sx={{ px: 2, marginLeft: "-10px" }}>
+        {Object.entries(
+          requirements.reduce((acc, r) => {
+            const cat = r.category || "Main";
+            if (!acc[cat]) acc[cat] = [];
+            acc[cat].push(r);
+            return acc;
+          }, {})
+        ).map(([category, docs]) => (
+          <Box key={category} sx={{ mt: 4 }}>
+            <Container>
+              <h1
+                style={{
+                  fontSize: "45px",
+                  fontWeight: "bold",
+                  textAlign: "center",
+                  color: subtitleColor,
+                  marginTop: "25px",
+                }}
+              >
+                {category === "Medical"
+                  ? "MEDICAL REQUIREMENTS"
+                  : category === "Others"
+                    ? "OTHER REQUIREMENTS"
+                    : "MAIN REQUIREMENTS"}
+              </h1>
+
+              {/* 📝 Show message only below MAIN DOCUMENTS title */}
+              {category !== "Medical" && category !== "Others" && (
+                <div
                   style={{
-                    fontSize: "45px",
-                    fontWeight: "bold",
                     textAlign: "center",
-                    color: subtitleColor,
-                    marginTop: "25px",
+                    fontSize: "18px",
+                    marginTop: "10px",
+                    marginBottom: "30px",
+                    color: "#333",
                   }}
                 >
-                  {category === "Medical"
-                    ? "UPLOAD MEDICAL DOCUMENTS"
-                    : category === "Others"
-                      ? "OTHER REQUIREMENTS"
-                      : "UPLOAD DOCUMENTS"}
-                </h1>
-
-                {/* 📝 Show message only below UPLOAD DOCUMENTS title */}
-                {category !== "Medical" && category !== "Others" && (
-                  <div
-                    style={{
-                      textAlign: "center",
-                      fontSize: "18px",
-                      marginTop: "10px",
-                      marginBottom: "30px",
-                      color: "#333",
-                    }}
-                  >
-                    <div style={{ textAlign: "center" }}>
-                      Complete the applicant form to secure your place for the upcoming academic year at{" "}
-                      {shortTerm ? (
-                        <>
-                          <strong>{shortTerm.toUpperCase()}</strong> <br />
-                          {companyName || ""}
-                        </>
-                      ) : (
-                        companyName || ""
-                      )}
-                      .
-                    </div>
-                  </div>
-                )}
-              </Container>
-
-              <TableContainer
-                component={Paper}
-                sx={{ width: "95%", mt: 2, border: `2px solid ${borderColor}` }}
-              >
-                <Table>
-                  <TableHead sx={{ backgroundColor: settings?.header_color || "#1976d2", border: `2px solid ${borderColor}` }}>
-                    <TableRow>
-                      <TableCell sx={{ color: "white", border: `2px solid ${borderColor}` }}>Document</TableCell>
-                      <TableCell sx={{ color: "white", border: `2px solid ${borderColor}` }}>Upload</TableCell>
-                      <TableCell sx={{ color: "white", border: `2px solid ${borderColor}` }}>Remarks</TableCell>
-                      <TableCell sx={{ color: "white", border: `2px solid ${borderColor}` }}>Preview</TableCell>
-                      <TableCell sx={{ color: "white", border: `2px solid ${borderColor}` }}>Delete</TableCell>
-                    </TableRow>
-                  </TableHead>
-
-                  <TableBody>
-                    {docs.map((doc) =>
-                      renderRow({
-                        id: doc.id,
-                        label: doc.description,
-                        is_required: doc.is_required
-                      })
+                  <div style={{ textAlign: "center" }}>
+                    Complete the applicant form to secure your place for the upcoming academic year at{" "}
+                    {shortTerm ? (
+                      <>
+                        <strong>{shortTerm.toUpperCase()}</strong> <br />
+                        {companyName || ""}
+                      </>
+                    ) : (
+                      companyName || ""
                     )}
+                    .
+                  </div>
+                </div>
+              )}
+            </Container>
 
-                  </TableBody>
+            <TableContainer
+              component={Paper}
+              sx={{ width: "95%", mt: 2, border: `2px solid ${borderColor}` }}
+            >
+              <Table>
+                <TableHead sx={{ backgroundColor: settings?.header_color || "#1976d2", border: `2px solid ${borderColor}` }}>
+                  <TableRow>
+                    <TableCell sx={{ color: "white", border: `2px solid ${borderColor}` }}>Document</TableCell>
+                    <TableCell sx={{ color: "white", border: `2px solid ${borderColor}` }}>Upload</TableCell>
+                    <TableCell sx={{ color: "white", border: `2px solid ${borderColor}` }}>Remarks</TableCell>
+                    <TableCell sx={{ color: "white", border: `2px solid ${borderColor}` }}>Preview</TableCell>
+                    <TableCell sx={{ color: "white", border: `2px solid ${borderColor}` }}>Delete</TableCell>
+                  </TableRow>
+                </TableHead>
 
-                </Table>
-              </TableContainer>
-            </Box>
-          ))}
-        </Box>
+                <TableBody>
+                  {docs.map((doc) =>
+                    renderRow({
+                      id: doc.id,
+                      label: doc.description,
+                      is_required: doc.is_required,
+                      is_optional: doc.is_optional
+                    })
+                  )}
 
-        <Box sx={{ mt: 4, textAlign: "center" }}>
-          <Button
-            variant="contained"
-            size="large"
-            onClick={() => {
-              if (!checkAllRequiredUploads()) return;
+                </TableBody>
 
-              setSnack({
-                open: true,
-                severity: "success",
-                message: "All required documents uploaded successfully.",
-              });
-
-              // example redirect
-              window.location.href = "/applicant_dashboard";
-            }}
-            sx={{
-
-              fontWeight: "bold",
-              padding: "12px 40px",
-              fontSize: "18px",
-            }}
-          >
-            Submit Requirements
-          </Button>
-        </Box>
-
+              </Table>
+            </TableContainer>
+          </Box>
+        ))}
       </Box>
-      );
+
+      <Box sx={{ mt: 4, textAlign: "center" }}>
+        <Button
+          variant="contained"
+          size="large"
+          onClick={() => {
+            if (!checkAllRequiredUploads()) return;
+
+            setSnack({
+              open: true,
+              severity: "success",
+              message: "All required documents uploaded successfully.",
+            });
+
+            // example redirect
+            window.location.href = "/applicant_dashboard";
+          }}
+          sx={{
+
+            fontWeight: "bold",
+            padding: "12px 40px",
+            fontSize: "18px",
+          }}
+        >
+          Submit Requirements
+        </Button>
+      </Box>
+
+    </Box>
+  );
 };
 
-      export default RequirementUploader;
+export default RequirementUploader;

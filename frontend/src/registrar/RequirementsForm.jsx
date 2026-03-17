@@ -16,7 +16,8 @@ import {
   TableHead,
   TableRow,
   TableCell,
-  Paper
+  Paper,
+  TableBody
 
 } from "@mui/material";
 import {
@@ -26,6 +27,7 @@ import {
   DialogActions,
 } from "@mui/material";
 import Unauthorized from "../components/Unauthorized";
+import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import LoadingOverlay from "../components/LoadingOverlay";
 import API_BASE_URL from "../apiConfig";
@@ -128,11 +130,18 @@ const RequirementsForm = () => {
 
 
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [editId, setEditId] = useState(null);
+
+  const [xeroxCopies, setXeroxCopies] = useState(0);
+  const [requiresOriginal, setRequiresOriginal] = useState(false);
+
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("Regular"); // ✅ Default category
+  const [category, setCategory] = useState("Main"); // ✅ Default category
   const [requirements, setRequirements] = useState([]);
   const [shortLabel, setShortLabel] = useState("");
   const [documentStatus, setDocumentStatus] = useState("On Process");
+
 
   // ✅ Snackbar state
   const [snack, setSnack] = useState({
@@ -150,7 +159,13 @@ const RequirementsForm = () => {
   const fetchRequirements = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/requirements`);
-      setRequirements(res.data);
+      const normalized = res.data.map(r => ({
+        ...r,
+        requires_original: r.requires_original === 1,
+        xerox_copies: r.xerox_copies || 0,
+        is_optional: r.is_optional === 1 // ✅ ADD THIS
+      }));
+      setRequirements(normalized);
     } catch (err) {
       console.error("Error fetching requirements:", err);
       setSnack({
@@ -168,6 +183,7 @@ const RequirementsForm = () => {
   // ✅ Handle submission of a new requirement
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!description.trim()) {
       setSnack({
         open: true,
@@ -176,33 +192,57 @@ const RequirementsForm = () => {
       });
       return;
     }
-    if (!category) {
-      setSnack({
-        open: true,
-        message: "Please select a category.",
-        severity: "warning",
-      });
-      return;
-    }
 
     try {
-      await axios.post(`${API_BASE_URL}/requirements`, {
-        requirements_description: description,
-        short_label: shortLabel,
-        category: category,
-        document_status: documentStatus,
-      });
+      if (isEditing) {
+        // ✅ UPDATE
+        await axios.put(`${API_BASE_URL}/requirements/${editId}`, {
+          requirements_description: description,
+          short_label: shortLabel,
+          category: category,
+          xerox_copies: xeroxCopies,
+          is_optional: isOptional,
+        });
+
+        setSnack({
+          open: true,
+          message: "Requirement updated successfully!",
+          severity: "success",
+        });
+
+      } else {
+        // ✅ CREATE
+        await axios.post(`${API_BASE_URL}/requirements`, {
+          requirements_description: description,
+          short_label: shortLabel,
+          category: category,
+          xerox_copies: xeroxCopies,
+          requires_original: requiresOriginal,
+          is_optional: isOptional,
+        });
+
+        setSnack({
+          open: true,
+          message: "Requirement saved successfully!",
+          severity: "success",
+        });
+      }
+
+      // RESET FORM
       setDescription("");
       setShortLabel("");
-      setCategory("Regular");
+      setCategory("Main");
+      setXeroxCopies(0);
+      setRequiresOriginal(false);
+      setIsOptional(false);
+      setIsEditing(false);
+      setEditId(null);
+
+
       fetchRequirements();
-      setSnack({
-        open: true,
-        message: "Requirement saved successfully!",
-        severity: "success",
-      });
+
     } catch (err) {
-      console.error("Error saving requirement:", err);
+      console.error(err);
       setSnack({
         open: true,
         message: "Error saving requirement.",
@@ -211,6 +251,7 @@ const RequirementsForm = () => {
     }
   };
 
+  const [isOptional, setIsOptional] = useState(false);
 
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [requirementToDelete, setRequirementToDelete] = useState(null);
@@ -237,7 +278,7 @@ const RequirementsForm = () => {
 
   // ✅ Group requirements by category
   const groupedRequirements = requirements.reduce((acc, req) => {
-    const cat = req.category || "Regular";
+    const cat = req.category || "Main";
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(req);
     return acc;
@@ -290,54 +331,116 @@ const RequirementsForm = () => {
         </Table>
       </TableContainer>
 
-      <div
-        style={{ border: `2px solid ${borderColor}`, }}
-        className=" bg-gray-50 p-6  shadow-sm max-h-100 overflow-y-auto"
-      >
-      
+      <TableContainer component={Paper} sx={{ border: `2px solid ${borderColor}` }}>
+        <Table stickyHeader size="small">
 
-        {Object.keys(groupedRequirements).map((cat) => (
-          <div key={cat}>
-            <h4 className="font-bold text-maroon mt-3 mb-2">{cat}:</h4>
-            <ul className="space-y-2">
-              {groupedRequirements[cat].map((req) => (
-                <li
-                  key={req.id}
-                  className="bg-white p-3 border border-gray-200 rounded-lg shadow-sm flex justify-between items-center"
+          {/* HEADER */}
+          <TableHead>
+            <TableRow>
+              <TableCell sx={{ border: `2px solid ${borderColor}`, textAlign: "center" }}>#</TableCell>
+              <TableCell sx={{ border: `2px solid ${borderColor}`, textAlign: "center" }}>Description</TableCell>
+              <TableCell sx={{ border: `2px solid ${borderColor}`, textAlign: "center" }}>Short Label</TableCell>
+              <TableCell sx={{ border: `2px solid ${borderColor}`, textAlign: "center" }}>Category</TableCell>
+              <TableCell sx={{ border: `2px solid ${borderColor}`, textAlign: "center" }}>Original Documents</TableCell>
+              <TableCell sx={{ border: `2px solid ${borderColor}`, textAlign: "center" }}>Xerox Copies</TableCell>
+              <TableCell sx={{ border: `2px solid ${borderColor}`, textAlign: "center" }}>Optional</TableCell>
+              <TableCell sx={{ border: `2px solid ${borderColor}`, textAlign: "center" }}>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+
+          {/* BODY */}
+          <TableBody>
+            {requirements.map((req, index) => (
+              <TableRow key={req.id}>
+
+                <TableCell sx={{ border: `2px solid ${borderColor}` }}>
+                  {index + 1}
+                </TableCell>
+
+                {/* DESCRIPTION */}
+                <TableCell sx={{ border: `2px solid ${borderColor}` }}>
+                  {req.description}
+                </TableCell>
+
+                {/* SHORT LABEL */}
+                <TableCell sx={{ border: `2px solid ${borderColor}` }}>
+                  {req.short_label || "N/A"}
+                </TableCell>
+
+                {/* CATEGORY */}
+                <TableCell sx={{ border: `2px solid ${borderColor}` }}>
+                  {req.category || "Main"}
+                </TableCell>
+
+                {/* ORIGINAL */}
+                <TableCell sx={{ border: `2px solid ${borderColor}`, textAlign: "center" }}>
+                  {req.requires_original ? "Yes" : "No"}
+                </TableCell>
+
+                {/* XEROX */}
+                <TableCell sx={{ border: `2px solid ${borderColor}`, textAlign: "center" }}>
+                  {req.xerox_copies > 0
+                    ? `${req.xerox_copies} ${req.xerox_copies > 1 ? "copies" : "copy"}`
+                    : "-"}
+                </TableCell>
+                <TableCell sx={{ border: `2px solid ${borderColor}`, textAlign: "center" }}>
+                  {req.is_optional ? "Yes" : "No"}
+                </TableCell>
+                {/* ACTIONS */}
+                <TableCell
+                  sx={{
+                    border: `2px solid ${borderColor}`,
+                    textAlign: "center",
+                    display: "flex",
+                    gap: "10px",
+                    justifyContent: "center"
+                  }}
                 >
-                  <span className="text-gray-800">{req.description}</span>
                   <Button
                     variant="contained"
                     size="small"
-                    sx={{
-                      backgroundColor: "#9E0000",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "5px",
-                            padding: "8px 14px",
-                            cursor: "pointer",
-                            width: "100px",
-                            height: "40px",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            gap: "5px",
+                    sx={{ backgroundColor: "green" }}
+                    onClick={() => {
+                      // ✅ Populate FORM
+                      setDescription(req.description);
+                      setShortLabel(req.short_label || "");
+                      setCategory(req.category || "Main");
+                      setRequiresOriginal(req.requires_original);
+                      setXeroxCopies(req.xerox_copies || 0);
+
+                      // ✅ Enable edit mode
+                      setIsEditing(true);
+                      setEditId(req.id);
+                      setIsOptional(req.is_optional);
+
+                      // ✅ Scroll to form
+                      window.scrollTo({
+                        top: document.body.scrollHeight,
+                        behavior: "smooth"
+                      });
                     }}
+                  >
+                    Edit
+                  </Button>
+
+                  <Button
+                    variant="contained"
+                    size="small"
+                    sx={{ backgroundColor: "#9E0000" }}
                     onClick={() => {
                       setRequirementToDelete(req);
                       setOpenDeleteDialog(true);
                     }}
                   >
-                     <DeleteIcon fontSize="small" /> Delete
+                    Delete
                   </Button>
+                </TableCell>
 
-
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
       <br />
       <br />
@@ -353,10 +456,10 @@ const RequirementsForm = () => {
       </TableContainer>
 
       <div
-        style={{ border: `2px solid ${borderColor}`, width: "50%"}}
+        style={{ border: `2px solid ${borderColor}`, width: "50%" }}
         className=" bg-gray-50 p-6 shadow-sm"
       >
-    
+
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Typography fontWeight={500}>Requirements Description:</Typography>
@@ -384,18 +487,52 @@ const RequirementsForm = () => {
               label="Category"
               onChange={(e) => setCategory(e.target.value)}
             >
-              <MenuItem value="Regular">Regular Requirements</MenuItem>
+              <MenuItem value="Main">Main Requirements</MenuItem>
               <MenuItem value="Medical">Medical Requirements</MenuItem>
               <MenuItem value="Others">Other Requirements</MenuItem>
             </Select>
           </FormControl>
 
+          <Typography fontWeight={500}>Requires Original:</Typography>
+          <FormControl fullWidth>
+            <InputLabel>Requires Original</InputLabel>
+            <Select
+              value={requiresOriginal ? "Yes" : "No"}
+              label="Requires Original"
+              onChange={(e) => setRequiresOriginal(e.target.value === "Yes")}
+            >
+              <MenuItem value="Yes">Yes</MenuItem>
+              <MenuItem value="No">No</MenuItem>
+            </Select>
+          </FormControl>
+
+          <Typography fontWeight={500}>Xerox Copies:</Typography>
+          <input
+            type="number"
+            value={xeroxCopies}
+            onChange={(e) => setXeroxCopies(Number(e.target.value))}
+            className="p-2 border rounded"
+          />
+
+          <Typography fontWeight={500}>Optional Requirement:</Typography>
+          <FormControl fullWidth>
+            <InputLabel>Optional</InputLabel>
+            <Select
+              value={isOptional ? "Yes" : "No"}
+              label="Optional"
+              onChange={(e) => setIsOptional(e.target.value === "Yes")}
+            >
+              <MenuItem value="Yes">Yes</MenuItem>
+              <MenuItem value="No">No</MenuItem>
+            </Select>
+          </FormControl>
+
           <button
             type="submit"
-            className="w-full py-3 text-white rounded-lg shadow-md hover:bg-red-700 transition duration-300"
-            style={{ backgroundColor: "#1976d2" }}
+            className="w-full py-3 text-white rounded-lg shadow-md transition duration-300"
+            style={{ backgroundColor: isEditing ? "#2e7d32" : "#1976d2" }}
           >
-            Save Requirement
+            {isEditing ? "Update Requirement" : "Save Requirement"}
           </button>
         </form>
       </div>
@@ -435,6 +572,8 @@ const RequirementsForm = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+
 
 
       {/* ✅ Snackbar */}

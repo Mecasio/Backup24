@@ -96,6 +96,7 @@ const studentPayment = require('./routes/payment/studentScholarship');
 const receiptCounter = require('./routes/payment/receiptCounter');
 const matriculationPayment = require('./routes/payment/matriculation');
 const programRoute = require("./routes/system_routes/programRoute");
+const requirementsRoute = require("./routes/system_routes/requirementsRoute");
 const applicantRoutes = require("./routes/reset_password_routes/applicantresetpasswordRoutes");
 const studentRoutes = require("./routes/reset_password_routes/studentresetpasswordRoutes");
 const facultyRoutes = require("./routes/reset_password_routes/facultyresetpasswordRoutes");
@@ -139,6 +140,7 @@ app.use("/api", announcementRoute);
 app.use("/api", programSlots);
 app.use("/", departmentRoute);
 app.use("/", roomRegistrationRoute);
+app.use("/", requirementsRoute);
 
 const uploadPath = path.join(__dirname, "uploads");
 
@@ -1989,68 +1991,6 @@ app.post("/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-// 11:19AM 10-08-2025 --------------- APPLICANT SIDE ----------- THIS PART SHOULD BE NOT HARD CODED -------------- //
-
-// REQUIREMENTS PANEL (UPDATED!) ADMIN
-// ✅ REQUIREMENTS PANEL (UPDATED!) ADMIN
-app.post("/requirements", async (req, res) => {
-  const { requirements_description, category, short_label } = req.body;
-
-  if (!requirements_description) {
-    return res.status(400).json({ error: "Description required" });
-  }
-
-  const query = `
-    INSERT INTO requirements_table
-    (description, short_label, category)
-    VALUES (?, ?, ?)
-  `;
-
-  try {
-    const [result] = await db.execute(query, [
-      requirements_description,
-      short_label || null,
-      category || "Regular",
-    ]);
-
-    res.status(201).json({ requirements_id: result.insertId });
-  } catch (err) {
-    console.error("Insert error:", err);
-    return res.status(500).json({ error: "Failed to save requirement" });
-  }
-});
-
-// GET THE REQUIREMENTS (UPDATED!)
-app.get("/requirements", async (req, res) => {
-  const query = "SELECT * FROM requirements_table";
-
-  try {
-    const [results] = await db.execute(query);
-    res.json(results);
-  } catch (err) {
-    console.error("Fetch error:", err);
-    return res.status(500).json({ error: "Failed to fetch requirements" });
-  }
-});
-
-// DELETE (REQUIREMENT PANEL)
-app.delete("/requirements/:id", async (req, res) => {
-  const { id } = req.params;
-  const query = "DELETE FROM requirements_table WHERE id = ?";
-
-  try {
-    const [result] = await db.execute(query, [id]);
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: "Requirement not found" });
-    }
-
-    res.status(200).json({ message: "Requirement deleted successfully" });
-  } catch (err) {
-    console.error("Delete error:", err);
-    res.status(500).json({ error: "Failed to delete requirement" });
-  }
-});
 
 // ✅ Upload Route
 
@@ -2303,7 +2243,7 @@ app.get("/api/requirements/by-status/:status", async (req, res) => {
   const { status } = req.params;
   try {
     const [rows] = await db.query(
-      "SELECT * FROM requirements_table WHERE category = 'Regular'",
+      "SELECT * FROM requirements_table WHERE category = 'Main'",
       [status],
     );
     res.json(rows);
@@ -2592,7 +2532,7 @@ app.get("/api/verified-exam-applicants", async (req, res) => {
     const [reqRows] = await db.query(`
       SELECT id
       FROM requirements_table
-      WHERE category = 'Regular'
+      WHERE category = 'Main'
       AND is_verifiable = 1
     `);
 
@@ -2602,7 +2542,7 @@ app.get("/api/verified-exam-applicants", async (req, res) => {
     if (requirementIds.length === 0) {
       return res
         .status(400)
-        .json({ error: "No verifiable Regular requirements found." });
+        .json({ error: "No verifiable Main requirements found." });
     }
 
     // 3️⃣ Construct placeholders for the IN clause dynamically
@@ -13546,7 +13486,7 @@ app.get("/api/document_status/check/:applicant_number", async (req, res) => {
     const [reqRows] = await db.query(`
       SELECT id
       FROM requirements_table
-      WHERE category = 'Regular'
+      WHERE category = 'Main'
       AND is_verifiable = 1
     `);
 
@@ -13737,13 +13677,16 @@ app.put("/api/submitted-medical/:upload_id", async (req, res) => {
 app.get("/api/requirements", async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT id, description FROM requirements_table ORDER BY id ASC",
+      `SELECT id, description, short_label, is_optional 
+       FROM requirements_table 
+       ORDER BY id ASC`
     );
     res.json(rows);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch requirements" });
   }
 });
+
 
 app.get("/api/program_evaluation/:student_number", async (req, res) => {
   const { student_number } = req.params;

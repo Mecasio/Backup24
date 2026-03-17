@@ -42,11 +42,39 @@ import CampaignIcon from '@mui/icons-material/Campaign';
 import ScoreIcon from '@mui/icons-material/Score';
 
 const tabs = [
-  { label: "Admission Process for Registrar", to: "/applicant_list_admin", icon: <SchoolIcon fontSize="large" /> },
-  { label: "Applicant Form", to: "/admin_dashboard1", icon: <DashboardIcon fontSize="large" /> },
-  { label: "Student Requirements", to: "/student_requirements", icon: <AssignmentIcon fontSize="large" /> },
-  { label: "Entrance Examination Score", to: "/applicant_scoring", icon: <ScoreIcon fontSize="large" /> },
+   {
+      label: "Admission Process for Registrar",
+      to: "/applicant_list_admin",
+      icon: <SchoolIcon fontSize="large" />,
+    },
+    {
+      label: "Applicant Form",
+      to: "/admin_dashboard1",
+      icon: <DashboardIcon fontSize="large" />,
+    },
+    {
+      label: "Student Requirements",
+      to: "/student_requirements",
+      icon: <AssignmentIcon fontSize="large" />,
+    },
+    {
+      label: "Entrance Exam Schedule Management",
+      to: "/assign_schedule_applicant",
+      icon: <ScheduleIcon fontSize="large" />,
+    },
 
+    {
+      label: "Examination Permit",
+      to: "/registrar_examination_profile",
+      icon: <PersonSearchIcon fontSize="large" />,
+    },
+
+
+    {
+      label: "Entrance Examination Score",
+      to: "/applicant_scoring",
+      icon: <ScoreIcon fontSize="large" />,
+    },
 ];
 
 
@@ -634,10 +662,9 @@ const StudentRequirements = () => {
 
 
 
-  const renderRow = (doc) => {
-    const uploaded = uploads.find((u) => u.description === doc.label);
-
-    const uploadId = uploaded?.upload_id;
+ const renderRow = (doc) => {
+  const uploaded = uploads.find((u) => u.description === doc.label);
+  const uploadId = uploaded?.upload_id;
 
     const buttonStyle = {
       minWidth: 120,
@@ -654,7 +681,15 @@ const StudentRequirements = () => {
 
     return (
       <TableRow key={doc.key}>
-        <TableCell sx={{ fontWeight: 'bold', width: '20%', border: `2px solid ${borderColor}` }}>{doc.label}</TableCell>
+        <TableCell sx={{ fontWeight: 'bold', width: '20%', border: `2px solid ${borderColor}` }}>
+
+          {doc.label}
+          {Number(doc.is_optional) === 1 && (
+               <span style={{ marginLeft: 2 }}>
+              (Optional)
+            </span>
+          )}
+        </TableCell>
         <TableCell sx={{ width: '20%', border: `2px solid ${borderColor}` }}>
           {uploadId && editingRemarkId === uploadId ? (
             // 🔥 TEXTFIELD ONLY
@@ -835,7 +870,7 @@ const StudentRequirements = () => {
                 <Button
                   variant="contained"
                   sx={{ backgroundColor: '#1976d2', color: 'white' }}
-                 href={`${API_BASE_URL}/ApplicantOnlineDocuments/${uploaded.file_path}`}
+                  href={`${API_BASE_URL}/ApplicantOnlineDocuments/${uploaded.file_path}`}
                   target="_blank"
                 >
                   Preview
@@ -872,7 +907,7 @@ const StudentRequirements = () => {
 
   // Put this at the very bottom before the return 
   if (loading || hasAccess === null) {
-   return <LoadingOverlay open={loading} message="Loading..." />;
+    return <LoadingOverlay open={loading} message="Loading..." />;
   }
 
   if (!hasAccess) {
@@ -884,168 +919,252 @@ const StudentRequirements = () => {
 
 
   return (
-      <Box sx={{ height: "calc(100vh - 150px)", overflowY: "auto", paddingRight: 1, backgroundColor: "transparent", mt: 1, padding: 2 }}>
-   
+    <Box sx={{ height: "calc(100vh - 150px)", overflowY: "auto", paddingRight: 1, backgroundColor: "transparent", mt: 1, padding: 2 }}>
 
-        {/* Top header: DOCUMENTS SUBMITTED + Search */}
-        <Box
+
+      {/* Top header: DOCUMENTS SUBMITTED + Search */}
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+
+          mb: 2,
+
+        }}
+      >
+        <Typography
+          variant="h4"
           sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-
-            mb: 2,
-
+            fontWeight: 'bold',
+            color: titleColor,
+            fontSize: '36px',
           }}
         >
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: 'bold',
-              color: titleColor,
-              fontSize: '36px',
-            }}
-          >
-            DOCUMENTS SUBMITTED
-          </Typography>
+          DOCUMENTS SUBMITTED
+        </Typography>
 
-          <TextField
-            variant="outlined"
-            placeholder="Search Applicant Name / Email / Applicant ID"
-            size="small"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+        <TextField
+          variant="outlined"
+          placeholder="Search Applicant Name / Email / Applicant ID"
+          size="small"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          sx={{
+            width: 450,
+            backgroundColor: "#fff",
+            borderRadius: 1,
+            "& .MuiOutlinedInput-root": {
+              borderRadius: "10px",
+            },
+          }}
+          InputProps={{
+            startAdornment: <SearchIcon sx={{ mr: 1, color: "gray" }} />,
+          }}
+        />
+      </Box>
+
+      <hr style={{ border: "1px solid #ccc", width: "100%" }} />
+      <br />
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          flexWrap: "nowrap", // ❌ prevent wrapping
+          width: "100%",
+          mt: 3,
+          gap: 2,
+        }}
+      >
+        {tabs.map((tab, index) => (
+          <Card
+            key={index}
+            onClick={() => handleStepClick(index, tab.to)}
             sx={{
-              width: 450,
-              backgroundColor: "#fff",
-              borderRadius: 1,
-              "& .MuiOutlinedInput-root": {
-                borderRadius: "10px",
+              flex: `1 1 ${100 / tabs.length}%`, // evenly divide row
+              height: 135,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              borderRadius: 2,
+              border: `2px solid ${borderColor}`,
+              backgroundColor: activeStep === index ? settings?.header_color || "#1976d2" : "#E8C999",
+              color: activeStep === index ? "#fff" : "#000",
+              boxShadow:
+                activeStep === index
+                  ? "0px 4px 10px rgba(0,0,0,0.3)"
+                  : "0px 2px 6px rgba(0,0,0,0.15)",
+              transition: "0.3s ease",
+              "&:hover": {
+                backgroundColor: activeStep === index ? "#000000" : "#f5d98f",
               },
             }}
-            InputProps={{
-              startAdornment: <SearchIcon sx={{ mr: 1, color: "gray" }} />,
-            }}
-          />
+          >
+            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <Box sx={{ fontSize: 40, mb: 1 }}>{tab.icon}</Box>
+              <Typography sx={{ fontSize: 14, fontWeight: "bold", textAlign: "center" }}>
+                {tab.label}
+              </Typography>
+            </Box>
+          </Card>
+        ))}
+      </Box>
+
+      <div style={{ height: "40px" }}></div>
+
+
+      {/* Applicant ID and Name */}
+      <TableContainer component={Paper} sx={{ width: '100%', border: `2px solid ${borderColor}` }}>
+        <Table>
+          <TableHead sx={{ backgroundColor: settings?.header_color || "#1976d2", }}>
+            <TableRow>
+              {/* Left cell: Applicant ID */}
+              <TableCell sx={{ color: 'white', fontSize: '20px', fontFamily: 'Arial Black', }}>
+                Applicant ID:&nbsp;
+                <span style={{ fontFamily: "Arial", fontWeight: "normal", textDecoration: "underline" }}>
+                  {selectedPerson?.applicant_number || person?.applicant_number || "N/A"}
+                </span>
+              </TableCell>
+
+              {/* Right cell: Applicant Name, right-aligned */}
+              <TableCell
+                align="right"
+                sx={{ color: 'white', fontSize: '20px', fontFamily: 'Arial Black', }}
+              >
+                Applicant Name:&nbsp;
+                <span style={{ fontFamily: "Arial", fontWeight: "normal", textDecoration: "underline" }}>
+                  {(selectedPerson?.last_name || person?.last_name || "").toUpperCase()},
+                  &nbsp;{(selectedPerson?.first_name || person?.first_name || "").toUpperCase()}{" "}
+                  {(selectedPerson?.middle_name || person?.middle_name || "").toUpperCase()}{" "}
+                  {(selectedPerson?.extension || person?.extension || "").toUpperCase()}
+                </span>
+              </TableCell>
+            </TableRow>
+          </TableHead>
+        </Table>
+      </TableContainer>
+
+
+      <TableContainer component={Paper} sx={{ width: '100%', border: `2px solid ${borderColor}` }}>
+        {/* SHS GWA and Height row below Applicant Name */}
+        <Box sx={{ px: 2, mb: 2, mt: 2 }}>
+          {/* SHS GWA Field */}
+          <Box sx={{ display: "flex", alignItems: "center", mb: 1, }}>
+            <Typography
+              sx={{
+                fontSize: "14px",
+                fontFamily: "Arial Black",
+                minWidth: "100px",
+
+                mr: 1,
+              }}
+            >
+              SHS GWA:
+            </Typography>
+            <TextField
+              size="small"
+              name="generalAverage1"
+              value={person.generalAverage1 || ""}
+              sx={{ width: "250px" }}
+              InputProps={{
+                sx: {
+                  height: 35, // control outer height
+                },
+              }}
+              inputProps={{
+                style: {
+                  padding: "4px 8px", // control inner padding
+                  fontSize: "12px",
+                },
+              }}
+            />
+          </Box>
+
+          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+            <Typography
+              sx={{
+                fontSize: "14px",
+                fontFamily: "Arial Black",
+                minWidth: "100px",
+                mr: 1,
+              }}
+            >
+              Height:
+            </Typography>
+            <TextField
+              size="small"
+              name="height"
+              value={person.height || ""}
+              sx={{ width: "100px" }}
+              InputProps={{
+                sx: {
+                  height: 35,
+                },
+              }}
+              inputProps={{
+                style: {
+                  padding: "4px 8px",
+                  fontSize: "12px",
+                },
+              }}
+            />
+            <div style={{ fontSize: "12px", marginLeft: "10px" }}>cm.</div>
+          </Box>
         </Box>
 
-        <hr style={{ border: "1px solid #ccc", width: "100%" }} />
+
+        <br />
         <br />
 
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            flexWrap: "nowrap", // ❌ prevent wrapping
-            width: "100%",
-            mt: 3,
-            gap: 2,
+            alignItems: "center",
+            mb: 2,
+            px: 2,
           }}
         >
-          {tabs.map((tab, index) => (
-            <Card
-              key={index}
-              onClick={() => handleStepClick(index, tab.to)}
-              sx={{
-                flex: `1 1 ${100 / tabs.length}%`, // evenly divide row
-                height: 135,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                borderRadius: 2,
-                border: `2px solid ${borderColor}`,
-                backgroundColor: activeStep === index ? settings?.header_color || "#1976d2" : "#E8C999",
-                color: activeStep === index ? "#fff" : "#000",
-                boxShadow:
-                  activeStep === index
-                    ? "0px 4px 10px rgba(0,0,0,0.3)"
-                    : "0px 2px 6px rgba(0,0,0,0.15)",
-                transition: "0.3s ease",
-                "&:hover": {
-                  backgroundColor: activeStep === index ? "#000000" : "#f5d98f",
-                },
-              }}
-            >
-              <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <Box sx={{ fontSize: 40, mb: 1 }}>{tab.icon}</Box>
-                <Typography sx={{ fontSize: 14, fontWeight: "bold", textAlign: "center" }}>
-                  {tab.label}
-                </Typography>
-              </Box>
-            </Card>
-          ))}
-        </Box>
-
-        <div style={{ height: "40px" }}></div>
-
-
-        {/* Applicant ID and Name */}
-        <TableContainer component={Paper} sx={{ width: '100%', border: `2px solid ${borderColor}` }}>
-          <Table>
-            <TableHead sx={{ backgroundColor: settings?.header_color || "#1976d2", }}>
-              <TableRow>
-                {/* Left cell: Applicant ID */}
-                <TableCell sx={{ color: 'white', fontSize: '20px', fontFamily: 'Arial Black', }}>
-                  Applicant ID:&nbsp;
-                  <span style={{ fontFamily: "Arial", fontWeight: "normal", textDecoration: "underline" }}>
-                    {selectedPerson?.applicant_number || person?.applicant_number || "N/A"}
-                  </span>
-                </TableCell>
-
-                {/* Right cell: Applicant Name, right-aligned */}
-                <TableCell
-                  align="right"
-                  sx={{ color: 'white', fontSize: '20px', fontFamily: 'Arial Black', }}
-                >
-                  Applicant Name:&nbsp;
-                  <span style={{ fontFamily: "Arial", fontWeight: "normal", textDecoration: "underline" }}>
-                    {(selectedPerson?.last_name || person?.last_name || "").toUpperCase()},
-                    &nbsp;{(selectedPerson?.first_name || person?.first_name || "").toUpperCase()}{" "}
-                    {(selectedPerson?.middle_name || person?.middle_name || "").toUpperCase()}{" "}
-                    {(selectedPerson?.extension || person?.extension || "").toUpperCase()}
-                  </span>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-          </Table>
-        </TableContainer>
-
-
-        <TableContainer component={Paper} sx={{ width: '100%', border: `2px solid ${borderColor}` }}>
-          {/* SHS GWA and Height row below Applicant Name */}
-          <Box sx={{ px: 2, mb: 2, mt: 2 }}>
-            {/* SHS GWA Field */}
-            <Box sx={{ display: "flex", alignItems: "center", mb: 1, }}>
+          {/* Left side: Applying As and Strand */}
+          <Box>
+            {/* Applying As */}
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
               <Typography
                 sx={{
                   fontSize: "14px",
                   fontFamily: "Arial Black",
-                  minWidth: "100px",
+                  minWidth: "120px",
 
-                  mr: 1,
+                  mr: 4.8,
                 }}
               >
-                SHS GWA:
+                Applying As:
               </Typography>
               <TextField
+                disabled
+                select
                 size="small"
-                name="generalAverage1"
-                value={person.generalAverage1 || ""}
-                sx={{ width: "250px" }}
-                InputProps={{
-                  sx: {
-                    height: 35, // control outer height
-                  },
-                }}
-                inputProps={{
-                  style: {
-                    padding: "4px 8px", // control inner padding
-                    fontSize: "12px",
-                  },
-                }}
-              />
+                name="applyingAs"
+                value={person.applyingAs || ""}
+                placeholder="Select applyingAs"
+                sx={{ width: "300px" }}
+                InputProps={{ sx: { height: 35 } }}
+                inputProps={{ style: { padding: "4px 8px", fontSize: "12px" } }}
+              >
+
+                <MenuItem value=""><em>Select Applying</em></MenuItem>
+                <MenuItem value="Senior High School Graduate">Senior High School Graduate</MenuItem>
+                <MenuItem value="Senior High School Graduating Student">Senior High School Graduating Student</MenuItem>
+                <MenuItem value="ALS Passer">ALS (Alternative Learning System) Passer</MenuItem>
+                <MenuItem value="Transferee">Transferee from other University/College</MenuItem>
+                <MenuItem value="Cross Enrolee">Cross Enrolee Student</MenuItem>
+                <MenuItem value="Foreign Applicant">Foreign Applicant/Student</MenuItem>
+                <MenuItem value="Baccalaureate Graduate">Baccalaureate Graduate</MenuItem>
+                <MenuItem value="Master Degree Graduate">Master Degree Graduate</MenuItem>
+              </TextField>
             </Box>
 
             <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -1053,136 +1172,52 @@ const StudentRequirements = () => {
                 sx={{
                   fontSize: "14px",
                   fontFamily: "Arial Black",
-                  minWidth: "100px",
-                  mr: 1,
+                  minWidth: "140px",
+                  mr: 2.3,
                 }}
               >
-                Height:
+                Document Status:
               </Typography>
               <TextField
+                select
                 size="small"
-                name="height"
-                value={person.height || ""}
-                sx={{ width: "100px" }}
-                InputProps={{
-                  sx: {
-                    height: 35,
-                  },
-                }}
-                inputProps={{
-                  style: {
-                    padding: "4px 8px",
-                    fontSize: "12px",
-                  },
-                }}
-              />
-              <div style={{ fontSize: "12px", marginLeft: "10px" }}>cm.</div>
+                name="document_status"
+                value={documentStatus}
+                onChange={handleDocumentStatus}
+                sx={{ width: "300px", mr: 2 }}
+                InputProps={{ sx: { height: 35 } }}
+                inputProps={{ style: { padding: "4px 8px", fontSize: "12px" } }}
+              >
+                <MenuItem value="">
+                  <em>Select Document Status</em>
+                </MenuItem>
+                <MenuItem value="On Process">On Process</MenuItem>
+                <MenuItem value="Documents Verified & ECAT">Documents Verified & ECAT</MenuItem>
+                <MenuItem value="Disapproved / Program Closed">Disapproved / Program Closed</MenuItem>
+
+              </TextField>
+
+              {person?.evaluator?.evaluator_email && (
+                <Typography variant="caption" sx={{ marginLeft: 1 }}>
+                  Status Changed By:{" "}
+                  {person.evaluator.evaluator_email.replace(/@gmail\.com$/i, "")} (
+                  {person.evaluator.evaluator_lname || ""}, {person.evaluator.evaluator_fname || ""}{" "}
+                  {person.evaluator.evaluator_mname || ""}
+                  )
+                  <br />
+                  Updated At: {new Date(person.evaluator.created_at).toLocaleString()}
+                </Typography>
+              )}
+
             </Box>
-          </Box>
-
-
-          <br />
-          <br />
-
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 2,
-              px: 2,
-            }}
-          >
-            {/* Left side: Applying As and Strand */}
-            <Box>
-              {/* Applying As */}
-              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                <Typography
-                  sx={{
-                    fontSize: "14px",
-                    fontFamily: "Arial Black",
-                    minWidth: "120px",
-
-                    mr: 4.8,
-                  }}
-                >
-                  Applying As:
-                </Typography>
-                <TextField
-                  disabled
-                  select
-                  size="small"
-                  name="applyingAs"
-                  value={person.applyingAs || ""}
-                  placeholder="Select applyingAs"
-                  sx={{ width: "300px" }}
-                  InputProps={{ sx: { height: 35 } }}
-                  inputProps={{ style: { padding: "4px 8px", fontSize: "12px" } }}
-                >
-
-                  <MenuItem value=""><em>Select Applying</em></MenuItem>
-                  <MenuItem value="Senior High School Graduate">Senior High School Graduate</MenuItem>
-                  <MenuItem value="Senior High School Graduating Student">Senior High School Graduating Student</MenuItem>
-                  <MenuItem value="ALS Passer">ALS (Alternative Learning System) Passer</MenuItem>
-                  <MenuItem value="Transferee">Transferee from other University/College</MenuItem>
-                  <MenuItem value="Cross Enrolee">Cross Enrolee Student</MenuItem>
-                  <MenuItem value="Foreign Applicant">Foreign Applicant/Student</MenuItem>
-                  <MenuItem value="Baccalaureate Graduate">Baccalaureate Graduate</MenuItem>
-                  <MenuItem value="Master Degree Graduate">Master Degree Graduate</MenuItem>
-                </TextField>
-              </Box>
-
-              <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                <Typography
-                  sx={{
-                    fontSize: "14px",
-                    fontFamily: "Arial Black",
-                    minWidth: "140px",
-                    mr: 2.3,
-                  }}
-                >
-                  Document Status:
-                </Typography>
-                <TextField
-                  select
-                  size="small"
-                  name="document_status"
-                  value={documentStatus}
-                  onChange={handleDocumentStatus}
-                  sx={{ width: "300px", mr: 2 }}
-                  InputProps={{ sx: { height: 35 } }}
-                  inputProps={{ style: { padding: "4px 8px", fontSize: "12px" } }}
-                >
-                  <MenuItem value="">
-                    <em>Select Document Status</em>
-                  </MenuItem>
-                  <MenuItem value="On Process">On Process</MenuItem>
-                  <MenuItem value="Documents Verified & ECAT">Documents Verified & ECAT</MenuItem>
-                  <MenuItem value="Disapproved / Program Closed">Disapproved / Program Closed</MenuItem>
-
-                </TextField>
-
-                {person?.evaluator?.evaluator_email && (
-                  <Typography variant="caption" sx={{ marginLeft: 1 }}>
-                    Status Changed By:{" "}
-                    {person.evaluator.evaluator_email.replace(/@gmail\.com$/i, "")} (
-                    {person.evaluator.evaluator_lname || ""}, {person.evaluator.evaluator_fname || ""}{" "}
-                    {person.evaluator.evaluator_mname || ""}
-                    )
-                    <br />
-                    Updated At: {new Date(person.evaluator.created_at).toLocaleString()}
-                  </Typography>
-                )}
-
-              </Box>
 
 
 
-              {/* Document Type, Remarks, and Document File */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 4, mb: 2 }}>
+            {/* Document Type, Remarks, and Document File */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 4, mb: 2 }}>
 
-                {/* Document Type */}
-                {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, }}>
+              {/* Document Type */}
+              {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, }}>
                   <Typography sx={{ fontSize: "14px", fontFamily: "Arial Black", width: "90px" }}>
                     Document Type:
                   </Typography>
@@ -1212,40 +1247,45 @@ const StudentRequirements = () => {
                 </Box> */}
 
 
-                {/* ---------------------------------------------------------------------- */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography sx={{ fontSize: "14px", fontFamily: "Arial Black", width: "90px" }}>
-                    Document Type:
-                  </Typography>
-                  <TextField
-                    disabled
-                    select
-                    size="small"
-                    placeholder="Select Documents"
-                    value={selectedFiles.requirements_id || ''}
-                    onChange={(e) =>
-                      setSelectedFiles(prev => ({
-                        ...prev,
-                        requirements_id: e.target.value,
-                      }))
-                    }
-                    sx={{ width: 200 }}
-                    InputProps={{ sx: { height: 38 } }}
-                    inputProps={{ style: { padding: "4px 8px", fontSize: "12px" } }}
-                  >
-                    <MenuItem value="">
-                      <em>Select Documents</em>
+              {/* ---------------------------------------------------------------------- */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography sx={{ fontSize: "14px", fontFamily: "Arial Black", width: "90px" }}>
+                  Document Type:
+                </Typography>
+                <TextField
+                  disabled
+                  select
+                  size="small"
+                  placeholder="Select Documents"
+                  value={selectedFiles.requirements_id || ''}
+                  onChange={(e) =>
+                    setSelectedFiles(prev => ({
+                      ...prev,
+                      requirements_id: e.target.value,
+                    }))
+                  }
+                  sx={{ width: 200 }}
+                  InputProps={{ sx: { height: 38 } }}
+                  inputProps={{ style: { padding: "4px 8px", fontSize: "12px" } }}
+                >
+                  <MenuItem value="">
+                    <em>Select Documents</em>
+                  </MenuItem>
+                  {/* ✅ Dynamically map requirements from DB */}
+                  {requirements.map((req) => (
+                    <MenuItem key={req.id} value={req.id}>
+                      {req.description}
+                      {req.is_optional === 1 && (
+                        <span style={{ color: "#999", fontStyle: "italic", marginLeft: 6 }}>
+                          (Optional)
+                        </span>
+                      )}
                     </MenuItem>
-                    {/* ✅ Dynamically map requirements from DB */}
-                    {requirements.map((req) => (
-                      <MenuItem key={req.id} value={req.id}>
-                        {req.description}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Box>
-                {/* ---------------------------------------------------------------------- */}
-                {/*
+                  ))}
+                </TextField>
+              </Box>
+              {/* ---------------------------------------------------------------------- */}
+              {/*
                 Remarks
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Typography sx={{ fontSize: "14px", fontFamily: "Arial Black", width: "80px" }}>
@@ -1277,186 +1317,187 @@ const StudentRequirements = () => {
                   </TextField>
                 </Box>
 */}
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginLeft: "-25px" }}>
-                  <Typography
-                    sx={{
-                      fontSize: "14px",
-                      fontFamily: "Arial Black",
-                      width: "100px",
-                      textAlign: "center"
-                    }}
-                  >
-                    Document File:
-                  </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, marginLeft: "-25px" }}>
+                <Typography
+                  sx={{
+                    fontSize: "14px",
+                    fontFamily: "Arial Black",
+                    width: "100px",
+                    textAlign: "center"
+                  }}
+                >
+                  Document File:
+                </Typography>
 
-                  {/* 📂 Gray Box Always Visible */}
-                  <Box
-                    sx={{
-                      backgroundColor: '#e0e0e0',
-                      padding: '6px 12px',
-                      borderRadius: '4px',
-                      fontSize: '14px',
-                      fontWeight: 'bold',
-                      height: 38,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: 250,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis'
-                    }}
-                    title={selectedFiles.file ? selectedFiles.file.name : "No file selected"}
-                  >
-                    {selectedFiles.file ? selectedFiles.file.name : "No file selected"}
-                  </Box>
-
-                  {/* 📁 Browse Button */}
-                  <Button
-                    disabled
-                    variant="contained"
-                    startIcon={<CloudUploadIcon />}
-                    onClick={() => document.getElementById("fileInput").click()}
-                    sx={{
-                      backgroundColor: '#1976d2',
-                      color: 'white',
-                      textTransform: 'none',
-                      width: 250,
-                      height: 38,
-                      fontSize: "15px",
-                      fontWeight: 'bold',
-                      justifyContent: "center",
-                      '&:hover': { backgroundColor: '#1565c0' }
-                    }}
-                  >
-                    Browse File
-                  </Button>
-
-                  <input
-                    id="fileInput"
-                    type="file"
-                    hidden
-                    accept=".jpg,.jpeg,.png,.pdf"
-                    onChange={(e) =>
-                      setSelectedFiles(prev => ({
-                        ...prev,
-                        file: e.target.files[0],
-                      }))
-                    }
-                  />
-
-                  {/* 🟢 Submit Button */}
-                  <Button
-                    disabled
-                    variant="contained"
-                    color="success"
-                    sx={{
-                      textTransform: "none",
-                      fontWeight: "bold",
-                      height: 38,
-                      width: 250
-                    }}
-                    onClick={() => handleConfirmUpload({ label: "New Document" })}
-
-                  >
-                    Submit Documents
-                  </Button>
+                {/* 📂 Gray Box Always Visible */}
+                <Box
+                  sx={{
+                    backgroundColor: '#e0e0e0',
+                    padding: '6px 12px',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    height: 38,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 250,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                  }}
+                  title={selectedFiles.file ? selectedFiles.file.name : "No file selected"}
+                >
+                  {selectedFiles.file ? selectedFiles.file.name : "No file selected"}
                 </Box>
+
+                {/* 📁 Browse Button */}
+                <Button
+                  disabled
+                  variant="contained"
+                  startIcon={<CloudUploadIcon />}
+                  onClick={() => document.getElementById("fileInput").click()}
+                  sx={{
+                    backgroundColor: '#1976d2',
+                    color: 'white',
+                    textTransform: 'none',
+                    width: 250,
+                    height: 38,
+                    fontSize: "15px",
+                    fontWeight: 'bold',
+                    justifyContent: "center",
+                    '&:hover': { backgroundColor: '#1565c0' }
+                  }}
+                >
+                  Browse File
+                </Button>
+
+                <input
+                  id="fileInput"
+                  type="file"
+                  hidden
+                  accept=".jpg,.jpeg,.png,.pdf"
+                  onChange={(e) =>
+                    setSelectedFiles(prev => ({
+                      ...prev,
+                      file: e.target.files[0],
+                    }))
+                  }
+                />
+
+                {/* 🟢 Submit Button */}
+                <Button
+                  disabled
+                  variant="contained"
+                  color="success"
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: "bold",
+                    height: 38,
+                    width: 250
+                  }}
+                  onClick={() => handleConfirmUpload({ label: "New Document" })}
+
+                >
+                  Submit Documents
+                </Button>
               </Box>
             </Box>
-
-            {/* Right side: ID Photo */}
-            {person.profile_img && (
-              <Box
-                sx={{
-                  width: "2.10in", // standard 2×2 size
-                  height: "2.10in",
-                  border: "1px solid #ccc",
-                  overflow: "hidden",
-                  marginTop: "-250px",
-                  borderRadius: "4px",
-                }}
-              >
-                <img
-                  src={`${API_BASE_URL}/uploads/Applicant1by1/${person.profile_img}`}
-                  alt="Profile"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              </Box>
-            )}
           </Box>
+
+          {/* Right side: ID Photo */}
+          {person.profile_img && (
+            <Box
+              sx={{
+                width: "2.10in", // standard 2×2 size
+                height: "2.10in",
+                border: "1px solid #ccc",
+                overflow: "hidden",
+                marginTop: "-250px",
+                borderRadius: "4px",
+              }}
+            >
+              <img
+                src={`${API_BASE_URL}/uploads/Applicant1by1/${person.profile_img}`}
+                alt="Profile"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            </Box>
+          )}
+        </Box>
+      </TableContainer>
+
+
+
+
+      <>
+        <TableContainer component={Paper} sx={{ width: '100%', border: `2px solid ${borderColor}` }}>
+          <Table>
+            <TableHead sx={{ backgroundColor: settings?.header_color || "#1976d2", }}>
+              <TableRow>
+                <TableCell sx={{ color: 'white', textAlign: "Center", border: `2px solid ${borderColor}` }}>Document Type</TableCell>
+                <TableCell sx={{ color: 'white', textAlign: "Center", border: `2px solid ${borderColor}` }}>Remarks</TableCell>
+                <TableCell sx={{ color: 'white', textAlign: "Center", border: `2px solid ${borderColor}` }}>Status</TableCell>
+                <TableCell sx={{ color: 'white', textAlign: "Center", border: `2px solid ${borderColor}` }}>Date and Time Submitted</TableCell>
+                <TableCell sx={{ color: 'white', textAlign: "Center", border: `2px solid ${borderColor}` }}>User</TableCell>
+                <TableCell sx={{ color: 'white', textAlign: "Center", border: `2px solid ${borderColor}` }}>Action</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody sx={{ border: `2px solid ${borderColor}` }}>
+              {requirements.map((doc) =>
+                renderRow({
+                  label: doc.description,
+                  key: doc.short_label || doc.description.replace(/\s+/g, ""),
+                  id: doc.id,
+                  is_optional: doc.is_optional
+                })
+              )}
+            </TableBody>
+          </Table>
         </TableContainer>
 
-
-
-
-        <>
-          <TableContainer component={Paper} sx={{ width: '100%', border: `2px solid ${borderColor}` }}>
-            <Table>
-              <TableHead sx={{ backgroundColor: settings?.header_color || "#1976d2", }}>
-                <TableRow>
-                  <TableCell sx={{ color: 'white', textAlign: "Center", border: `2px solid ${borderColor}` }}>Document Type</TableCell>
-                  <TableCell sx={{ color: 'white', textAlign: "Center", border: `2px solid ${borderColor}` }}>Remarks</TableCell>
-                  <TableCell sx={{ color: 'white', textAlign: "Center", border: `2px solid ${borderColor}` }}>Status</TableCell>
-                  <TableCell sx={{ color: 'white', textAlign: "Center", border: `2px solid ${borderColor}` }}>Date and Time Submitted</TableCell>
-                  <TableCell sx={{ color: 'white', textAlign: "Center", border: `2px solid ${borderColor}` }}>User</TableCell>
-                  <TableCell sx={{ color: 'white', textAlign: "Center", border: `2px solid ${borderColor}` }}>Action</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody sx={{ border: `2px solid ${borderColor}` }}>
-                {requirements.map((doc) =>
-                  renderRow({
-                    label: doc.description,
-                    key: doc.short_label || doc.description.replace(/\s+/g, ""),
-                    id: doc.id,
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-
-          <Snackbar
-            open={snackbar.open}
-            autoHideDuration={3000}
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={3000}
+          onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        >
+          <Alert
             onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
-            anchorOrigin={{ vertical: "top", horizontal: "center" }}
+            severity={snackbar.severity}
+            sx={{ width: "100%" }}
           >
-            <Alert
-              onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
-              severity={snackbar.severity}
-              sx={{ width: "100%" }}
-            >
-              {snackbar.message}
-            </Alert>
-          </Snackbar>
-          {/* Confirmation Dialog */}
-          <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
-            <DialogTitle>
-              {confirmAction === "upload" ? "Confirm Upload" : "Confirm Deletion"}
-            </DialogTitle>
-            <DialogContent>
-              {confirmAction === "upload" ? (
-                <>Are you sure you want to upload <strong>{targetDoc?.label}</strong>?<br />
-                  Added by: <strong>{localStorage.getItem("username")}</strong></>
-              ) : (
-                <>Are you sure you want to delete
-                  <strong>{targetDoc?.label || targetDoc?.short_label || targetDoc?.file_path}</strong>?<br />
-                  Deleted by: <strong>{localStorage.getItem("username")}</strong></>
-              )}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setConfirmOpen(false)} color="error">
-                Cancel
-              </Button>
-              <Button onClick={handleConfirmAction} color="success" variant="contained">
-                Yes, Confirm
-              </Button>
-            </DialogActions>
-          </Dialog>
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+        {/* Confirmation Dialog */}
+        <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+          <DialogTitle>
+            {confirmAction === "upload" ? "Confirm Upload" : "Confirm Deletion"}
+          </DialogTitle>
+          <DialogContent>
+            {confirmAction === "upload" ? (
+              <>Are you sure you want to upload <strong>{targetDoc?.label}</strong>?<br />
+                Added by: <strong>{localStorage.getItem("username")}</strong></>
+            ) : (
+              <>Are you sure you want to delete
+                <strong>{targetDoc?.label || targetDoc?.short_label || targetDoc?.file_path}</strong>?<br />
+                Deleted by: <strong>{localStorage.getItem("username")}</strong></>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setConfirmOpen(false)} color="error">
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmAction} color="success" variant="contained">
+              Yes, Confirm
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-        </>
+      </>
 
-    
+
     </Box >
   );
 };

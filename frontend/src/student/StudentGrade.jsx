@@ -173,6 +173,21 @@ const StudentGradingPage = () => {
     }
   };
 
+  const convertNumericToGrade = (numeric) => {
+    const grade = parseFloat(numeric);
+
+    if (grade >= 97) return 1.0;
+    if (grade >= 94) return 1.25;
+    if (grade >= 91) return 1.5;
+    if (grade >= 88) return 1.75;
+    if (grade >= 85) return 2.0;
+    if (grade >= 82) return 2.25;
+    if (grade >= 79) return 2.5;
+    if (grade >= 76) return 2.75;
+    if (grade >= 75) return 3.0;
+    return 5.0;
+  };
+
   const viewGrade = async () => {
     try {
       const res = await axios.get(
@@ -489,7 +504,7 @@ const StudentGradingPage = () => {
                           }}
                           align="center"
                         >
-                          {row.final_grade ?? ""}
+                          {convertNumericToGrade(row.final_grade ?? "")}
                         </TableCell>
                         <TableCell
                           style={{ border: `2px solid ${borderColor}` }}

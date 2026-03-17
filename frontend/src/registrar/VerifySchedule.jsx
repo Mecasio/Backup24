@@ -677,7 +677,7 @@ You have been scheduled for document verification with the following details:
 ${reqText}
 
 🕘 Office Hours for Admission Evaluation:
-9:00 AM – 4:00 PM
+8:00 AM – 5:00 PM
 
 ⚠️ Important Reminders:
 • Arrive at least **1 hour before** your scheduled time.

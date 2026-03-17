@@ -156,27 +156,39 @@ const AdminApplicantList = () => {
   };
 
   const tabs = [
-    {
-      label: "Admission Process for Registrar",
-      to: "/applicant_list_admin",
-      icon: <SchoolIcon fontSize="large" />,
-    },
-    {
-      label: "Applicant Form",
-      to: "/admin_dashboard1",
-      icon: <DashboardIcon fontSize="large" />,
-    },
-    {
-      label: "Student Requirements",
-      to: "/student_requirements",
-      icon: <AssignmentIcon fontSize="large" />,
-    },
-
-    {
-      label: "Entrance Examination Score",
-      to: "/applicant_scoring",
-      icon: <ScoreIcon fontSize="large" />,
-    },
+   {
+       label: "Admission Process for Registrar",
+       to: "/applicant_list_admin",
+       icon: <SchoolIcon fontSize="large" />,
+     },
+     {
+       label: "Applicant Form",
+       to: "/admin_dashboard1",
+       icon: <DashboardIcon fontSize="large" />,
+     },
+     {
+       label: "Student Requirements",
+       to: "/student_requirements",
+       icon: <AssignmentIcon fontSize="large" />,
+     },
+     {
+       label: "Entrance Exam Schedule Management",
+       to: "/assign_schedule_applicant",
+       icon: <ScheduleIcon fontSize="large" />,
+     },
+ 
+     {
+       label: "Examination Permit",
+       to: "/registrar_examination_profile",
+       icon: <PersonSearchIcon fontSize="large" />,
+     },
+ 
+ 
+     {
+       label: "Entrance Examination Score",
+       to: "/applicant_scoring",
+       icon: <ScoreIcon fontSize="large" />,
+     },
   ];
 
   const [hasAccess, setHasAccess] = useState(null);

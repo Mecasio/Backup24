@@ -933,7 +933,7 @@ const VerifyDocumentsSchedule = () => {
                                 "Start",
                                 "End",
                                 "Evaluator",
-                                "Quota",
+                                "Room Slot",
                                 "Actions",
                             ].map((header) => (
                                 <TableCell
@@ -1395,14 +1395,14 @@ const VerifyDocumentsSchedule = () => {
                                                 size="small"
                                                 value={evaluator}
                                                 onChange={(e) => setEvaluator(e.target.value)}
-                                                required
+                                                 required
                                             />
                                         </Grid>
 
                                         {/* Room Quota */}
                                         <Grid item xs={12}>
                                             <Typography fontWeight="600" mb={0.5}>
-                                                Room Quota
+                                                Room Slot
                                             </Typography>
                                             <TextField
                                                 fullWidth

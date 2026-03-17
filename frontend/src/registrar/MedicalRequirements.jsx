@@ -607,7 +607,6 @@ const MedicalRequirements = () => {
 
     const renderRow = (doc) => {
         const uploaded = uploads.find((u) => u.description === doc.label);
-
         const uploadId = uploaded?.upload_id;
 
         const buttonStyle = {
@@ -620,7 +619,14 @@ const MedicalRequirements = () => {
 
         return (
             <TableRow key={doc.key}>
-                <TableCell sx={{ fontWeight: 'bold', width: '20%', border: `2px solid ${borderColor}` }}>{doc.label}</TableCell>
+                <TableCell sx={{ fontWeight: 'bold', width: '20%', border: `2px solid ${borderColor}` }}>
+                    {doc.label}
+                    {Number(doc.is_optional) === 1 && (
+                             <span style={{ marginLeft: 2 }}>
+                            (Optional)
+                        </span>
+                    )}
+                </TableCell>
 
                 <TableCell sx={{ width: '20%', border: `2px solid ${borderColor}` }}>
                     {uploadId && editingRemarkId === uploadId ? (
@@ -1205,6 +1211,11 @@ const MedicalRequirements = () => {
                                     {requirements.map((req) => (
                                         <MenuItem key={req.id} value={req.id}>
                                             {req.description}
+                                            {req.is_optional === 1 && (
+                                                <span style={{ color: "#999", fontStyle: "italic", marginLeft: 6 }}>
+                                                    (Optional)
+                                                </span>
+                                            )}
                                         </MenuItem>
                                     ))}
                                 </TextField>
@@ -1373,6 +1384,7 @@ const MedicalRequirements = () => {
                                     label: doc.description,
                                     key: doc.short_label || doc.description.replace(/\s+/g, ""),
                                     id: doc.id,
+                                    is_optional: doc.is_optional
                                 })
                             )}
                         </TableBody>

@@ -801,7 +801,7 @@ const AssignQualifyingInterviewExam = () => {
                                 {[
                                     "#", "Branch", "Date", "Building", "Room",
                                     "Start", "End", "Interviewer",
-                                    "Quota", "Actions"
+                                    "Room Slot", "Actions"
                                 ].map(h => (
                                     <TableCell
                                         key={h}
@@ -1208,7 +1208,7 @@ const AssignQualifyingInterviewExam = () => {
                                         </Grid>
 
                                         <Grid item xs={12}>
-                                            <Typography fontWeight="600" mb={0.5}>Room Quota</Typography>
+                                            <Typography fontWeight="600" mb={0.5}>Room Slot</Typography>
                                             <TextField
                                                 fullWidth
                                                 size="small"

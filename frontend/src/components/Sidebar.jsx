@@ -462,17 +462,19 @@ const SideBar = ({ setIsAuthenticated, profileImage, setProfileImage }) => {
       key: "admissionOffice", label: "Admission Office", icon: AdminPanelSettings, items: [
         { title: "Admission Dashboard", link: "/admission_officer_dashboard", icon: DashboardIcon, page_id: 103 },
         { title: "Applicant List", link: "/applicant_list_admin", icon: ListAltOutlined, page_id: 7 },
-        { title: "Applicant Form", link: "/admin_dashboard1", icon: AccountCircle, page_id: 1 },
+        { title: "Applicant Profile", link: "/admin_dashboard1", icon: AccountCircle, page_id: 1 },
         { title: "Documents Submitted", link: "/student_requirements", icon: Description, page_id: 61 },
+        { title: "Exam Schedule Mgmt", link: "/assign_schedule_applicant", icon: EditCalendar, page_id: 11 },
+        { title: "Examination Permit", link: "/registrar_examination_profile", icon: Badge, page_id: 48 },
         { title: "Entrance Exam Scores", link: "/applicant_scoring", icon: Score, page_id: 8 },
         { title: "Room Registration", link: "/room_registration", icon: MeetingRoom, page_id: 52 },
-        { title: "Verify Documents Schedule", link: "/verify_document_schedule", icon: People, page_id: 115 },
-        { title: "Verify Documents", link: "/verify_schedule", icon: People, page_id: 118 },
-        { title: "Evaluator Schedule Mgmt", link: "/evaluator_schedule_room_list", icon: People, page_id: 119 },
+        // { title: "Verify Documents Schedule", link: "/verify_document_schedule", icon: People, page_id: 115 },
+        // { title: "Verify Documents", link: "/verify_schedule", icon: People, page_id: 118 },
+        // { title: "Evaluator Schedule Mgmt", link: "/evaluator_schedule_room_list", icon: People, page_id: 119 },
         { title: "Exam Room Assignment", link: "/assign_entrance_exam", icon: MeetingRoom, page_id: 9 },
-        { title: "Exam Schedule Mgmt", link: "/assign_schedule_applicant", icon: EditCalendar, page_id: 11 },
+        
         { title: "Proctor's Applicant List", link: "/admission_schedule_room_list", icon: People, page_id: 33 },
-        { title: "Examination Permit", link: "/registrar_examination_profile", icon: Badge, page_id: 48 },
+        
         { title: "Announcement", link: "/announcement_for_admission", icon: Campaign, page_id: 98 },
         { title: "Program Slot Remaining", link: "/program_slot_limit", icon: People, page_id: 110 },
       ]
@@ -483,7 +485,8 @@ const SideBar = ({ setIsAuthenticated, profileImage, setProfileImage }) => {
       key: "enrollmentOfficer", label: "Enrollment Officer", icon: AssignmentIndIcon, items: [
         { title: "Enrollment Dashboard", link: "/enrollment_officer_dashboard", icon: DashboardIcon, page_id: 103 },
         { title: "Applicant List", link: "/applicant_list", icon: ListAlt, page_id: 6 },
-        { title: "Applicant Form", link: "/registrar_dashboard1", icon: AccountCircle, page_id: 43 },
+        { title: "Applicant Profile", link: "/registrar_dashboard1", icon: AccountCircle, page_id: 43 },
+        { title: "Student Profile", link: "/official_student_dashboard1", icon: AccountCircle, page_id: 43 },
         { title: "Documents Submitted", link: "/registrar_requirements", icon: FolderCopy, page_id: 49 },
         { title: "Qualifying / Interview Scores", link: "/qualifying_interview_exam_scores", icon: Assessment, page_id: 37 },
         { title: "Student Numbering", link: "/student_numbering_per_college", icon: FormatListNumbered, page_id: 60 },
@@ -502,7 +505,7 @@ const SideBar = ({ setIsAuthenticated, profileImage, setProfileImage }) => {
       key: "medicalDental", label: "Medical & Dental", icon: MedicalServices, items: [
         { title: "Medical Dashboard", link: "/registrar_dashboard", icon: DashboardIcon, page_id: 101 },
         { title: "Applicant List", link: "/medical_applicant_list", icon: ListAltOutlined, page_id: 24 },
-        { title: "Applicant Form", link: "/medical_dashboard1", icon: AccountCircle, page_id: 25 },
+        { title: "Student Profile", link: "/medical_dashboard1", icon: AccountCircle, page_id: 25 },
         { title: "Documents Submitted", link: "/medical_requirements", icon: Description, page_id: 30 },
         { title: "Medical Requirements", link: "/medical_requirements_form", icon: MedicalServices, page_id: 31 },
         { title: "Dental Assessment", link: "/dental_assessment", icon: HealthAndSafety, page_id: 19 },
@@ -520,7 +523,7 @@ const SideBar = ({ setIsAuthenticated, profileImage, setProfileImage }) => {
         { title: "Student Numbering Panel", link: "/student_numbering", icon: Numbers, page_id: 59 },
         { title: "Course Tagging", link: "/course_tagging", icon: Class, page_id: 17 },
         { title: "Student List", link: "/student_list", icon: ListAltOutlined, page_id: 104 },
-        { title: "Applicant Form", link: "/readmission_dashboard1", icon: AccountCircle, page_id: 38 },
+        { title: "Student Profile", link: "/readmission_dashboard1", icon: AccountCircle, page_id: 38 },
         { title: "Submitted Documents", link: "/submitted_documents", icon: Description, page_id: 106 },
         { title: "Class List", link: "/class_roster", icon: Class, page_id: 15 },
         { title: "Search COR", link: "/search_cor", icon: Search, page_id: 56 },

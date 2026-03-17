@@ -40,7 +40,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import KeyIcon from "@mui/icons-material/Key";
 import API_BASE_URL from "../apiConfig";
 import CampaignIcon from '@mui/icons-material/Campaign';
-
+import ScoreIcon from '@mui/icons-material/Score';
 
 const ApplicantScoring = () => {
 
@@ -120,12 +120,39 @@ const ApplicantScoring = () => {
     };
 
     const tabs = [
+  {
+      label: "Admission Process for Registrar",
+      to: "/applicant_list_admin",
+      icon: <SchoolIcon fontSize="large" />,
+    },
+    {
+      label: "Applicant Form",
+      to: "/admin_dashboard1",
+      icon: <DashboardIcon fontSize="large" />,
+    },
+    {
+      label: "Student Requirements",
+      to: "/student_requirements",
+      icon: <AssignmentIcon fontSize="large" />,
+    },
+    {
+      label: "Entrance Exam Schedule Management",
+      to: "/assign_schedule_applicant",
+      icon: <ScheduleIcon fontSize="large" />,
+    },
 
-        { label: "Admission Process for Registrar", to: "/applicant_list_admin", icon: <SchoolIcon fontSize="large" /> },
-        { label: "Applicant Form", to: "/admin_dashboard1", icon: <DashboardIcon fontSize="large" /> },
-        { label: "Student Requirements", to: "/student_requirements", icon: <AssignmentIcon fontSize="large" /> },
-        { label: "Entrance Examination Score", to: "/applicant_scoring", icon: <PersonSearchIcon fontSize="large" /> },
+    {
+      label: "Examination Permit",
+      to: "/registrar_examination_profile",
+      icon: <PersonSearchIcon fontSize="large" />,
+    },
 
+
+    {
+      label: "Entrance Examination Score",
+      to: "/applicant_scoring",
+      icon: <ScoreIcon fontSize="large" />,
+    },
 
     ];
 
@@ -182,7 +209,7 @@ const ApplicantScoring = () => {
 
 
     const navigate = useNavigate();
-    const [activeStep, setActiveStep] = useState(3);
+    const [activeStep, setActiveStep] = useState(5);
     const [clickedSteps, setClickedSteps] = useState(Array(tabs.length).fill(false));
 
 

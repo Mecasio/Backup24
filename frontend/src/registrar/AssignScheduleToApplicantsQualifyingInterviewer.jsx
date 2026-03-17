@@ -617,6 +617,61 @@ const AssignScheduleToApplicantsInterviewer = () => {
         }
     };
 
+
+    const [requirements, setRequirements] = useState([]);
+
+    const fetchRequirements = async () => {
+        try {
+            const res = await axios.get(`${API_BASE_URL}/requirements`);
+            setRequirements(res.data);
+            return res.data; // 👈 useful for email building
+        } catch (err) {
+            console.error("Failed to fetch requirements:", err);
+            return [];
+        }
+    };
+
+    useEffect(() => {
+        fetchRequirements();
+    }, []);
+    const buildRequirementsText = (requirements) => {
+        if (!requirements || requirements.length === 0) {
+            return "• No requirements listed at this time.";
+        }
+
+        const grouped = requirements.reduce((acc, req) => {
+            const category = req.category || "Other";
+            if (!acc[category]) acc[category] = [];
+            acc[category].push(req);
+            return acc;
+        }, {});
+
+        let text = "";
+
+        Object.entries(grouped).forEach(([category, items]) => {
+            text += `\n${category} Requirements:\n`;
+
+            items.forEach((req) => {
+                let notes = [];
+
+                // ✅ ONLY Xerox (removed original)
+                if (req.xerox_copies > 0) {
+                    notes.push(
+                        `${req.xerox_copies} Xerox copy${req.xerox_copies > 1 ? "s" : ""}`
+                    );
+                }
+
+                let extra = notes.length > 0 ? ` (${notes.join(" + ")})` : "";
+
+                text += `• ${req.description}${extra}\n`;
+            });
+        });
+
+        return text.trim();
+    };
+
+
+
     const handleSendEmails = () => {
         if (!selectedSchedule) {
             setSnack({
@@ -682,6 +737,8 @@ const AssignScheduleToApplicantsInterviewer = () => {
             day: "numeric",
         });
 
+        const reqText = buildRequirementsText(requirements);
+
         setEmailMessage(
             `Dear ${first.last_name || ""}, ${first.first_name || ""} ${first.middle_name || ""},
 
@@ -694,8 +751,13 @@ You are scheduled for an interview on:
 
 Please bring the following requirements:
 
-1. Proceed to the Guidance Office for verification.
-2. Your Admission Form must be signed before taking the exam.
+📄 REQUIRED DOCUMENTS:
+${reqText}
+
+1. Your Enrollment Officer will provide you with the Admission Form Process, including the required signatories.
+
+Reminder:
+Please provide your Enrollment Officer with photocopies of all your submitted online documents.
 
 Thank you and good luck!`
         );
@@ -754,6 +816,9 @@ Thank you and good luck!`
             day: "numeric",
         });
 
+        const reqText = buildRequirementsText(requirements);
+
+
         setSelectedSchedule(targetScheduleId);
         setSelectedApplicants(new Set([applicant.applicant_number]));
 
@@ -769,8 +834,13 @@ You are scheduled for an interview on:
 
 Please bring the following requirements:
 
-1. Proceed to the Guidance Office for verification.
-2. Your Admission Form must be signed before taking the exam.
+📄 REQUIRED DOCUMENTS:
+${reqText}
+
+1. Your Enrollment Officer will provide you with the Admission Form Process, including the required signatories.
+
+Reminder:
+Please provide your Enrollment Officer with photocopies of all your submitted online documents.
 
 Thank you and good luck!`
         );
@@ -1385,7 +1455,7 @@ Thank you and good luck!`
                             variant="contained"
                             color="secondary"
                             onClick={handleAssign40}
-                            sx={{ minWidth: 150 }}
+                            sx={{ minWidth: 150, marginLeft: "15px" }}
                         >
                             Assign Max
                         </Button>

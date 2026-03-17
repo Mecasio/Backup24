@@ -227,11 +227,11 @@ const QualifyingExamScore = () => {
         prev.map((p) =>
           p.person_id === person.person_id
             ? {
-                ...p,
-                qualifying_exam_score: qExam,
-                qualifying_interview_score: qInterview,
-                final_rating: finalRating,
-              }
+              ...p,
+              qualifying_exam_score: qExam,
+              qualifying_interview_score: qInterview,
+              final_rating: finalRating,
+            }
             : p,
         ),
       );
@@ -625,25 +625,25 @@ const QualifyingExamScore = () => {
       .sort((a, b) => {
         const aExam = Number(
           editScores[a.person_id]?.qualifying_exam_score ??
-            a.qualifying_exam_score ??
-            0,
+          a.qualifying_exam_score ??
+          0,
         );
         const aInterview = Number(
           editScores[a.person_id]?.qualifying_interview_score ??
-            a.qualifying_interview_score ??
-            0,
+          a.qualifying_interview_score ??
+          0,
         );
         const aTotal = (aExam + aInterview) / 2;
 
         const bExam = Number(
           editScores[b.person_id]?.qualifying_exam_score ??
-            b.qualifying_exam_score ??
-            0,
+          b.qualifying_exam_score ??
+          0,
         );
         const bInterview = Number(
           editScores[b.person_id]?.qualifying_interview_score ??
-            b.qualifying_interview_score ??
-            0,
+          b.qualifying_interview_score ??
+          0,
         );
         const bTotal = (bExam + bInterview) / 2;
 
@@ -914,13 +914,12 @@ th, td {
             <b style="letter-spacing: 1px; font-size: 20px; font-family: 'Times New Roman', serif;">
               ${firstLine}
             </b>
-            ${
-              secondLine
-                ? `<div style="letter-spacing: 1px; font-size: 20px; font-family: 'Times New Roman', serif;">
+            ${secondLine
+        ? `<div style="letter-spacing: 1px; font-size: 20px; font-family: 'Times New Roman', serif;">
                      <b>${secondLine}</b>
                    </div>`
-                : ""
-            }
+        : ""
+      }
 
             <!-- ✅ Dynamic Address -->
             <div style="font-size: 12px;">${campusAddress}</div>
@@ -948,36 +947,35 @@ th, td {
           </thead>
           <tbody>
             ${filteredPersons
-              .map((person) => {
-                const qualifyingExam =
-                  editScores[person.person_id]?.qualifying_exam_score ??
-                  person.qualifying_exam_score ??
-                  0;
-                const qualifyingInterview =
-                  editScores[person.person_id]?.qualifying_interview_score ??
-                  person.qualifying_interview_score ??
-                  0;
-                const computedTotalAve =
-                  (Number(qualifyingExam) + Number(qualifyingInterview)) / 2;
+        .map((person) => {
+          const qualifyingExam =
+            editScores[person.person_id]?.qualifying_exam_score ??
+            person.qualifying_exam_score ??
+            0;
+          const qualifyingInterview =
+            editScores[person.person_id]?.qualifying_interview_score ??
+            person.qualifying_interview_score ??
+            0;
+          const computedTotalAve =
+            (Number(qualifyingExam) + Number(qualifyingInterview)) / 2;
 
-                return `
+          return `
                 <tr>
                   <td>${person.applicant_number ?? "N/A"}</td>
                   <td class="name-col">${person.last_name}, ${person.first_name} ${person.middle_name ?? ""} ${person.extension ?? ""}</td>
-                  <td>${
-                    curriculumOptions.find(
-                      (item) =>
-                        item.curriculum_id?.toString() ===
-                        person.program?.toString(),
-                    )?.program_code ?? "N/A"
-                  }</td>
+                  <td>${curriculumOptions.find(
+            (item) =>
+              item.curriculum_id?.toString() ===
+              person.program?.toString(),
+          )?.program_code ?? "N/A"
+            }</td>
                   <td>${qualifyingExam}</td>
                   <td>${qualifyingInterview}</td>
                   <td>${computedTotalAve.toFixed(2)}</td>
                   <td>${person.college_approval_status ?? "N/A"}</td>
                 </tr>`;
-              })
-              .join("")}
+        })
+        .join("")}
           </tbody>
         </table>
       </div>
@@ -1035,7 +1033,7 @@ th, td {
             Number(row["Total Ave"]) ||
             (Number(row["Qualifying Exam Score"]) +
               Number(row["Qualifying Interview Score"])) /
-              2,
+            2,
 
           // ⭐ NEW: Status Column from Excel
           status: row["Status"] ? String(row["Status"]).trim() : "Waiting List",
@@ -1502,6 +1500,57 @@ th, td {
 
   const [emailMessage, setEmailMessage] = useState("");
 
+
+  const [requirements, setRequirements] = useState([]);
+
+  const fetchRequirements = async () => {
+    try {
+      const res = await axios.get(`${API_BASE_URL}/requirements`);
+      setRequirements(res.data);
+      return res.data; // 👈 useful for email building
+    } catch (err) {
+      console.error("Failed to fetch requirements:", err);
+      return [];
+    }
+  };
+
+  useEffect(() => {
+    fetchRequirements();
+  }, []);
+
+
+  const buildRequirementsText = (requirements) => {
+    if (!Array.isArray(requirements) || requirements.length === 0) {
+      return "• No requirements listed at this time.";
+    }
+
+    let text = "";
+
+    requirements.forEach((req) => {
+      let notes = [];
+
+      // ✅ PRIORITY: Original overrides Xerox
+      if (req.requires_original) {
+        notes.push("Original");
+      } else if ((req.xerox_copies || 0) > 0) {
+        notes.push(
+          `${req.xerox_copies} Xerox copy${req.xerox_copies > 1 ? "s" : ""
+          }`
+        );
+      }
+
+      if (req.is_optional) {
+        notes.push("Optional");
+      }
+
+      const extra = notes.length > 0 ? ` (${notes.join(" + ")})` : "";
+
+      text += `• ${req.description}${extra}\n`;
+    });
+
+    return text.trim();
+  };
+
   const handleOpenDialog = (applicant = null) => {
     const today = new Date();
     const validUntil = new Date(today);
@@ -1513,6 +1562,9 @@ th, td {
       year: "numeric",
     });
 
+    const reqText = buildRequirementsText(requirements);
+
+
     // ✅ Use dynamic company name from settings
     const companyName = settings?.company_name || "Student Information System";
 
@@ -1523,6 +1575,8 @@ Congratulations on passing the Interview/Qualifying Exam!
 
 Please follow the steps below to complete your Admission process:
 
+
+
 1. Proceed to the Clinic for your Medical Examination.  
    - Bring and present your Admission Form Process so they can verify if you're eligible to take the Medical Examination.
 
@@ -1531,7 +1585,7 @@ Please follow the steps below to complete your Admission process:
 
 3. Please note that failure to comply within 7 days may result in your slot being given to another applicant.
 
-This email is valid until ${formattedValidUntil}.
+You have until ${formattedValidUntil} to complete the admission process.
 
 Thank you, best regards
 `.trim();
@@ -1552,6 +1606,9 @@ Thank you, best regards
       year: "numeric",
     });
 
+    const reqText = buildRequirementsText(requirements);
+
+
     // ✅ Use dynamic company name from settings
     const companyName = settings?.company_name || "Student Information System";
 
@@ -1562,6 +1619,9 @@ Congratulations on passing the Interview/Qualifying Exam!
 
 Please follow the steps below to complete your Admission process:
 
+📄 REQUIRED DOCUMENTS:
+${reqText}
+
 1. Proceed to the Clinic for your Medical Examination.  
    - Bring and present your Admission Form Process so they can verify if you're eligible to take the Medical Examination.
 
@@ -1570,7 +1630,7 @@ Please follow the steps below to complete your Admission process:
 
 3. Please note that failure to comply within 7 days may result in your slot being given to another applicant.
 
-This email is valid until ${formattedValidUntil}.
+You have until ${formattedValidUntil} to complete the admission process.
 
 Thank you, best regards
 `.trim();
@@ -2660,7 +2720,7 @@ Thank you, best regards
                 color="error"
                 onClick={handleUnassignAll}
                 sx={{ minWidth: 150 }}
-              > 
+              >
                 Unassign All
               </Button>
 
@@ -3022,7 +3082,7 @@ Thank you, best regards
                         <Select
                           value={
                             person.college_approval_status &&
-                            person.college_approval_status !== "On Process"
+                              person.college_approval_status !== "On Process"
                               ? person.college_approval_status
                               : "Waiting List" // ✅ default to Waiting List
                           }

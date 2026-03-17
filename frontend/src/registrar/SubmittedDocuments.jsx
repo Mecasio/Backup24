@@ -546,9 +546,9 @@ const MedicalRequirements = () => {
     }
   };
 
-  const renderRow = (doc) => {
-    const uploaded = uploads.find((u) => u.description === doc.label);
-    const uploadId = uploaded?.upload_id;
+ const renderRow = (doc) => {
+  const uploaded = uploads.find((u) => u.description === doc.label);
+  const uploadId = uploaded?.upload_id;
 
     const buttonStyle = {
       minWidth: 120,
@@ -568,6 +568,11 @@ const MedicalRequirements = () => {
           }}
         >
           {doc.label}
+          {Number(doc.is_optional) === 1 && (
+                <span style={{ marginLeft: 2 }}>
+              (Optional)
+            </span>
+          )}
         </TableCell>
 
         <TableCell sx={{ width: "20%", border: `2px solid ${borderColor}` }}>
@@ -715,14 +720,14 @@ const MedicalRequirements = () => {
         <TableCell style={{ border: `2px solid ${borderColor}` }}>
           {selectedPerson?.student_number || person?.student_number
             ? `[${selectedPerson?.student_number || person?.student_number}] ${(
-                selectedPerson?.last_name || person?.last_name || ""
-              ).toUpperCase()}, ${(
-                selectedPerson?.first_name || person?.first_name || ""
-              ).toUpperCase()} ${(
-                selectedPerson?.middle_name || person?.middle_name || ""
-              ).toUpperCase()} ${(
-                selectedPerson?.extension || person?.extension || ""
-              ).toUpperCase()}`
+              selectedPerson?.last_name || person?.last_name || ""
+            ).toUpperCase()}, ${(
+              selectedPerson?.first_name || person?.first_name || ""
+            ).toUpperCase()} ${(
+              selectedPerson?.middle_name || person?.middle_name || ""
+            ).toUpperCase()} ${(
+              selectedPerson?.extension || person?.extension || ""
+            ).toUpperCase()}`
             : ""}
         </TableCell>
 
@@ -1134,6 +1139,11 @@ const MedicalRequirements = () => {
                   {requirements.map((req) => (
                     <MenuItem key={req.id} value={req.id}>
                       {req.description}
+                      {req.is_optional === 1 && (
+                        <span style={{ color: "#999", fontStyle: "italic", marginLeft: 6 }}>
+                          (Optional)
+                        </span>
+                      )}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -1282,6 +1292,7 @@ const MedicalRequirements = () => {
                   label: doc.description,
                   key: doc.short_label || doc.description.replace(/\s+/g, ""),
                   id: doc.id,
+                  is_optional: doc.is_optional
                 })
               )}
             </TableBody>
