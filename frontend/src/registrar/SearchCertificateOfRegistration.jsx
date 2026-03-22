@@ -26,7 +26,7 @@ import ConfirmationNumberIcon from "@mui/icons-material/ConfirmationNumber";
 import GradeIcon from "@mui/icons-material/Grade";
 import MenuBookIcon from "@mui/icons-material/MenuBook";
 import SchoolIcon from "@mui/icons-material/School";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import API_BASE_URL from "../apiConfig";
 
 import UploadFileIcon from '@mui/icons-material/UploadFile';
@@ -128,6 +128,7 @@ const SearchCertificateOfRegistration = () => {
 
 
   const navigate = useNavigate();
+  const location = useLocation();
   const isTabNavigationRef = useRef(false);
   const REGISTRAR_COR_SEARCH_KEY = "registrar_cor_search_student_number";
 
@@ -167,6 +168,7 @@ const SearchCertificateOfRegistration = () => {
     if (!debouncedStudentNumber || debouncedStudentNumber.length < 5) {
       setSelectedStudent(null);
       setStudentData([]);
+      setStudentDetails([]);
       return;
     }
 
@@ -301,6 +303,29 @@ const SearchCertificateOfRegistration = () => {
 
 
   useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const studentNumberFromUrl = queryParams.get("student_number")?.trim() || "";
+    const storedStudentNumber =
+      sessionStorage.getItem("edit_student_number")?.trim() || "";
+    const nextStudentNumber =
+      studentNumberFromUrl ||
+      sessionStorage.getItem(REGISTRAR_COR_SEARCH_KEY) ||
+      localStorage.getItem("studentNumberForCOR") ||
+      storedStudentNumber;
+
+    if (
+      nextStudentNumber &&
+      nextStudentNumber !== "undefined" &&
+      nextStudentNumber !== "null" &&
+      nextStudentNumber !== studentNumber
+    ) {
+      setStudentNumber(nextStudentNumber);
+      sessionStorage.setItem(REGISTRAR_COR_SEARCH_KEY, nextStudentNumber);
+      sessionStorage.setItem("edit_student_number", nextStudentNumber);
+    }
+  }, [location.search]);
+
+  useEffect(() => {
     const trimmed = studentNumber.trim();
     if (trimmed.length < 5) {
       setDebouncedStudentNumber("");
@@ -316,6 +341,8 @@ const SearchCertificateOfRegistration = () => {
 
   useEffect(() => {
     if (studentNumber) {
+      sessionStorage.setItem(REGISTRAR_COR_SEARCH_KEY, studentNumber.trim());
+      sessionStorage.setItem("edit_student_number", studentNumber.trim());
       localStorage.removeItem("studentNumberForCOR");
     }
   }, [studentNumber]);

@@ -650,7 +650,7 @@ const ProgramTagging = () => {
               !yearDesc.includes(q) &&
               !programCode.includes(q) &&
               !programDesc.includes(q) &&
-              !major.includes(q)
+              !major.includes(q) && !getBranchLabel(item.components).toLowerCase().includes(q)
             ) {
               return false;
             }
@@ -667,6 +667,11 @@ const ProgramTagging = () => {
     const startYear = Number(yearDesc);
     if (isNaN(startYear)) return yearDesc;
     return `${startYear} - ${startYear + 1}`;
+  };
+
+  const getBranchLabel = (branchId) => {
+      const branch = branches.find((item) => Number(item.id) === Number(branchId));
+      return branch?.branch || "—";
   };
 
   if (loading || hasAccess === null) {
@@ -836,12 +841,7 @@ const ProgramTagging = () => {
                   <option key={curriculum.curriculum_id} value={curriculum.curriculum_id}>
                     {formatSchoolYear(curriculum.year_description)}:
                     {` (${curriculum.program_code}) ${curriculum.program_description}`}
-                    {curriculum.major ? ` (${curriculum.major})` : ""} {`${curriculum.components} (${Number(curriculum.components) === 1
-                      ? "Manila Campus"
-                      : Number(curriculum.components) === 2
-                        ? "Cavite Campus"
-                        : "â€”"
-                      })`}
+                    {curriculum.major ? ` (${curriculum.major})` : ""} {`${curriculum.components} (${getBranchLabel(curriculum.components)})`}
                   </option>
                 ))}
             </select>
@@ -1645,3 +1645,4 @@ const styles = {
 };
 
 export default ProgramTagging;
+

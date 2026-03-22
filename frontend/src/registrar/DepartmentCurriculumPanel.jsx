@@ -50,6 +50,7 @@ export default function DepartmentCurriculumPanel() {
   const [companyName, setCompanyName] = useState("");
   const [shortTerm, setShortTerm] = useState("");
   const [campusAddress, setCampusAddress] = useState("");
+  const [branches, setBranches] = useState([]);
 
   useEffect(() => {
     if (!settings) return;
@@ -73,6 +74,21 @@ export default function DepartmentCurriculumPanel() {
     if (settings.company_name) setCompanyName(settings.company_name);
     if (settings.short_term) setShortTerm(settings.short_term);
     if (settings.campus_address) setCampusAddress(settings.campus_address);
+    if (settings?.branches) {
+      try {
+        const parsed =
+          typeof settings.branches === "string"
+            ? JSON.parse(settings.branches)
+            : settings.branches;
+        setBranches(parsed);
+      } catch (err) {
+        console.error("Failed to parse branches:", err);
+        setBranches([]);
+      }
+    } else {
+      setBranches([]);
+    }
+
 
   }, [settings]);
 
@@ -211,6 +227,11 @@ export default function DepartmentCurriculumPanel() {
   useEffect(() => {
     fetchProgram();
   }, []);
+
+  const getBranchLabel = (branchId) => {
+    const branch = branches.find((item) => Number(item.id) === Number(branchId));
+    return branch?.branch || "—";
+  };
 
 
   async function fetchCurriculums() {
@@ -394,12 +415,7 @@ export default function DepartmentCurriculumPanel() {
                     <MenuItem key={c.curriculum_id} value={c.curriculum_id}>
                       {formatSchoolYear(c.year_description)}:{" "}
                       {`(${c.program_code}): ${c.program_description}${c.major ? ` (${c.major})` : ""
-                        } (${Number(c.components) === 1
-                          ? "Manila Campus"
-                          : Number(c.components) === 2
-                            ? "Cavite Campus"
-                            : "â€”"
-                        })`}
+                        } (${getBranchLabel(c.components)})`}
                     </MenuItem>
                   );
                 })}
@@ -577,3 +593,4 @@ export default function DepartmentCurriculumPanel() {
     </Box>
   );
 }
+

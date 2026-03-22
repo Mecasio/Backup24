@@ -34,6 +34,7 @@ const CurriculumPanel = () => {
   const [companyName, setCompanyName] = useState("");
   const [shortTerm, setShortTerm] = useState("");
   const [campusAddress, setCampusAddress] = useState("");
+  const [branches, setBranches] = useState([]);
 
   useEffect(() => {
     if (!settings) return;
@@ -57,6 +58,21 @@ const CurriculumPanel = () => {
     if (settings.company_name) setCompanyName(settings.company_name);
     if (settings.short_term) setShortTerm(settings.short_term);
     if (settings.campus_address) setCampusAddress(settings.campus_address);
+    if (settings?.branches) {
+      try {
+        const parsed =
+          typeof settings.branches === "string"
+            ? JSON.parse(settings.branches)
+            : settings.branches;
+        setBranches(parsed);
+      } catch (err) {
+        console.error("Failed to parse branches:", err);
+        setBranches([]);
+      }
+    } else {
+      setBranches([]);
+    }
+
 
   }, [settings]);
 
@@ -160,6 +176,11 @@ const CurriculumPanel = () => {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const getBranchLabel = (branchId) => {
+    const branch = branches.find((item) => Number(item.id) === Number(branchId));
+    return branch?.branch || "�";
   };
 
   const handleChange = (e) => {
@@ -389,12 +410,7 @@ const CurriculumPanel = () => {
     const code = (program.program_code || "").toLowerCase();
     const description = (program.program_description || "").toLowerCase();
     const major = (program.major || "").toLowerCase();
-    const campus =
-      Number(program.components) === 1
-        ? "manila campus"
-        : Number(program.components) === 2
-          ? "cavite campus"
-          : "";
+    const campus = getBranchLabel(program.components).toLowerCase();
 
     return (
       schoolYear.includes(search) ||
@@ -693,12 +709,7 @@ const CurriculumPanel = () => {
                 <TableCell sx={{ border: `2px solid ${borderColor}` }}>
                   <Typography fontWeight={500}>
 
-                    {`(${item.program_code}): ${item.program_description} (${Number(item.components) === 1
-                      ? "Manila Campus"
-                      : Number(item.components) === 2
-                        ? "Cavite Campus"
-                        : "—"
-                      })`}
+                    {`(${item.program_code}): ${item.program_description} (${getBranchLabel(item.components)})`}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {item.major ? ` (${item.major})` : ""}
@@ -970,12 +981,7 @@ const CurriculumPanel = () => {
                   <option key={program.program_id} value={program.program_id}>
                     {formatSchoolYear(program.year_description)}:{" "}
                     {`(${program.program_code}): ${program.program_description}${program.major ? ` (${program.major})` : ""
-                      } (${Number(program.components) === 1
-                        ? "Manila Campus"
-                        : Number(program.components) === 2
-                          ? "Cavite Campus"
-                          : "—"
-                      })`}
+                      } (${getBranchLabel(program.components)})`}
                   </option>
                 ))}
               </select>
@@ -1063,3 +1069,4 @@ const CurriculumPanel = () => {
 };
 
 export default CurriculumPanel;
+

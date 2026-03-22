@@ -254,6 +254,11 @@ const ProgramUnit = () => {
         return `${startYear} - ${startYear + 1}`;
     };
 
+    const getBranchLabel = (branchId) => {
+        const branch = branches.find((item) => Number(item.id) === Number(branchId));
+        return branch?.branch || "—";
+    };
+
     const [filteredPrograms, setFilteredPrograms] = useState([]);
 
     const [selectedCampus, setSelectedCampus] = useState("");
@@ -288,7 +293,7 @@ const ProgramUnit = () => {
                 item.program_code?.toLowerCase().includes(search) ||
                 item.program_description?.toLowerCase().includes(search) ||
                 item.major?.toLowerCase().includes(search) ||
-                item.year_description?.toString().includes(search)
+                item.year_description?.toString().includes(search) || getBranchLabel(item.components).toLowerCase().includes(search)
             );
         });
 
@@ -448,12 +453,7 @@ const ProgramUnit = () => {
                             <MenuItem key={c.curriculum_id} value={c.curriculum_id}>
                                 {formatSchoolYear(c.year_description)}:{" "}
                                 {`(${c.program_code}): ${c.program_description}${c.major ? ` (${c.major})` : ""
-                                    } (${Number(c.components) === 1
-                                        ? "Manila Campus"
-                                        : Number(c.components) === 2
-                                            ? "Cavite Campus"
-                                            : "â€”"
-                                    })`}
+                                    } (${getBranchLabel(c.components)})`}
                             </MenuItem>
                         ))}
 
@@ -751,3 +751,5 @@ const ProgramUnit = () => {
 };
 
 export default ProgramUnit;
+
+

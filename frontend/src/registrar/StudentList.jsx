@@ -293,10 +293,23 @@ const StudentList = () => {
         try {
             setLoading(true);
             const res = await fetch(`${API_BASE_URL}/api/all-students`);
+            const contentType = res.headers.get("content-type") || "";
+
+            if (!res.ok || !contentType.includes("application/json")) {
+                const body = await res.text();
+                throw new Error(
+                    `Unexpected response from /api/all-students (${res.status} ${res.statusText}): ${body.slice(0, 120)}`
+                );
+            }
+
             const data = await res.json();
 
             // Merge documents by student_number + year_id + semester_id
             const mergedData = data.reduce((acc, doc) => {
+                const nextDocument =
+                    doc.requirements_id && doc.description
+                        ? { id: doc.requirements_id, description: doc.description }
+                        : null;
                 const existing = acc.find(
                     (p) =>
                         String(p.student_number) === String(doc.student_number) &&
@@ -304,7 +317,12 @@ const StudentList = () => {
                         String(p.semester_id ?? "") === String(doc.semester_id ?? "")
                 );
                 if (existing) {
-                    existing.documents.push({ id: doc.requirements_id, description: doc.description });
+                    if (
+                        nextDocument &&
+                        !existing.documents.some((item) => String(item.id) === String(nextDocument.id))
+                    ) {
+                        existing.documents.push(nextDocument);
+                    }
                     // Keep the first non-empty academic values seen across duplicate rows
                     existing.year_id = existing.year_id ?? doc.year_id;
                     existing.semester_id = existing.semester_id ?? doc.semester_id;
@@ -315,7 +333,7 @@ const StudentList = () => {
                 } else {
                     acc.push({
                         ...doc,
-                        documents: [{ id: doc.requirements_id, description: doc.description }],
+                        documents: nextDocument ? [nextDocument] : [],
                     });
                 }
                 return acc;

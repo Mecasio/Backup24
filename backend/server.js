@@ -122,7 +122,9 @@ const registerStudent = require("./routes/student_routes/registerStudent");
 const curriculum = require("./routes/system_routes/curriculumRoute");
 const schoolYear = require("./routes/system_routes/schoolYear");
 const statistics = require("./routes/system_routes/statistics");
+const evaluation = require("./routes/system_routes/evaluation");
 
+app.use("/", evaluation);
 app.use("/", statistics);
 app.use("/", schoolYear);
 app.use("/", curriculum);
@@ -9950,6 +9952,87 @@ app.get("/api/student_upload_documents_data", async (req, res) => {
     res.status(200).json(persons);
   } catch (error) {
     console.error(" Error fetching upload documents:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+app.get("/api/all-students", async (req, res) => {
+  try {
+    const [rows] = await db3.query(`
+      SELECT DISTINCT
+        pt.person_id,
+        pt.campus,
+        pt.first_name,
+        pt.middle_name,
+        pt.last_name,
+        pt.extension,
+        pt.birthOfDate,
+        pt.gender,
+        snt.student_number,
+        ct.curriculum_id,
+        pgt.program_id,
+        pgt.program_description,
+        pgt.program_code,
+        dpt.dprtmnt_id,
+        dpt.dprtmnt_name,
+        dpt.dprtmnt_code,
+        sst.year_level_id,
+        ylt.year_level_description,
+        asyt.year_id,
+        asyt.semester_id,
+        yt.year_description,
+        smt.semester_description,
+        remark_summary.en_remarks,
+        rt.id AS requirements_id,
+        rt.description
+      FROM student_numbering_table AS snt
+      INNER JOIN person_table AS pt
+        ON snt.person_id = pt.person_id
+      LEFT JOIN student_curriculum_table AS sct
+        ON snt.id = sct.student_numbering_id
+      LEFT JOIN curriculum_table AS ct
+        ON sct.curriculum_id = ct.curriculum_id
+      LEFT JOIN program_table AS pgt
+        ON ct.program_id = pgt.program_id
+      LEFT JOIN dprtmnt_curriculum_table AS dct
+        ON ct.curriculum_id = dct.curriculum_id
+      LEFT JOIN dprtmnt_table AS dpt
+        ON dct.dprtmnt_id = dpt.dprtmnt_id
+      LEFT JOIN student_status_table AS sst
+        ON snt.student_number = sst.student_number
+      LEFT JOIN year_level_table AS ylt
+        ON sst.year_level_id = ylt.year_level_id
+      LEFT JOIN active_school_year_table AS asyt
+        ON sst.active_school_year_id = asyt.id
+      LEFT JOIN year_table AS yt
+        ON asyt.year_id = yt.year_id
+      LEFT JOIN semester_table AS smt
+        ON asyt.semester_id = smt.semester_id
+      LEFT JOIN (
+        SELECT
+          student_number,
+          active_school_year_id,
+          MAX(en_remarks) AS en_remarks
+        FROM enrolled_subject
+        GROUP BY student_number, active_school_year_id
+      ) AS remark_summary
+        ON remark_summary.student_number = snt.student_number
+       AND remark_summary.active_school_year_id = sst.active_school_year_id
+      LEFT JOIN requirement_uploads AS ru
+        ON ru.person_id = pt.person_id
+      LEFT JOIN requirements_table AS rt
+        ON ru.requirements_id = rt.id
+      WHERE snt.student_number IS NOT NULL
+      ORDER BY
+        asyt.year_id ASC,
+        asyt.semester_id ASC,
+        snt.student_number ASC,
+        rt.id ASC
+    `);
+
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error("Error fetching all students:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });

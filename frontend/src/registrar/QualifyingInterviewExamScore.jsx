@@ -196,7 +196,19 @@ const QualifyingExamScore = () => {
     };
   };
 
+  const isInterviewEmailLocked = (person) =>
+    Number(person?.applicant_interview_status) === 1;
+
   const saveSingleRow = async (person) => {
+    if (isInterviewEmailLocked(person)) {
+      setSnack({
+        open: true,
+        message: "Scores can no longer be changed after the email has been sent.",
+        severity: "warning",
+      });
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -252,7 +264,7 @@ const QualifyingExamScore = () => {
     try {
       setLoading(true);
 
-      for (const person of persons) {
+      for (const person of persons.filter((p) => !isInterviewEmailLocked(p))) {
         const payload = buildPayload(person);
         await axios.post(`${API_BASE_URL}/api/interview/save`, payload);
       }
@@ -421,9 +433,7 @@ const QualifyingExamScore = () => {
 
       const data = Array.isArray(res.data) ? res.data : [];
 
-      const withAssignedFlag = data
-        .filter((p) => Number(p.applicant_interview_status) !== 1)
-        .map((p) => ({
+      const withAssignedFlag = data.map((p) => ({
           ...p,
           assigned: false,
         }));
@@ -755,9 +765,7 @@ const QualifyingExamScore = () => {
         .get(`${API_BASE_URL}/api/applicants-with-number`)
         .then((res) =>
           setPersons(
-            (Array.isArray(res.data) ? res.data : []).filter(
-              (p) => Number(p.applicant_interview_status) !== 1,
-            ),
+            Array.isArray(res.data) ? res.data : [],
           ),
         )
         .catch((err) => {
@@ -1103,6 +1111,10 @@ th, td {
   const debounceTimers = {};
 
   const handleScoreChange = (person, field, value) => {
+    if (isInterviewEmailLocked(person)) {
+      return;
+    }
+
     // 1️⃣ Update local state for instant UI feedback
     setEditScores((prev) => ({
       ...prev,
@@ -1683,6 +1695,7 @@ Thank you, best regards
     }
 
     let successCount = 0;
+    const successfulApplicantNumbers = new Set();
 
     for (const applicant of targets) {
       // ✅ Try all possible email fields
@@ -1712,6 +1725,7 @@ Thank you, best regards
         );
 
         successCount++;
+        successfulApplicantNumbers.add(applicant.applicant_number);
       } catch (err) {
         console.error(`❌ Failed for ${applicant.applicant_number}`, err);
         // Continue to next instead of breaking everything
@@ -1721,10 +1735,11 @@ Thank you, best regards
       await new Promise((res) => setTimeout(res, 200));
     }
 
-    // remove the successfully emailed applicants
     setPersons((prev) =>
-      prev.filter(
-        (p) => !targets.some((t) => t.applicant_number === p.applicant_number),
+      prev.map((p) =>
+        successfulApplicantNumbers.has(p.applicant_number)
+          ? { ...p, applicant_interview_status: 1 }
+          : p,
       ),
     );
 
@@ -1734,7 +1749,7 @@ Thank you, best regards
       severity: successCount === targets.length ? "success" : "warning",
     });
 
-    setConfirmOpen(false);
+    setSingleConfirmOpen(false);
     setSelectedApplicant(null);
     setLoading2(false);
   };
@@ -1760,6 +1775,7 @@ Thank you, best regards
     }
 
     let successCount = 0;
+    const successfulApplicantNumbers = new Set();
 
     for (const applicant of targets) {
       // ✅ Try all possible email fields
@@ -1789,6 +1805,7 @@ Thank you, best regards
         );
 
         successCount++;
+        successfulApplicantNumbers.add(applicant.applicant_number);
       } catch (err) {
         console.error(`❌ Failed for ${applicant.applicant_number}`, err);
         // Continue to next instead of breaking everything
@@ -1798,10 +1815,11 @@ Thank you, best regards
       await new Promise((res) => setTimeout(res, 200));
     }
 
-    // remove the successfully emailed applicants
     setPersons((prev) =>
-      prev.filter(
-        (p) => !targets.some((t) => t.applicant_number === p.applicant_number),
+      prev.map((p) =>
+        successfulApplicantNumbers.has(p.applicant_number)
+          ? { ...p, applicant_interview_status: 1 }
+          : p,
       ),
     );
 
@@ -3040,6 +3058,7 @@ Thank you, best regards
                     >
                       <TextField
                         value={qualifyingExam}
+                        disabled={isInterviewEmailLocked(person)}
                         onChange={(e) =>
                           handleScoreChange(
                             person,
@@ -3063,6 +3082,7 @@ Thank you, best regards
                     >
                       <TextField
                         value={qualifyingInterview}
+                        disabled={isInterviewEmailLocked(person)}
                         onChange={(e) =>
                           handleScoreChange(
                             person,
@@ -3150,6 +3170,7 @@ Thank you, best regards
                         color="primary"
                         size="small"
                         sx={{ width: "100px", height: "35px" }}
+                        disabled={isInterviewEmailLocked(person)}
                         onClick={() => saveSingleRow(person)}
                       >
                         SAVE

@@ -65,6 +65,7 @@ const tabs1 = [
     icon: SchoolIcon,
   },
 ];
+const REGISTRAR_COR_SEARCH_KEY = "registrar_cor_search_student_number";
 
 const MedicalRequirements = () => {
   const settings = useContext(SettingsContext);
@@ -261,11 +262,21 @@ const MedicalRequirements = () => {
 
     const pid = sessionStorage.getItem("edit_person_id");
     const sn = sessionStorage.getItem("edit_student_number");
+    const currentStudentNumber =
+      selectedPerson?.student_number ||
+      person?.student_number ||
+      searchQuery?.trim() ||
+      sn;
+
+    if (currentStudentNumber) {
+      sessionStorage.setItem(REGISTRAR_COR_SEARCH_KEY, currentStudentNumber);
+      sessionStorage.setItem("edit_student_number", currentStudentNumber);
+    }
 
     if (pid) {
       navigate(`${to}?person_id=${pid}`);
-    } else if (sn) {
-      navigate(`${to}?student_number=${sn}`);
+    } else if (currentStudentNumber) {
+      navigate(`${to}?student_number=${currentStudentNumber}`);
     } else {
       navigate(to);
     }

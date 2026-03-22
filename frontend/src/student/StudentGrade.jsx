@@ -174,7 +174,18 @@ const StudentGradingPage = () => {
   };
 
   const convertNumericToGrade = (numeric) => {
+    if (
+      numeric === null ||
+      numeric === undefined ||
+      numeric === "" ||
+      Number(numeric) === 0
+    ) {
+      return "";
+    }
+
     const grade = parseFloat(numeric);
+
+    if (Number.isNaN(grade)) return "";
 
     if (grade >= 97) return 1.0;
     if (grade >= 94) return 1.25;

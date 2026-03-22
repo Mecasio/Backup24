@@ -429,13 +429,13 @@ const SideBar = ({ setIsAuthenticated, profileImage, setProfileImage }) => {
         { title: "Qualifying / Interview Scores", link: "/qualifying_interview_exam_scores", icon: Assessment, page_id: 37 },
         { title: "Student Numbering", link: "/student_numbering_per_college", icon: FormatListNumbered, page_id: 60 },
 
-        { title: "Student List", link: "/student_list_for_enrollment", icon: ListAlt, page_id: 104 },
+        { title: "Student List", link: "/student_list_for_enrollment", icon: ListAlt, page_id: 137 },
         { title: "Student Profile", link: "/official_student_dashboard1", icon: AccountCircle, page_id: 43 },
         { title: "Student Online Requirements", link: "/student_official_requirements", icon: FolderCopy, page_id: 124 },
         { title: "Course Tagging", link: "/course_tagging_for_college", icon: Class, page_id: 124 },
         { title: "Search COR", link: "/search_cor_for_college", icon: Search, page_id: 125 },
         {
-          title: "Class List", link: classRosterEnrollmentLink, icon: Class, page_id: 15, activeCheck: () => isClassRosterActive(classRosterEnrollmentLink)
+          title: "Class List", link: classRosterEnrollmentLink, icon: Class, page_id: 139, activeCheck: () => isClassRosterActive(classRosterEnrollmentLink)
         },
 
 
@@ -455,7 +455,7 @@ const SideBar = ({ setIsAuthenticated, profileImage, setProfileImage }) => {
         { title: "Medical Requirements", link: "/medical_requirements_form", icon: MedicalServices, page_id: 31 },
         { title: "Dental Assessment", link: "/dental_assessment", icon: HealthAndSafety, page_id: 19 },
         { title: "Physical & Neuro Exam", link: "/physical_neuro_exam", icon: Psychology, page_id: 32 },
-        { title: "Health Records Certificate", link: "/health_record", icon: ContactEmergency },
+        { title: "Health Records Certificate", link: "/health_record", icon: ContactEmergency, page_id: 140},
         { title: "Medical Certificate", link: "/medical_certificate", icon: MedicalServices, page_id: 130 },
       ]
     },

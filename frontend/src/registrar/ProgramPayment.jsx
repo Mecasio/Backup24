@@ -248,6 +248,11 @@ const CurriculumCourseMap = () => {
 
   const [searchCurriculum, setSearchCurriculum] = useState("");
 
+  const getBranchLabel = (branchId) => {
+    const branch = branches.find((item) => Number(item.id) === Number(branchId));
+    return branch?.branch || "�";
+  };
+
   const filteredCurriculumList = curriculumList
     .filter((item) => {
       // 🏫 CAMPUS FILTER
@@ -698,12 +703,7 @@ const CurriculumCourseMap = () => {
               <MenuItem key={c.curriculum_id} value={c.curriculum_id}>
                 {formatSchoolYear(c.year_description)}:{" "}
                 {`(${c.program_code}): ${c.program_description}${c.major ? ` (${c.major})` : ""
-                  } (${Number(c.components) === 1
-                    ? "Manila Campus"
-                    : Number(c.components) === 2
-                      ? "Cavite Campus"
-                      : "—"
-                  })`}
+                  } (${getBranchLabel(c.components)})`}
               </MenuItem>
             ))}
 
@@ -1282,3 +1282,4 @@ const CurriculumCourseMap = () => {
 };
 
 export default CurriculumCourseMap;
+
